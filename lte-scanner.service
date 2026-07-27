@@ -1,0 +1,15 @@
+[Unit]
+Description=LTE Scanner Backend
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/Cellular-Discovery-Service/backend
+EnvironmentFile=/home/pi/Cellular-Discovery-Service/backend/.env
+ExecStart=/home/pi/Cellular-Discovery-Service/backend/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

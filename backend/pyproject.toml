@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lte-scanner-backend"
+version = "0.1.0"
+description = "USB Modem LTE Network Discovery Web Backend"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

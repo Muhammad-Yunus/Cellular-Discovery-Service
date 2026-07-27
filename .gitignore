@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/.env
+.venv/
+ENV/
+ENV.lib/
+build/
+dist/
+*.egg-info/
+/.idea/
+/.pytest_cache/
+.coverage
+*.log
+
+# Database
+test.db
+*.sqlite
+*.sql
+
+# Environment
+.env
+.env.*
+
+# System files
+.SDS_Store
+Thumbs.db
+
+# Alembic (migrations are kept, but not generated cache)
+alembic/__pycache__/
