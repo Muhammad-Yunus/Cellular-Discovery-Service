@@ -50,8 +50,11 @@ class TestCLIAdapter:
             stderr="Error message",
         )
 
-        with pytest.raises(CLIError):
-            self.adapter.execute(port="/dev/ttyUSB0", timeout=30)
+        result = self.adapter.execute(port="/dev/ttyUSB0", timeout=30)
+
+        # On non-zero exit, adapter returns empty results instead of raising error
+        assert len(result.results) == 0
+        assert "Error message" in result.raw_output
 
     def test_parse_output_valid_json(self):
         stdout = '{"results": [{"operator_name": "Telkomsel", "mcc": "510", "mnc": "10"}]}'
@@ -76,5 +79,17 @@ class TestCLIAdapter:
     def test_parse_output_empty_results(self):
         stdout = '{"results": []}'
         result = self.adapter._parse_output(stdout)
+        assert len(result.results) == 0
 
+    def test_parse_output_raw_list_format(self):
+        """Test that raw JSON list format is handled correctly"""
+        stdout = '[{"operator_name": "Telkomsel", "mcc": "510", "mnc": "10"}]'
+        result = self.adapter._parse_output(stdout)
+        assert len(result.results) == 1
+        assert result.results[0].operator_name == "Telkomsel"
+
+    def test_parse_output_raw_empty_list(self):
+        """Test that empty raw list is handled correctly"""
+        stdout = '[]'
+        result = self.adapter._parse_output(stdout)
         assert len(result.results) == 0
