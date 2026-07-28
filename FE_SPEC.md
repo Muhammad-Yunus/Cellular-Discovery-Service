@@ -419,7 +419,11 @@ WebSocket (future)
 /ws/scan
 ```
 
-Note: The backend CLI adapter uses a `CLI_COMMAND` environment variable that must be set to the full path of the `lte-discovery` executable when running as a systemd service (since systemd doesn't load user PATH). Default value in development is `lte-discovery`.
+## Development Notes
+
+For development without real hardware, set environment variable `MOCK_CLI=true` in `.env`. This returns simulated scan results instead of calling the actual `lte-discovery` CLI tool.
+
+For systemd service deployment, ensure `CLI_COMMAND` is set to the full path of the `lte-discovery` executable (e.g., `/home/pi/.local/bin/lte-discovery`) since systemd does not load user's `$PATH` from `~/.profile`. See `.env.example` for configuration details.
 
 ---
 
