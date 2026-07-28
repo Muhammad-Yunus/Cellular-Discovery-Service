@@ -18,10 +18,6 @@ class Settings(BaseSettings):
     # Set full path if running as systemd service where PATH may not include user bin
     CLI_COMMAND: str = "lte-discovery"
 
-    # Enable mock mode for development/testing without real hardware
-    # When enabled, returns simulated scan results instead of calling the actual CLI
-    MOCK_CLI: bool = False
-
     LOG_LEVEL: str = "INFO"
 
     APP_ENV: str = "production"

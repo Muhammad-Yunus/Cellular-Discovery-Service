@@ -11,9 +11,8 @@ logger = logging.getLogger(__name__)
 
 
 class CLIAdapter:
-    def __init__(self, command: str = "lte-discovery", mock_mode: bool = False):
+    def __init__(self, command: str = "lte-discovery"):
         self.command = command
-        self.mock_mode = mock_mode or os.getenv("LTE_DISCOVERY MOCK", "false").lower() == "true"
 
     def _find_command(self) -> str:
         if shutil.which(self.command):
@@ -21,37 +20,6 @@ class CLIAdapter:
         raise CLINotFoundError(self.command)
 
     def execute(self, port: str, timeout: int = 30) -> CLIScanResponse:
-        if self.mock_mode:
-            # Return simulated scan results for development/testing
-            logger.info("Mock mode: Returning simulated scan results")
-            simulated_results = [
-                CLIScanResult(
-                    operator_name="Telkomsel",
-                    mcc="525",
-                    mnc="01",
-                    rat="LTE",
-                    status="connected",
-                ),
-                CLIScanResult(
-                    operator_name="Indosat",
-                    mcc="525",
-                    mnc="06",
-                    rat="LTE",
-                    status="available",
-                ),
-                CLIScanResult(
-                    operator_name="XL Axiata",
-                    mcc="525",
-                    mnc="08",
-                    rat="LTE",
-                    status="available",
-                ),
-            ]
-            return CLIScanResponse(
-                results=simulated_results,
-                raw_output='{"results": simulated_results, "timestamp": "now"}'
-            )
-
         cmd = self._find_command()
         args = [cmd, "scan", "--port", port, "--json"]
 
@@ -66,7 +34,6 @@ class CLIAdapter:
             )
         except subprocess.TimeoutExpired as e:
             logger.error(f"CLI timed out after {timeout}s")
-            # In non-mock mode on timeout, return empty results to avoid hanging frontend
             logger.warning("CLI timed out, returning empty results")
             return CLIScanResponse(results=[], raw_output=f"{{\"error\": \"timeout\", \"port\": \"{port}}}")
         except FileNotFoundError as e:
@@ -90,15 +57,23 @@ class CLIAdapter:
                 raw_output=stdout,
             )
 
-        results = []
-        scan_results = data.get("results", data.get("networks", []))
-
-        if not isinstance(scan_results, list):
+        # Handle both formats: raw list [...] or object {"results": [...]}
+        if isinstance(data, list):
+            scan_results = data
+        elif isinstance(data, dict):
+            scan_results = data.get("results", data.get("networks", []))
+            if not isinstance(scan_results, list):
+                raise CLIParseError(
+                    "Expected 'results' or 'networks' to be a list",
+                    raw_output=stdout,
+                )
+        else:
             raise CLIParseError(
-                "Expected 'results' or 'networks' to be a list",
+                f"Unexpected JSON type: {type(data).__name__}, expected list or dict",
                 raw_output=stdout,
             )
 
+        results = []
         for item in scan_results:
             results.append(
                 CLIScanResult(

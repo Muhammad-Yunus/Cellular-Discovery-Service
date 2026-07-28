@@ -7,7 +7,7 @@ from app.config.settings import get_settings, Settings
 
 
 def get_cli_adapter(settings: Settings = Depends(get_settings)) -> CLIAdapter:
-    return CLIAdapter(command=settings.CLI_COMMAND, mock_mode=settings.MOCK_CLI)
+    return CLIAdapter(command=settings.CLI_COMMAND)
 
 
 def get_gps_provider(settings: Settings = Depends(get_settings)) -> GPSProvider:

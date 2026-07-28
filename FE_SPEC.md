@@ -421,8 +421,6 @@ WebSocket (future)
 
 ## Development Notes
 
-For development without real hardware, set environment variable `MOCK_CLI=true` in `.env`. This returns simulated scan results instead of calling the actual `lte-discovery` CLI tool.
-
 For systemd service deployment, ensure `CLI_COMMAND` is set to the full path of the `lte-discovery` executable (e.g., `/home/pi/.local/bin/lte-discovery`) since systemd does not load user's `$PATH` from `~/.profile`. See `.env.example` for configuration details.
 
 ---
