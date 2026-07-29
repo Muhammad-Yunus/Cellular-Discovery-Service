@@ -10,6 +10,7 @@ from app.core.exceptions import (
 )
 from app.api.routers import scan, history, settings as settings_router, ws_gps, ws_scan
 import logging
+from fastapi.middleware.cors import CORSMiddleware
 
 app_settings = get_settings()
 
@@ -32,6 +33,26 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Add CORS Middleware
+if app_settings.ALLOW_ALL_ORIGINS:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+elif app_settings.ORIGIN_WHITELIST:
+    origins = [origin.strip() for origin in app_settings.ORIGIN_WHITELIST.split(",") if origin.strip()]
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+# Add exception handlers
 app.add_exception_handler(AppException, app_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
 
