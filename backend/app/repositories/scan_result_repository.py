@@ -72,7 +72,15 @@ class ScanResultRepository:
         query = self.db.query(ScanResult).join(ScanResult.session)
 
         if search:
-            query = query.filter(ScanSession.tty_port.ilike(f"%{search}%"))
+            from sqlalchemy import or_
+            query = query.filter(
+                or_(
+                    ScanSession.tty_port.ilike(f"%{search}%"),
+                    ScanResult.operator_name.ilike(f"%{search}%"),
+                    ScanResult.mcc.ilike(f"%{search}%"),
+                    ScanResult.mnc.ilike(f"%{search}%"),
+                )
+            )
 
         total = query.count()
 

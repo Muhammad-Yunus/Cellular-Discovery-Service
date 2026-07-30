@@ -603,7 +603,7 @@ The `/scans` endpoint supports query parameters:
 
 - `page` (default: 1) — page number (1-indexed)
 - `page_size` (default: 10, max: 100) — number of records per page
-- `search` (optional) — text filter on `tty_port` field
+- `search` (optional) — text filter on `tty_port`, `operator_name`, `mcc`, and `mnc` fields
 - `sort` (default: `-scan_time`) — sort field, prefix `-` for descending (e.g. `-scan_time`, `scan_time`)
 
 Response is `PaginatedResponse`:
