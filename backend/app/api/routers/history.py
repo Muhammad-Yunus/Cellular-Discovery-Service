@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from datetime import datetime
 from app.db.database import get_db
 from app.services import HistoryService
 from app.schemas.scan import (
@@ -18,6 +19,8 @@ def list_scans(
     search: str | None = None,
     sort: str = "-scan_time",
     rat: str | None = None,
+    start_time: datetime | None = None,
+    end_time: datetime | None = None,
     db: Session = Depends(get_db),
 ):
     service = HistoryService(db=db)
@@ -27,6 +30,8 @@ def list_scans(
         search=search,
         sort=sort,
         rat=rat,
+        start_time=start_time,
+        end_time=end_time,
     )
 
 

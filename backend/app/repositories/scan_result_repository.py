@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import desc, asc
 from typing import Optional
+from datetime import datetime
 from app.db.models.scan_result import ScanResult
 from app.db.models.scan_session import ScanSession
 
@@ -69,6 +70,8 @@ class ScanResultRepository:
         search: Optional[str] = None,
         sort: str = "-scan_time",
         rat: Optional[str] = None,
+        start_time: Optional[datetime] = None,
+        end_time: Optional[datetime] = None,
     ) -> tuple[list[ScanResult], int]:
         query = self.db.query(ScanResult).join(ScanResult.session)
 
@@ -85,6 +88,12 @@ class ScanResultRepository:
 
         if rat:
             query = query.filter(ScanResult.rat.ilike(rat))
+
+        if start_time:
+            query = query.filter(ScanSession.scan_time >= start_time)
+
+        if end_time:
+            query = query.filter(ScanSession.scan_time <= end_time)
 
         total = query.count()
 

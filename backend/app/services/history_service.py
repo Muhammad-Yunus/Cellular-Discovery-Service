@@ -1,4 +1,5 @@
 import math
+from datetime import datetime
 from sqlalchemy.orm import Session
 from app.repositories import ScanSessionRepository, ScanResultRepository
 from app.schemas.scan import ScanResultFlatResponse, PaginatedResponse
@@ -17,6 +18,8 @@ class HistoryService:
         search: str | None = None,
         sort: str = "-scan_time",
         rat: str | None = None,
+        start_time: datetime | None = None,
+        end_time: datetime | None = None,
     ) -> PaginatedResponse:
         results, total = self.result_repo.get_all_flat(
             page=page,
@@ -24,6 +27,8 @@ class HistoryService:
             search=search,
             sort=sort,
             rat=rat,
+            start_time=start_time,
+            end_time=end_time,
         )
 
         total_pages = math.ceil(total / page_size) if total > 0 else 1
