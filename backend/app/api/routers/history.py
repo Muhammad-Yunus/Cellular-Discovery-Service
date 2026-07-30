@@ -17,6 +17,7 @@ def list_scans(
     page_size: int = Query(10, ge=1, le=100),
     search: str | None = None,
     sort: str = "-scan_time",
+    rat: str | None = None,
     db: Session = Depends(get_db),
 ):
     service = HistoryService(db=db)
@@ -25,6 +26,7 @@ def list_scans(
         page_size=page_size,
         search=search,
         sort=sort,
+        rat=rat,
     )
 
 

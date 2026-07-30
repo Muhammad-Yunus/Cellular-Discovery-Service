@@ -16,12 +16,14 @@ class HistoryService:
         page_size: int = 10,
         search: str | None = None,
         sort: str = "-scan_time",
+        rat: str | None = None,
     ) -> PaginatedResponse:
         results, total = self.result_repo.get_all_flat(
             page=page,
             page_size=page_size,
             search=search,
             sort=sort,
+            rat=rat,
         )
 
         total_pages = math.ceil(total / page_size) if total > 0 else 1

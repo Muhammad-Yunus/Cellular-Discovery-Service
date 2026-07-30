@@ -68,6 +68,7 @@ class ScanResultRepository:
         page_size: int = 10,
         search: Optional[str] = None,
         sort: str = "-scan_time",
+        rat: Optional[str] = None,
     ) -> tuple[list[ScanResult], int]:
         query = self.db.query(ScanResult).join(ScanResult.session)
 
@@ -81,6 +82,9 @@ class ScanResultRepository:
                     ScanResult.mnc.ilike(f"%{search}%"),
                 )
             )
+
+        if rat:
+            query = query.filter(ScanResult.rat.ilike(rat))
 
         total = query.count()
 
