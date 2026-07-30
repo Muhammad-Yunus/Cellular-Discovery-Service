@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     TIMEZONE: str = "Asia/Jakarta"
 
     # CORS settings - for frontend running on different machines during development
-    ALLOW_ALL_ORIGINS: bool = False
+    ALLOW_ALL_ORIGINS: bool = True
     ORIGIN_WHITELIST: str = ""  # Comma-separated list of origins, e.g., http://localhost:3000,http://192.168.1.100:3000
 
     @property
