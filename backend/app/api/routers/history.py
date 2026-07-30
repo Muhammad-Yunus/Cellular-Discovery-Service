@@ -23,6 +23,14 @@ def list_scans(
     end_time: datetime | None = None,
     db: Session = Depends(get_db),
 ):
+    # Validasi rentang waktu: jika keduanya diatur dan start > end, kembalikan error
+    if start_time and end_time:
+        if start_time.timestamp() > end_time.timestamp():
+            raise HTTPException(
+                status_code=422,
+                detail="start_time tidak boleh lebih besar dari end_time",
+            )
+
     service = HistoryService(db=db)
     return service.get_sessions(
         page=page,

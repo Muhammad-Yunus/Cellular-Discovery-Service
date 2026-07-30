@@ -21,6 +21,11 @@ class HistoryService:
         start_time: datetime | None = None,
         end_time: datetime | None = None,
     ) -> PaginatedResponse:
+        # Validasi rentang waktu di service layer (untuk keamanan tambahan)
+        if start_time and end_time:
+            if start_time.timestamp() > end_time.timestamp():
+                raise ValueError("start_time tidak boleh lebih besar dari end_time")
+
         results, total = self.result_repo.get_all_flat(
             page=page,
             page_size=page_size,
