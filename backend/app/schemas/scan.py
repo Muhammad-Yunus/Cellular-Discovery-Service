@@ -35,6 +35,10 @@ class ScanSessionListResponse(BaseModel):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     created_at: datetime
+    operator_name: Optional[str] = None
+    mcc: Optional[str] = None
+    mnc: Optional[str] = None
+    result_count: int = 0
 
     class Config:
         from_attributes = True

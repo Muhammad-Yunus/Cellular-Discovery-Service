@@ -39,6 +39,10 @@ class HistoryService:
                 latitude=s.latitude,
                 longitude=s.longitude,
                 created_at=s.created_at,
+                operator_name=s.results[0].operator_name if s.results else None,
+                mcc=s.results[0].mcc if s.results else None,
+                mnc=s.results[0].mnc if s.results else None,
+                result_count=len(s.results),
             )
             for s in sessions
         ]
