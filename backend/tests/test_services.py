@@ -76,19 +76,22 @@ class TestHistoryService:
     def test_get_sessions_with_data(self, db_session):
         service = self._make_service(db_session)
 
-        service.session_repo.create(tty_port="/dev/ttyUSB0")
-        service.session_repo.create(tty_port="/dev/ttyUSB1")
+        session = service.session_repo.create(tty_port="/dev/ttyUSB0")
+        service.result_repo.create(session_id=session.id, operator_name="Telkomsel")
 
         result = service.get_sessions()
 
-        assert result.total == 2
-        assert len(result.items) == 2
+        assert result.total == 1
+        assert len(result.items) == 1
+        assert result.items[0].operator_name == "Telkomsel"
+        assert result.items[0].scan_session_id == session.id
 
     def test_get_sessions_pagination(self, db_session):
         service = self._make_service(db_session)
 
         for i in range(15):
-            service.session_repo.create(tty_port=f"/dev/ttyUSB{i}")
+            session = service.session_repo.create(tty_port=f"/dev/ttyUSB{i}")
+            service.result_repo.create(session_id=session.id, operator_name=f"Op{i}")
 
         result = service.get_sessions(page=1, page_size=10)
 
@@ -100,21 +103,23 @@ class TestHistoryService:
         service = self._make_service(db_session)
 
         session = service.session_repo.create(tty_port="/dev/ttyUSB0")
-        service.result_repo.create(
+        scan_result = service.result_repo.create(
             session_id=session.id,
             operator_name="Telkomsel",
         )
 
-        result = service.get_session(session.id)
+        result = service.get_session(scan_result.id)
 
         assert result is not None
-        assert len(result.results) == 1
+        assert result.operator_name == "Telkomsel"
+        assert result.scan_session_id == session.id
 
     def test_delete_session(self, db_session):
         service = self._make_service(db_session)
 
         session = service.session_repo.create(tty_port="/dev/ttyUSB0")
-        deleted = service.delete_session(session.id)
+        scan_result = service.result_repo.create(session_id=session.id)
+        deleted = service.delete_session(scan_result.id)
 
         assert deleted is True
 

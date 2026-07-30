@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session
 from sqlalchemy import desc, asc, func
 from typing import Optional
 from app.db.models.scan_session import ScanSession
@@ -34,7 +34,7 @@ class ScanSessionRepository:
         search: Optional[str] = None,
         sort: str = "-scan_time",
     ) -> tuple[list[ScanSession], int]:
-        query = self.db.query(ScanSession).options(selectinload(ScanSession.results))
+        query = self.db.query(ScanSession)
 
         if search:
             query = query.filter(

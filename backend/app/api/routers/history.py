@@ -3,8 +3,7 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.services import HistoryService
 from app.schemas.scan import (
-    ScanSessionListResponse,
-    ScanSessionResponse,
+    ScanResultFlatResponse,
     PaginatedResponse,
     ScanDeleteResponse,
 )
@@ -29,32 +28,32 @@ def list_scans(
     )
 
 
-@router.get("/{scan_id}", response_model=ScanSessionResponse)
+@router.get("/{result_id}", response_model=ScanResultFlatResponse)
 def get_scan(
-    scan_id: int,
+    result_id: int,
     db: Session = Depends(get_db),
 ):
     service = HistoryService(db=db)
-    result = service.get_session(scan_id)
+    result = service.get_session(result_id)
 
     if not result:
-        raise HTTPException(status_code=404, detail="Scan not found")
+        raise HTTPException(status_code=404, detail="Scan result not found")
 
     return result
 
 
-@router.delete("/{scan_id}", response_model=ScanDeleteResponse)
+@router.delete("/{result_id}", response_model=ScanDeleteResponse)
 def delete_scan(
-    scan_id: int,
+    result_id: int,
     db: Session = Depends(get_db),
 ):
     service = HistoryService(db=db)
-    deleted = service.delete_session(scan_id)
+    deleted = service.delete_session(result_id)
 
     if not deleted:
-        raise HTTPException(status_code=404, detail="Scan not found")
+        raise HTTPException(status_code=404, detail="Scan result not found")
 
     return ScanDeleteResponse(
-        message="Scan deleted successfully",
-        id=scan_id,
+        message="Scan result deleted successfully",
+        id=result_id,
     )

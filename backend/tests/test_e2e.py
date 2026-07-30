@@ -65,13 +65,14 @@ class TestScanWorkflowE2E:
             assert data["results"][0]["mcc"] == "510"
             assert data["results"][1]["operator_name"] == "XL Axiata"
 
-            scan_id = data["id"]
+            result_id = data["results"][0]["id"]
 
-            detail_response = client.get(f"/api/v1/scans/{scan_id}")
+            detail_response = client.get(f"/api/v1/scans/{result_id}")
             assert detail_response.status_code == 200
             detail = detail_response.json()
-            assert detail["id"] == scan_id
-            assert len(detail["results"]) == 2
+            assert detail["id"] == result_id
+            assert detail["operator_name"] == "Telkomsel"
+            assert detail["scan_session_id"] == data["id"]
 
         finally:
             client.app.dependency_overrides.pop(get_gps_provider, None)
@@ -92,8 +93,8 @@ class TestScanWorkflowE2E:
             list_response = client.get("/api/v1/scans")
             assert list_response.status_code == 200
             data = list_response.json()
-            assert data["total"] == 3
-            assert len(data["items"]) == 3
+            assert data["total"] == 6
+            assert len(data["items"]) == 6
 
         finally:
             client.app.dependency_overrides.pop(get_gps_provider, None)
@@ -131,11 +132,11 @@ class TestHistoryCRUDE2E:
                 "/api/v1/scan",
                 json={"tty": "/dev/ttyUSB0"},
             )
-            scan_id = create_resp.json()["id"]
+            result_id = create_resp.json()["results"][0]["id"]
 
-            get_resp = client.get(f"/api/v1/scans/{scan_id}")
+            get_resp = client.get(f"/api/v1/scans/{result_id}")
             assert get_resp.status_code == 200
-            assert get_resp.json()["id"] == scan_id
+            assert get_resp.json()["id"] == result_id
         finally:
             client.app.dependency_overrides.pop(get_gps_provider, None)
             client.app.dependency_overrides.pop(get_cli_adapter, None)
@@ -149,13 +150,13 @@ class TestHistoryCRUDE2E:
                 "/api/v1/scan",
                 json={"tty": "/dev/ttyUSB0"},
             )
-            scan_id = create_resp.json()["id"]
+            result_id = create_resp.json()["results"][0]["id"]
 
-            delete_resp = client.delete(f"/api/v1/scans/{scan_id}")
+            delete_resp = client.delete(f"/api/v1/scans/{result_id}")
             assert delete_resp.status_code == 200
-            assert delete_resp.json()["id"] == scan_id
+            assert delete_resp.json()["id"] == result_id
 
-            get_resp = client.get(f"/api/v1/scans/{scan_id}")
+            get_resp = client.get(f"/api/v1/scans/{result_id}")
             assert get_resp.status_code == 404
         finally:
             client.app.dependency_overrides.pop(get_gps_provider, None)
@@ -250,11 +251,11 @@ class TestPaginationE2E:
         response = client.get("/api/v1/scans")
         assert response.status_code == 200
         data = response.json()
-        assert data["total"] == 25
+        assert data["total"] == 50
         assert len(data["items"]) == 10
         assert data["page"] == 1
         assert data["page_size"] == 10
-        assert data["total_pages"] == 3
+        assert data["total_pages"] == 5
 
     def test_pagination_page_2(self, client, db_session, mock_cli, mock_gps):
         self._populate_scans(client, 25, mock_cli, mock_gps)
@@ -268,10 +269,10 @@ class TestPaginationE2E:
     def test_pagination_last_page(self, client, db_session, mock_cli, mock_gps):
         self._populate_scans(client, 25, mock_cli, mock_gps)
 
-        response = client.get("/api/v1/scans?page=3&page_size=10")
+        response = client.get("/api/v1/scans?page=5&page_size=10")
         assert response.status_code == 200
         data = response.json()
-        assert len(data["items"]) == 5
+        assert len(data["items"]) == 10
 
     def test_pagination_custom_page_size(self, client, db_session, mock_cli, mock_gps):
         self._populate_scans(client, 15, mock_cli, mock_gps)
@@ -280,7 +281,7 @@ class TestPaginationE2E:
         assert response.status_code == 200
         data = response.json()
         assert len(data["items"]) == 5
-        assert data["total_pages"] == 3
+        assert data["total_pages"] == 6
 
 
 class TestHealthCheckE2E:

@@ -3,6 +3,24 @@ from typing import Optional
 from datetime import datetime
 
 
+class ScanResultFlatResponse(BaseModel):
+    id: int
+    scan_session_id: int
+    scan_time: datetime
+    tty_port: str
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    created_at: datetime
+    operator_name: Optional[str] = None
+    mcc: Optional[str] = None
+    mnc: Optional[str] = None
+    rat: Optional[str] = None
+    status: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
 class ScanResultResponse(BaseModel):
     id: int
     operator_name: Optional[str] = None
@@ -28,28 +46,12 @@ class ScanSessionResponse(BaseModel):
         from_attributes = True
 
 
-class ScanSessionListResponse(BaseModel):
-    id: int
-    scan_time: datetime
-    tty_port: str
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
-    created_at: datetime
-    operator_name: Optional[str] = None
-    mcc: Optional[str] = None
-    mnc: Optional[str] = None
-    result_count: int = 0
-
-    class Config:
-        from_attributes = True
-
-
 class ScanRequest(BaseModel):
     tty: str = "/dev/ttyUSB0"
 
 
 class PaginatedResponse(BaseModel):
-    items: list[ScanSessionListResponse]
+    items: list[ScanResultFlatResponse]
     total: int
     page: int
     page_size: int

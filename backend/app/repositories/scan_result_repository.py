@@ -1,6 +1,8 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import desc, asc
 from typing import Optional
 from app.db.models.scan_result import ScanResult
+from app.db.models.scan_session import ScanSession
 
 
 class ScanResultRepository:
@@ -59,3 +61,43 @@ class ScanResultRepository:
 
     def get_by_session_id(self, session_id: int) -> list[ScanResult]:
         return self.db.query(ScanResult).filter(ScanResult.session_id == session_id).all()
+
+    def get_all_flat(
+        self,
+        page: int = 1,
+        page_size: int = 10,
+        search: Optional[str] = None,
+        sort: str = "-scan_time",
+    ) -> tuple[list[ScanResult], int]:
+        query = self.db.query(ScanResult).join(ScanResult.session)
+
+        if search:
+            query = query.filter(ScanSession.tty_port.ilike(f"%{search}%"))
+
+        total = query.count()
+
+        if sort.startswith("-"):
+            query = query.order_by(desc(ScanSession.scan_time))
+        else:
+            query = query.order_by(asc(ScanSession.scan_time))
+
+        offset = (page - 1) * page_size
+        results = query.offset(offset).limit(page_size).all()
+
+        return results, total
+
+    def get_by_id_with_session(self, result_id: int) -> Optional[ScanResult]:
+        return (
+            self.db.query(ScanResult)
+            .options(joinedload(ScanResult.session))
+            .filter(ScanResult.id == result_id)
+            .first()
+        )
+
+    def delete(self, result_id: int) -> bool:
+        result = self.db.query(ScanResult).filter(ScanResult.id == result_id).first()
+        if not result:
+            return False
+        self.db.delete(result)
+        self.db.commit()
+        return True

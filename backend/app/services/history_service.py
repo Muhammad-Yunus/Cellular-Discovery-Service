@@ -1,12 +1,7 @@
 import math
 from sqlalchemy.orm import Session
 from app.repositories import ScanSessionRepository, ScanResultRepository
-from app.schemas.scan import (
-    ScanSessionListResponse,
-    ScanSessionResponse,
-    ScanResultResponse,
-    PaginatedResponse,
-)
+from app.schemas.scan import ScanResultFlatResponse, PaginatedResponse
 
 
 class HistoryService:
@@ -22,7 +17,7 @@ class HistoryService:
         search: str | None = None,
         sort: str = "-scan_time",
     ) -> PaginatedResponse:
-        sessions, total = self.session_repo.get_all(
+        results, total = self.result_repo.get_all_flat(
             page=page,
             page_size=page_size,
             search=search,
@@ -32,19 +27,21 @@ class HistoryService:
         total_pages = math.ceil(total / page_size) if total > 0 else 1
 
         items = [
-            ScanSessionListResponse(
-                id=s.id,
-                scan_time=s.scan_time,
-                tty_port=s.tty_port,
-                latitude=s.latitude,
-                longitude=s.longitude,
-                created_at=s.created_at,
-                operator_name=s.results[0].operator_name if s.results else None,
-                mcc=s.results[0].mcc if s.results else None,
-                mnc=s.results[0].mnc if s.results else None,
-                result_count=len(s.results),
+            ScanResultFlatResponse(
+                id=r.id,
+                scan_session_id=r.session_id,
+                scan_time=r.session.scan_time,
+                tty_port=r.session.tty_port,
+                latitude=r.session.latitude,
+                longitude=r.session.longitude,
+                created_at=r.session.created_at,
+                operator_name=r.operator_name,
+                mcc=r.mcc,
+                mnc=r.mnc,
+                rat=r.rat,
+                status=r.status,
             )
-            for s in sessions
+            for r in results
         ]
 
         return PaginatedResponse(
@@ -55,32 +52,25 @@ class HistoryService:
             total_pages=total_pages,
         )
 
-    def get_session(self, session_id: int) -> ScanSessionResponse | None:
-        session = self.session_repo.get_by_id(session_id)
-        if not session:
+    def get_session(self, result_id: int) -> ScanResultFlatResponse | None:
+        result = self.result_repo.get_by_id_with_session(result_id)
+        if not result:
             return None
 
-        results = self.result_repo.get_by_session_id(session.id)
-
-        return ScanSessionResponse(
-            id=session.id,
-            scan_time=session.scan_time,
-            tty_port=session.tty_port,
-            latitude=session.latitude,
-            longitude=session.longitude,
-            created_at=session.created_at,
-            results=[
-                ScanResultResponse(
-                    id=r.id,
-                    operator_name=r.operator_name,
-                    mcc=r.mcc,
-                    mnc=r.mnc,
-                    rat=r.rat,
-                    status=r.status,
-                )
-                for r in results
-            ],
+        return ScanResultFlatResponse(
+            id=result.id,
+            scan_session_id=result.session_id,
+            scan_time=result.session.scan_time,
+            tty_port=result.session.tty_port,
+            latitude=result.session.latitude,
+            longitude=result.session.longitude,
+            created_at=result.session.created_at,
+            operator_name=result.operator_name,
+            mcc=result.mcc,
+            mnc=result.mnc,
+            rat=result.rat,
+            status=result.status,
         )
 
-    def delete_session(self, session_id: int) -> bool:
-        return self.session_repo.delete(session_id)
+    def delete_session(self, result_id: int) -> bool:
+        return self.result_repo.delete(result_id)
