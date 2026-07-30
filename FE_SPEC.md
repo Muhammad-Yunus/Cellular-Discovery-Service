@@ -164,7 +164,10 @@ Each scan item displays
 - Operator
 - MCC/MNC
 - RAT
+- Status
 - Scan Time
+
+Each item has `scan_session_id` — use it to group results from the same scan session (e.g. Telkomsel + IM3 Ooredoo from one modem poll).
 
 Clicking a scan
 
@@ -399,24 +402,108 @@ Base URL
 Endpoints
 
 ```
-POST /scan
-
-GET /scans
-
-GET /scans/{id}
-
-DELETE /scans/{id}
-
-GET /settings
-
-PUT /settings
+POST /scan                          → ScanSessionResponse (nested)
+GET  /scans?page=1&page_size=10     → PaginatedResponse (flat items)
+GET  /scans/{result_id}             → ScanResultFlatResponse
+DELETE /scans/{result_id}           → ScanDeleteResponse
+GET  /settings                      → list[SettingResponse]
+PUT  /settings                      → list[SettingResponse]
 ```
 
-WebSocket (future)
+### Response Schemas
 
+#### POST /scan — Returns session with nested results (used for creation only)
+```json
+{
+  "id": 56,
+  "scan_time": "2026-07-30T09:07:55.135303+07:00",
+  "tty_port": "/dev/ttyUSB0",
+  "latitude": -6.150676643667096,
+  "longitude": 106.89665223346297,
+  "created_at": "2026-07-30T09:07:55.135303+07:00",
+  "results": [
+    { "id": 34, "operator_name": "Telkomsel", "mcc": "510", "mnc": "10", "rat": "GSM", "status": "Forbidden" },
+    { "id": 35, "operator_name": "IM3 Ooredoo", "mcc": "510", "mnc": "21", "rat": "GSM", "status": "Forbidden" }
+  ]
+}
 ```
-/ws/gps
-/ws/scan
+TypeScript:
+```ts
+interface ScanSessionResponse {
+  id: number
+  scan_time: string
+  tty_port: string
+  latitude: number | null
+  longitude: number | null
+  created_at: string
+  results: ScanResult[]
+}
+interface ScanResult {
+  id: number
+  operator_name: string | null
+  mcc: string | null
+  mnc: string | null
+  rat: string | null
+  status: string | null
+}
+```
+
+#### GET /scans — Paginated list (flat: 1 item per scan_result, NOT per session)
+```json
+{
+  "items": [
+    {
+      "id": 35,
+      "scan_session_id": 56,
+      "scan_time": "2026-07-30T09:07:55.135303+07:00",
+      "tty_port": "/dev/ttyUSB0",
+      "latitude": -6.150676643667096,
+      "longitude": 106.89665223346297,
+      "created_at": "2026-07-30T09:07:55.135303+07:00",
+      "operator_name": "IM3 Ooredoo",
+      "mcc": "510",
+      "mnc": "21",
+      "rat": "GSM",
+      "status": "Forbidden"
+    }
+  ],
+  "total": 35,
+  "page": 1,
+  "page_size": 10,
+  "total_pages": 4
+}
+```
+TypeScript:
+```ts
+interface ScanResultFlat {
+  id: number               // scan_result_id
+  scan_session_id: number  // FK → scan_sessions.id
+  scan_time: string
+  tty_port: string
+  latitude: number | null
+  longitude: number | null
+  created_at: string
+  operator_name: string | null
+  mcc: string | null
+  mnc: string | null
+  rat: string | null
+  status: string | null
+}
+interface PaginatedResponse {
+  items: ScanResultFlat[]
+  total: number
+  page: number
+  page_size: number
+  total_pages: number
+}
+```
+
+#### GET /scans/{result_id} — Single scan result (id = scan_result_id, NOT session id)
+Same shape as one item in the list above (ScanResultFlat).
+
+#### DELETE /scans/{result_id}
+```json
+{ "message": "Scan result deleted successfully", "id": 35 }
 ```
 
 ## Development Notes
@@ -514,11 +601,25 @@ PUT /settings
 
 The `/scans` endpoint supports query parameters:
 
-- `limit` (default: 20, max: 100) — number of records per page
-- `offset` (default: 0) — starting record index
-- `search` (optional) — text filter on operator, MCC, MNC fields
+- `page` (default: 1) — page number (1-indexed)
+- `page_size` (default: 10, max: 100) — number of records per page
+- `search` (optional) — text filter on `tty_port` field
+- `sort` (default: `-scan_time`) — sort field, prefix `-` for descending (e.g. `-scan_time`, `scan_time`)
 
-Frontend pagination store should track: `currentPage`, `limit`, `totalItems`, `offset`, `searchTerm`. Implement client-side or server-side pagination as appropriate. When user changes page or search, fetch new data with updated parameters.
+Response is `PaginatedResponse`:
+```json
+{
+  "items": [ /* ScanResultFlat[] */ ],
+  "total": 35,
+  "page": 1,
+  "page_size": 10,
+  "total_pages": 4
+}
+```
+
+**Important:** The response is **flat** — each item is one `scan_result` row. If one scan session found 2 operators, it produces 2 items sharing the same `scan_session_id`. Use `scan_session_id` to group related results on the frontend if needed.
+
+Frontend pagination store should track: `currentPage`, `pageSize`, `totalItems`, `searchTerm`, `sort`. Implement server-side pagination. When user changes page, search, or sort, fetch new data with updated parameters.
 
 ---
 
@@ -747,7 +848,68 @@ Frontend tests SHALL NOT require FastAPI. Use mocking libraries like `jest-mock-
 
 Frontend TypeScript interfaces shall mirror backend Pydantic models. Recommended approach:
 
-1. Manual sync for core types (`ScanResponse`, `ScanSummary`, `Setting`, `ScanCreate`, etc.) using `backend/app/schemas/scan.py` and related files as reference. Define matching TypeScript interfaces/types in `frontend/types/`.
+1. Manual sync for core types using `backend/app/schemas/scan.py` as reference. Define matching TypeScript interfaces in `frontend/types/`.
+
+Key types to maintain:
+
+```ts
+// POST /scan response
+interface ScanSessionResponse {
+  id: number
+  scan_time: string
+  tty_port: string
+  latitude: number | null
+  longitude: number | null
+  created_at: string
+  results: ScanResult[]
+}
+
+// Nested inside session
+interface ScanResult {
+  id: number
+  operator_name: string | null
+  mcc: string | null
+  mnc: string | null
+  rat: string | null
+  status: string | null
+}
+
+// GET /scans list item + GET /scans/{id} response
+interface ScanResultFlat {
+  id: number
+  scan_session_id: number
+  scan_time: string
+  tty_port: string
+  latitude: number | null
+  longitude: number | null
+  created_at: string
+  operator_name: string | null
+  mcc: string | null
+  mnc: string | null
+  rat: string | null
+  status: string | null
+}
+
+// GET /scans wrapper
+interface PaginatedResponse {
+  items: ScanResultFlat[]
+  total: number
+  page: number
+  page_size: number
+  total_pages: number
+}
+
+interface SettingResponse {
+  key: string
+  value: string | null
+  updated_at: string
+}
+
+interface ScanDeleteResponse {
+  message: string
+  id: number
+}
+```
 
 2. Optionally generate frontend TypeScript types from OpenAPI spec at `/openapi.json` using tools like `openapi-typescript` during build.
 
@@ -768,7 +930,9 @@ Update system store with health results and display colored badges in UI.
 
 # Signal Panel Data Source
 
-Signal panel displays data from the **currently selected scan** from the sidebar list. If no selection is made, show the most recent completed scan (from `scanStore`). Data fields: Operator, MCC, MNC, RAT, Scan Time. Fetch from `GET /scans/{id}` when a scan is selected.
+Signal panel displays data from the **currently selected scan result** from the sidebar list. If no selection is made, show the most recent completed scan result (from `scanStore`). Data fields: Operator, MCC, MNC, RAT, Scan Time, Status, TTY Port.
+
+Fetch from `GET /scans/{result_id}` when a scan result is selected. The response is a single `ScanResultFlat` object — no nested array. Use `scan_session_id` to identify which session the result belongs to, useful for grouping or highlighting related markers on the map.
 
 ---
 
