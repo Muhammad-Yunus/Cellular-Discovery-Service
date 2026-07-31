@@ -1,3 +1,4 @@
+from pydantic import Field
 from pydantic_settings import BaseSettings
 from functools import lru_cache
 
@@ -14,8 +15,16 @@ class Settings(BaseSettings):
     DEFAULT_TTY: str = "/dev/ttyUSB0"
     SCAN_TIMEOUT: int = 30
 
+    MISSION_MAX_LOCATIONS: int = Field(default=10_000, gt=0, description="Maximum number of locations allowed per mission upload")
+    MISSION_DEFAULT_RADIUS_METERS: int = Field(default=20, gt=0, description="Default geofence radius (meters) when mission radius not specified")
+    MISSION_POLL_INTERVAL: int = Field(default=2, gt=0, description="Seconds between GPS location checks during mission execution")
+    MISSION_GPS_FAILURE_THRESHOLD: int = Field(default=10, gt=0, description="Consecutive GPS failures before mission marked as FAILED")
+    MISSION_CLI_TIMEOUT: int = Field(default=30, gt=0, description="Timeout per scan CLI call in seconds")
+    MISSION_START_GPS_TIMEOUT: int = Field(default=5, gt=0, description="Maximum time to wait for GPS availability at mission start")
+    MISSION_LOG_SIZE: int = Field(default=200, gt=0, description="Maximum number of log entries stored per mission")
+
     # CLI command for lte-discovery scanner
-    # Set full path if running as systemd service where PATH may not include user bin
+    # Set full path if running as a systemd service where PATH may not include user bin
     CLI_COMMAND: str = "lte-discovery"
 
     LOG_LEVEL: str = "INFO"

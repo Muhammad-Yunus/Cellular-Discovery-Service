@@ -13,11 +13,13 @@ class ScanSessionRepository:
         tty_port: str,
         latitude: Optional[float] = None,
         longitude: Optional[float] = None,
+        mission_location_id: Optional[int] = None,
     ) -> ScanSession:
         session = ScanSession(
             tty_port=tty_port,
             latitude=latitude,
             longitude=longitude,
+            mission_location_id=mission_location_id,
         )
         self.db.add(session)
         self.db.commit()

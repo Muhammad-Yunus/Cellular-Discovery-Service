@@ -21,7 +21,13 @@ class ScanService:
         self.session_repo = ScanSessionRepository(db)
         self.result_repo = ScanResultRepository(db)
 
-    def execute_scan(self, port: str, timeout: int = 30) -> ScanSessionResponse:
+    def execute_scan(
+        self,
+        port: str,
+        timeout: int = 30,
+        *,
+        mission_location_id: int | None = None,
+    ) -> ScanSessionResponse:
         logger.info(f"Starting scan on port: {port}")
 
         location = self.gps_provider.get_location()
@@ -34,6 +40,7 @@ class ScanService:
             tty_port=port,
             latitude=location.latitude,
             longitude=location.longitude,
+            mission_location_id=mission_location_id,
         )
 
         results_data = [
@@ -70,6 +77,7 @@ class ScanService:
             tty_port=session.tty_port,
             latitude=session.latitude,
             longitude=session.longitude,
+            mission_location_id=session.mission_location_id,
             created_at=session.created_at,
             results=[
                 ScanResultResponse(

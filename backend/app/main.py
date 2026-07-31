@@ -8,9 +8,10 @@ from app.core.exceptions import (
     app_exception_handler,
     generic_exception_handler,
 )
-from app.api.routers import scan, history, settings as settings_router, ws_gps, ws_scan
+from app.api.routers import scan, history, settings as settings_router, ws_gps, ws_scan, ws_mission, mission_locations, missions, mission_planning, mission_control, mission_scans
 import logging
 from fastapi.middleware.cors import CORSMiddleware
+from app.core.mission_executor import MissionExecutor
 
 app_settings = get_settings()
 
@@ -21,8 +22,12 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting application...")
+    executor = MissionExecutor()
+    await executor.startup()
+    app.state.mission_executor = executor
     yield
     logger.info("Shutting down application...")
+    await executor.shutdown()
     engine.dispose()
 
 
@@ -61,6 +66,12 @@ app.include_router(history.router)
 app.include_router(settings_router.router)
 app.include_router(ws_gps.router)
 app.include_router(ws_scan.router)
+app.include_router(ws_mission.router)
+app.include_router(mission_locations.router)
+app.include_router(missions.router)
+app.include_router(mission_planning.router)
+app.include_router(mission_control.router)
+app.include_router(mission_scans.router)
 
 
 @app.get("/health")

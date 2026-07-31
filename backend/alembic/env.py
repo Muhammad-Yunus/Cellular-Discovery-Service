@@ -18,7 +18,7 @@ if config.config_file_name is not None:
 
 target_metadata = Base.metadata
 
-from app.db.models import scan_session, scan_result, setting
+from app.db.models import mission, mission_location, scan_result, scan_session, setting
 
 
 def run_migrations_offline() -> None:
@@ -43,7 +43,9 @@ def run_migrations_online() -> None:
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection,
+            target_metadata=target_metadata,
+            include_schemas=True,
         )
 
         with context.begin_transaction():

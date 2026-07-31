@@ -10,6 +10,7 @@ class ScanResultFlatResponse(BaseModel):
     tty_port: str
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    mission_location_id: Optional[int] = None
     created_at: datetime
     operator_name: Optional[str] = None
     mcc: Optional[str] = None
@@ -39,6 +40,7 @@ class ScanSessionResponse(BaseModel):
     tty_port: str
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    mission_location_id: Optional[int] = None
     created_at: datetime
     results: list[ScanResultResponse] = []
 

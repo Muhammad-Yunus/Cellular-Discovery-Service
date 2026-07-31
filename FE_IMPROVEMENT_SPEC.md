@@ -23,8 +23,8 @@ src/views/
 ├── ScansListPage.vue          (existing /scans)
 ├── MissionListPage.vue        (NEW: /missions/list)       -- List all missions
 ├── MissionDetailPage.vue      (NEW: /missions/{id})      -- View & control single mission
-├── LocationUploadPage.vue     (NEW: /locations/upload)   -- CSV upload page
-├── LocationListPage.vue       (NEW: /locations/list)     -- View imported locations
+├── LocationUploadPage.vue     (NEW: /missions/{id}/locations/upload) -- CSV upload per mission
+├── LocationListPage.vue       (NEW: /missions/{id}/locations)   -- View imported locations
 └── MissionsWebSocket.vue      (hidden component, real-time updates)
 ```
 
@@ -40,13 +40,13 @@ Add these routes:
   meta: { title: 'Missions' }
 },
 {
-  path: '/locations/upload',
+  path: '/missions/:id/locations/upload',
   name: 'location-upload',
   component: () => import('@/views/LocationUploadPage.vue'),
   meta: { title: 'Import Tower Locations' }
 },
 {
-  path: '/locations',
+  path: '/missions/:id/locations',
   name: 'location-list',
   component: () => import('@/views/LocationListPage.vue'),
   meta: { title: 'Tower Locations' }
@@ -111,15 +111,15 @@ Standard pagination component: page size selector (10, 25, 50), current page, to
 |-----|---------|
 | **Overview** | Mission metadata (name, description, radius, tty_port, status, counters), action buttons (Start/Stop/Plan/Reorder), live progress indicator |
 | **Route** | Interactive map (Leaflet/Google Maps) showing all mission locations in sequence order; highlight current position as GPS updates; show distance between consecutive points |
-| **Planner** | Table of mission_planners: sequence_order, tower_name, status, actual_visit_time, scan_session_id (link to detail). Supports manual reorder drag-and-drop or numeric input submit |
-| **Scans** | Paginated list of scan_sessions linked to this mission (JOIN through mission_planners.scan_session_id); same filters as main Scans list |
+| **Planner** | Table of mission_locations: sequence_order, tower_name, status, actual_visit_time, scan_session_id (link to detail). Supports manual reorder drag-and-drop or numeric input submit |
+| **Scans** | Paginated list of scan_sessions linked to this mission (JOIN through mission_locations.scan_session_id); same filters as main Scans list |
 | **Logs** | Event timeline of mission events (STARTING, VISITED, STOPPED, FAILED, etc.) with timestamps |
 
 #### Action Buttons (conditional based on status)
 
 - **Generate Plan** → POST /{id}/plan → shows auto-planner spinner, then refreshes Route tab
 - **Manual Reorder** → open modal where user drags rows or enters sequence numbers → POST /{id}/route/reorder (payload: array of `{location_id, sequence_order}`)
-- **Skip** → on a specific planner row: POST /{id}/route/skip({planner_id}) → mark as SKIPPED
+- **Skip** → on a specific location row: POST /{id}/route/skip({location_id}) → mark as SKIPPED
 - **Start** → POST /{id}/start (only when READY/IDLE); disables other actions until completed/stopped
 - **Pause / Resume** → for RUNNING/PAUSED states
 - **Stop** → any running state
@@ -128,7 +128,7 @@ Standard pagination component: page size selector (10, 25, 50), current page, to
 
 Subscribe to channel `"mission"` and listen for:
 - `mission_progress`: update `visited_locations`, `current_location_id`, `distance_to_target`
-- `mission_visit`: add new entry to live log, update planner status → VISITED, set `actual_visit_time`
+- `mission_visit`: add new entry to live log, update location status → VISITED, set `actual_visit_time`
 - `mission_completed`: change status to COMPLETED, show completion toast
 - `mission_failed`: change status to FAILED, show error toast with reason
 - `mission_stopped`: change status to STOPPED, show stopped notification
@@ -312,11 +312,11 @@ interface PlannerDTO {
   created_at: string
 }
 
-// Mission Event Log (for logs tab)
+// Mission Event Log (for logs tab) — event_type vocabulary matches backend (Phase 6 §4.6 / Phase 10 §6.2)
 interface MissionLogEntry {
   timestamp: string
-  event_type: 'STARTED' | 'GPS_LOCK' | 'SCAN_TRIGGERED' | 'LOCATION_VISITED' | 
-             'PAUSED' | 'RESUMED' | 'STOPPED' | 'COMPLETED' | 'FAILED'
+  event_type: 'STARTING' | 'RUNNING' | 'PAUSED' | 'RESUMED' | 'VISITED' | 'SKIPPED' |
+              'STOPPED' | 'COMPLETED' | 'FAILED' | 'GPS_ERROR' | 'SCAN_ERROR' | 'INFO'
   message: string
 }
 ```
@@ -345,9 +345,9 @@ Use Toastify or similar toast library already in place.
 
 Use Leaflet.js (lightweight, no key required) for visual route:
 
-- Load all mission_locations from the mission's planners
+- Load all mission_locations belonging to the mission
 - Place markers colored by status (gray=PENDING, blue=IN_PROGRESS, green=VISITED, red=SKIPPED)
-- Draw polyline connecting planners in sequence order
+- Draw polyline connecting locations in sequence order
 - If live GPS available (via existing `/ws/gps`), show a blue dot for current position
 - Highlight current target marker when within radius (flash animation)
 - Click marker → show tower details
@@ -407,7 +407,7 @@ All mission CRUD actions require authenticated session (if auth is implemented l
 - [ ] CSV upload page accepts valid CSV, shows correct summary
 - [ ] CSV upload page rejects malformed CSV with error toast
 - [ ] Mission list renders correctly, filters by status work
-- [ ] Mission Detail page loads overview, route, planner, scans, logs tabs
+- [ ] Mission Detail page loads overview, route, locations, scans, logs tabs
 - [ ] Generate Plan button shows spinner, then updates route visualization
 - [ ] Manual reorder works: drag or numeric inputs, submits correctly
 - [ ] Start button transitions state appropriately, WebSocket updates visible

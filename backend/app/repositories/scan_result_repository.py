@@ -4,6 +4,7 @@ from typing import Optional
 from datetime import datetime
 from app.db.models.scan_result import ScanResult
 from app.db.models.scan_session import ScanSession
+from app.db.models.mission_location import MissionLocation
 
 
 class ScanResultRepository:
@@ -74,6 +75,57 @@ class ScanResultRepository:
         end_time: Optional[datetime] = None,
     ) -> tuple[list[ScanResult], int]:
         query = self.db.query(ScanResult).join(ScanResult.session)
+
+        if search:
+            from sqlalchemy import or_
+            query = query.filter(
+                or_(
+                    ScanSession.tty_port.ilike(f"%{search}%"),
+                    ScanResult.operator_name.ilike(f"%{search}%"),
+                    ScanResult.mcc.ilike(f"%{search}%"),
+                    ScanResult.mnc.ilike(f"%{search}%"),
+                )
+            )
+
+        if rat:
+            query = query.filter(ScanResult.rat.ilike(rat))
+
+        if start_time:
+            query = query.filter(ScanSession.scan_time >= start_time)
+
+        if end_time:
+            query = query.filter(ScanSession.scan_time <= end_time)
+
+        total = query.count()
+
+        if sort.startswith("-"):
+            query = query.order_by(desc(ScanSession.scan_time))
+        else:
+            query = query.order_by(asc(ScanSession.scan_time))
+
+        offset = (page - 1) * page_size
+        results = query.offset(offset).limit(page_size).all()
+
+        return results, total
+
+    def get_mission_flat(
+        self,
+        mission_id: int,
+        page: int = 1,
+        page_size: int = 10,
+        search: Optional[str] = None,
+        sort: str = "-scan_time",
+        rat: Optional[str] = None,
+        start_time: Optional[datetime] = None,
+        end_time: Optional[datetime] = None,
+    ) -> tuple[list[ScanResult], int]:
+        """Return scan results whose session is linked to a mission location."""
+        query = (
+            self.db.query(ScanResult)
+            .join(ScanResult.session)
+            .join(ScanSession.mission_location)
+            .filter(MissionLocation.mission_id == mission_id)
+        )
 
         if search:
             from sqlalchemy import or_
