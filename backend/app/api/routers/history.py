@@ -37,7 +37,7 @@ def list_scans(
         if rat_stripped and rat_stripped.upper() not in {"GSM", "LTE", "UMTS", "ALL"}:
             raise HTTPException(
                 status_code=422,
-                detail="Hanya GSM, LTE, UMTS, atau ALL yang diizinkan untuk parameter rat",
+                detail="Only GSM, LTE, UMTS, or ALL is allowed for the rat parameter",
             )
 
     service = HistoryService(db=db)
@@ -76,7 +76,7 @@ def export_scans(
         if rat_stripped and rat_stripped.upper() not in {"GSM", "LTE", "UMTS", "ALL"}:
             raise HTTPException(
                 status_code=422,
-                detail="Hanya GSM, LTE, UMTS, atau ALL yang diizinkan untuk parameter rat",
+                detail="Only GSM, LTE, UMTS, or ALL is allowed for the rat parameter",
             )
 
     service = HistoryService(db=db)

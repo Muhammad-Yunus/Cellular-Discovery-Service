@@ -32,7 +32,7 @@ class HistoryService:
         if rat is not None:
             rat_stripped = rat.strip()
             if rat_stripped and rat_stripped.upper() not in {"GSM", "LTE", "UMTS", "ALL"}:
-                raise ValueError("Hanya GSM, LTE, UMTS, atau ALL yang diizinkan untuk parameter rat")
+                raise ValueError("Only GSM, LTE, UMTS, or ALL is allowed for the rat parameter")
             # Konversi ALL ke None agar repo tidak mem-filter
             if rat_stripped.upper() == "ALL":
                 rat = None
