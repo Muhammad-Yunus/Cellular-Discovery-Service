@@ -28,7 +28,7 @@ def list_scans(
         if start_time.timestamp() > end_time.timestamp():
             raise HTTPException(
                 status_code=422,
-                detail="start_time tidak boleh lebih besar dari end_time",
+                detail="start_time cannot be greater than end_time",
             )
 
     service = HistoryService(db=db)
