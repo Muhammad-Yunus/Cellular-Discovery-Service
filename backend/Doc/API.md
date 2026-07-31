@@ -11,6 +11,10 @@
 - [Authentication](#authentication)
 - [Scan Service](#scan-service)
 - [History Service](#history-service)
+  - [GET /scans](#get-scans)
+  - [GET /scans/export](#get-scansexport)
+  - [GET /scans/{id}](#get-scanssid)
+  - [DELETE /scans/{id}](#deletescanssid)
 - [Settings Service](#settings-service)
 - [WebSocket Service](#websocket-service)
 - [Error Handling](#error-handling)
@@ -90,6 +94,9 @@ List all scan sessions with pagination and filtering.
 | `page_size` | int | 10 | Items per page (1-100) |
 | `search` | string | null | Search by tty_port |
 | `sort` | string | -scan_time | `-scan_time` or `scan_time` |
+| `rat` | string | null | Filter by RAT: GSM, LTE, UMTS, or ALL |
+| `start_time` | datetime | null | ISO 8601 datetime filter (inclusive start) |
+| `end_time` | datetime | null | ISO 8601 datetime filter (inclusive end) |
 
 **Response (200 OK):**
 ```json
@@ -101,6 +108,26 @@ List all scan sessions with pagination and filtering.
   "total_pages": 10
 }
 ```
+
+### GET /scans/export
+
+Export all scan matching filters as a CSV file. Supports the same query parameters as GET /scans except `page` and `page_size` are ignored (all matching records are exported).
+
+**Query Parameters:**
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `search` | string | null | Search by tty_port |
+| `sort` | string | -scan_time | `-scan_time` or `scan_time` |
+| `rat` | string | null | Filter by RAT: GSM, LTE, UMTS, or ALL |
+| `start_time` | datetime | null | ISO 8601 datetime filter (inclusive start) |
+| `end_time` | datetime | null | ISO 8601 datetime filter (inclusive end) |
+
+**Response (200 OK):** CSV file downloadable with header:
+```
+id,session_id,scan_time,tty_port,latitude,longitude,created_at,operator_name,mcc,mnc,rat,status
+```
+
+Additional headers: `Content-Disposition: attachment; filename="scan_export.csv"`, `Content-Type: text/csv`
 
 ### GET /scans/{id}
 
