@@ -31,6 +31,23 @@ def list_scans(
                 detail="start_time cannot be greater than end_time",
             )
 
+    # Validasi filter RAT: harus mengandung setidaknya 1 huruf, kecuali ALL
+    if rat is not None:
+        rat_stripped = rat.strip()
+        # EMPTY string or whitespace-only → invalid (except ALL)
+        if rat_stripped == "" or rat_stripped == " ":
+            raise HTTPException(
+                status_code=422,
+                detail="Filter RAT harus berisi minimal satu karakter alfabet atau ALL",
+            )
+        # Check if it's ALL (special keyword, skip filter)
+        # Otherwise verify it contains at least one alphabetic character
+        if not any(c.isalpha() for c in rat_stripped):
+            raise HTTPException(
+                status_code=422,
+                detail="Filter RAT harus mengandung huruf alfabet (contoh: GSM, LTE)",
+            )
+
     service = HistoryService(db=db)
     return service.get_sessions(
         page=page,

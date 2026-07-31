@@ -604,7 +604,7 @@ The `/scans` endpoint supports query parameters:
 - `page` (default: 1) — page number (1-indexed)
 - `page_size` (default: 10, max: 100) — number of records per page
 - `search` (optional) — text filter on `tty_port`, `operator_name`, `mcc`, and `mnc` fields
-- `rat` (optional) — filter by RAT type (e.g. `GSM`, `LTE`, `NR`, `WCDMA`)
+- `rat` (optional) — filter by RAT type (e.g. `GSM`, `LTE`, `NR`, `WCDMA`). Must contain at least one alphabetic character, or use `ALL` to skip filtering. Empty value returns error.
 - `start_time` (optional) — ISO 8601 datetime with timezone (e.g. `2026-07-29T00:00:00+07:00`)
 - `end_time` (optional) — ISO 8601 datetime with timezone (e.g. `2026-07-30T23:59:59+07:00`)
 - `sort` (default: `-scan_time`) — sort field, prefix `-` for descending (e.g. `-scan_time`, `scan_time`)

@@ -26,6 +26,15 @@ class HistoryService:
             if start_time.timestamp() > end_time.timestamp():
                 raise ValueError("start_time cannot be greater than end_time")
 
+        # Validasi filter RAT: pastikan valid sebelum filter
+        if rat is not None:
+            rat_stripped = rat.strip()
+            # Skip jika ALL atau kosong/whitespace saja (di-handle di router, tapi check juga di sini)
+            if rat_stripped.upper() == "ALL":
+                rat = None  # clear to skip filter in repo
+            elif not any(c.isalpha() for c in rat_stripped):
+                raise ValueError("Rat filter harus mengandung huruf alfabet")
+
         results, total = self.result_repo.get_all_flat(
             page=page,
             page_size=page_size,
