@@ -26,14 +26,14 @@ class HistoryService:
             if start_time.timestamp() > end_time.timestamp():
                 raise ValueError("start_time cannot be greater than end_time")
 
-        # Validasi filter RAT: pastikan valid sebelum filter
+        # Validasi filter RAT — hanya GSM, LTE, UMTS, atau ALL (case-insensitive)
         if rat is not None:
             rat_stripped = rat.strip()
-            # Skip jika ALL atau kosong/whitespace saja (di-handle di router, tapi check juga di sini)
+            if rat_stripped and rat_stripped.upper() not in {"GSM", "LTE", "UMTS", "ALL"}:
+                raise ValueError("Hanya GSM, LTE, UMTS, atau ALL yang diizinkan untuk parameter rat")
+            # Konversi ALL ke None agar repo tidak mem-filter
             if rat_stripped.upper() == "ALL":
-                rat = None  # clear to skip filter in repo
-            elif not any(c.isalpha() for c in rat_stripped):
-                raise ValueError("Rat filter harus mengandung huruf alfabet")
+                rat = None
 
         results, total = self.result_repo.get_all_flat(
             page=page,

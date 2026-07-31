@@ -86,7 +86,7 @@ class ScanResultRepository:
                 )
             )
 
-        if rat and rat.upper() != "ALL":
+        if rat:
             query = query.filter(ScanResult.rat.ilike(rat))
 
         if start_time:
