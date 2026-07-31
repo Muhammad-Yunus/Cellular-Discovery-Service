@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.orm import Session
 from datetime import datetime
 from app.db.database import get_db
@@ -50,6 +50,46 @@ def list_scans(
         start_time=start_time,
         end_time=end_time,
     )
+
+
+@router.get("/export")
+def export_scans(
+    search: str | None = None,
+    sort: str = "-scan_time",
+    rat: str | None = None,
+    start_time: datetime | None = None,
+    end_time: datetime | None = None,
+    db: Session = Depends(get_db),
+):
+    """Export all scan results matching filters to CSV."""
+    # Validasi rentang waktu: jika keduanya diatur dan start > end, kembalikan error
+    if start_time and end_time:
+        if start_time.timestamp() > end_time.timestamp():
+            raise HTTPException(
+                status_code=422,
+                detail="start_time cannot be greater than end_time",
+            )
+
+    # Validasi filter RAT — hanya GSM, LTE, UMTS, atau ALL (case-insensitive)
+    if rat is not None:
+        rat_stripped = rat.strip()
+        if rat_stripped and rat_stripped.upper() not in {"GSM", "LTE", "UMTS", "ALL"}:
+            raise HTTPException(
+                status_code=422,
+                detail="Hanya GSM, LTE, UMTS, atau ALL yang diizinkan untuk parameter rat",
+            )
+
+    service = HistoryService(db=db)
+    csv_data = service.get_all_csv(
+        search=search,
+        sort=sort,
+        rat=rat,
+        start_time=start_time,
+        end_time=end_time,
+    )
+    response = Response(content=csv_data, media_type="text/csv")
+    response.headers["Content-Disposition"] = 'attachment; filename="scan_export.csv"'
+    return response
 
 
 @router.get("/{result_id}", response_model=ScanResultFlatResponse)

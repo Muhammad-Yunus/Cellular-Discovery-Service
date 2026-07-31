@@ -626,6 +626,37 @@ Frontend pagination store should track: `currentPage`, `pageSize`, `totalItems`,
 
 ---
 
+# CSV Export (GET /scans/export)
+
+Exports all scan results matching the filters as a downloadable CSV file. Supports the same query parameters as `/scans` except `page` and `page_size` are ignored (all matching records are exported).
+
+Query parameters:
+- `search` (optional) — text filter on `tty_port`, `operator_name`, `mcc`, and `mnc` fields
+- `rat` (optional) — filter by RAT type. Valid values: `GSM`, `LTE`, `UMTS`, or `ALL` (case-insensitive). Empty or omitted means no filter. Using `ALL` also means no filter.
+- `start_time` (optional) — ISO 8601 datetime with timezone
+- `end_time` (optional) — ISO 8601 datetime with timezone
+- `sort` (default: `-scan_time`) — sort field, prefix `-` for descending
+
+Response: A CSV file with the following columns:
+- `id`: scan result ID
+- `session_id`: associated scan session ID
+- `scan_time`: ISO 8601 timestamp of the scan
+- `tty_port`: TTY port string
+- `latitude`: GPS latitude
+- `longitude`: GPS longitude
+- `created_at`: ISO 8601 timestamp of record creation
+- `operator_name`: operator name string
+- `mcc`: Mobile Country Code
+- `mnc`: Mobile Network Code
+- `rat`: Radio Access Technology
+- `status`: status of the scan result
+
+The response includes a `Content-Disposition` header with filename `scan_export.csv` prompting the browser to download the file.
+
+Frontend can implement an "Export" button that calls this endpoint and triggers the download using `<a download>` or by handling the blob response.
+
+---
+
 # Folder Structure
 
 ```

@@ -1,5 +1,7 @@
 import math
 from datetime import datetime
+from io import StringIO
+import csv
 from sqlalchemy.orm import Session
 from app.repositories import ScanSessionRepository, ScanResultRepository
 from app.schemas.scan import ScanResultFlatResponse, PaginatedResponse
@@ -72,6 +74,53 @@ class HistoryService:
             page_size=page_size,
             total_pages=total_pages,
         )
+
+    def get_all_csv(
+        self,
+        search: str | None = None,
+        sort: str = "-scan_time",
+        rat: str | None = None,
+        start_time: datetime | None = None,
+        end_time: datetime | None = None,
+    ) -> str:
+        """Export all scan results matching filters to CSV format (string)."""
+        # Get ALL results without pagination
+        results, _ = self.result_repo.get_all_flat(
+            page=1,
+            page_size=999999,  # Large number to get all
+            search=search,
+            sort=sort,
+            rat=rat,
+            start_time=start_time,
+            end_time=end_time,
+        )
+
+        # Build CSV in memory
+        output = StringIO()
+        writer = csv.writer(output)
+        # Header
+        writer.writerow([
+            "id", "session_id", "scan_time", "tty_port", "latitude",
+            "longitude", "created_at", "operator_name", "mcc", "mnc", "rat", "status"
+        ])
+        # Rows
+        for r in results:
+            writer.writerow([
+                r.id,
+                r.session_id,
+                r.session.scan_time.isoformat() if r.session.scan_time else "",
+                r.session.tty_port,
+                r.session.latitude,
+                r.session.longitude,
+                r.session.created_at.isoformat() if r.session.created_at else "",
+                r.operator_name or "",
+                r.mcc or "",
+                r.mnc or "",
+                r.rat or "",
+                r.status or "",
+            ])
+
+        return output.getvalue()
 
     def get_session(self, result_id: int) -> ScanResultFlatResponse | None:
         result = self.result_repo.get_by_id_with_session(result_id)
