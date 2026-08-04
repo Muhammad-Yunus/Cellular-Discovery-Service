@@ -29,6 +29,7 @@ TEST_NAME_PREFIXES = (
     "patch-empty",  # ADD: test mission S17 patch empty body validation
     "s20-",  # ADD: test mission S20 list pagination
     "s21-",  # ADD: test mission S21 list invalid status filter
+    "s22-",  # ADD: test scan list invalid filters
 )
 
 

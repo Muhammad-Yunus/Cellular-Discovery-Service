@@ -1339,6 +1339,44 @@ def assert_list_detail_mentions(context, expected_text):
     )
 
 
+@when('I get scans with rat "{rat}"')
+def get_scans_with_rat(context, rat):
+    r = httpx.get(f"{BASE_URL}/api/v1/scans", params={"rat": rat, "page": 1, "page_size": 5})
+    context.scan_list_status = r.status_code
+    try:
+        context.scan_list_body = r.json()
+    except Exception:
+        context.scan_list_body = {"raw": r.text}
+
+
+@when('I get scans with start_time "{start_time}" and end_time "{end_time}"')
+def get_scans_with_time_range(context, start_time, end_time):
+    r = httpx.get(
+        f"{BASE_URL}/api/v1/scans",
+        params={"page": 1, "page_size": 5, "start_time": start_time, "end_time": end_time},
+    )
+    context.scan_list_status = r.status_code
+    try:
+        context.scan_list_body = r.json()
+    except Exception:
+        context.scan_list_body = {"raw": r.text}
+
+
+@then('the scan list status is {code:d}')
+def assert_scan_list_status(context, code):
+    assert context.scan_list_status == code, (
+        f"Scan list returned {context.scan_list_status}, expected {code}: {context.scan_list_body}"
+    )
+
+
+@then('the scan list detail mentions "{expected_text}"')
+def assert_scan_list_detail_mentions(context, expected_text):
+    detail = context.scan_list_body.get("detail", "")
+    assert expected_text.lower() in detail.lower(), (
+        f"Expected scan list detail to mention '{expected_text}', got '{detail}'"
+    )
+
+
 @then('the planned route has no sequence order')
 def verify_route_no_sequence(context):
     r = httpx.get(f"{BASE_URL}/api/v1/missions/{context.mission_id}/route")
