@@ -21,6 +21,7 @@ TEST_NAME_PREFIXES = (
     "skip-",  # ADD: test mission S08 skip location
     "delete-",  # ADD: test mission S09 delete single location
     "bulk-",  # ADD: test mission S10 bulk delete by batch
+    "delete-mission-",  # ADD: test mission S11 delete IDLE mission
 )
 
 

@@ -1037,7 +1037,53 @@ def assert_mission_location_count(context, name, count):
     )
 
 
-# ---------- S10 Bulk delete by upload batch steps ----------
+# ---------- S11 Delete mission steps ----------
+
+@given('three locations (M1, M2, M3) uploaded via CSV')
+def upload_three_mission_locations(context):
+    csv_content = """cellular_tower_id,cellular_tower_name,latitude,longitude
+M1,Tower M1,-6.20000,106.80000
+M2,Tower M2,-6.20010,106.80010
+M3,Tower M3,-6.20020,106.80020
+"""
+    r = httpx.post(
+        f"{BASE_URL}/api/v1/missions/{context.mission_id}/locations/upload",
+        files={"file": ("locations.csv", csv_content, "text/csv")},
+    )
+    assert r.status_code == 200, f"3-location upload (M1-M3) failed: {r.text}"
+
+
+@when('I delete the mission "{name}" via the API')
+def delete_mission_via_api(context, name):
+    _switch_to_mission(context, name)
+    r = httpx.delete(f"{BASE_URL}/api/v1/missions/{context.mission_id}")
+    context.delete_mission_status = r.status_code
+    context.delete_mission_body = r.json()
+
+
+@then('the mission delete request returns status {code:d}')
+def assert_delete_mission_status(context, code):
+    assert context.delete_mission_status == code, (
+        f"DELETE mission returned {context.delete_mission_status}, expected {code}: "
+        f"{context.delete_mission_body}"
+    )
+
+
+@then('the response message is "{expected_message}"')
+def assert_delete_mission_message(context, expected_message):
+    message = context.delete_mission_body.get("message", "")
+    assert message == expected_message, (
+        f"Expected message '{expected_message}', got '{message}'"
+    )
+
+
+@then('getting the mission "{name}" returns status 404')
+def assert_mission_gone(context, name):
+    _switch_to_mission(context, name)
+    r = httpx.get(f"{BASE_URL}/api/v1/missions/{context.mission_id}")
+    assert r.status_code == 404, (
+        f"Expected 404 for deleted mission, got {r.status_code}: {r.text}"
+    )
 
 @given('three locations (B1, B2, B3) uploaded via CSV for batch "first"')
 def upload_first_batch_b1_b3(context):
