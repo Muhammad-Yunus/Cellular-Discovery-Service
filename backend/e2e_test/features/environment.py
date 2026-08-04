@@ -43,6 +43,7 @@ TEST_NAME_PREFIXES = (
     "s33-",  # ADD: test scan delete invalid id
     "s34-",  # ADD: test mission locations list invalid
     "s35-",  # ADD: test mission location delete invalid
+    "s36-",  # ADD: test mission location get invalid
 )
 
 

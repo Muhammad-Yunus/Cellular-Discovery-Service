@@ -1686,6 +1686,31 @@ def assert_mission_location_delete_detail_mentions(context, expected_text):
     )
 
 
+@when('I get mission location {location_id:d} for mission id {mission_id:d}')
+def get_mission_location(context, location_id, mission_id):
+    r = httpx.get(f"{BASE_URL}/api/v1/missions/{mission_id}/locations/{location_id}")
+    context.mission_location_get_status = r.status_code
+    try:
+        context.mission_location_get_body = r.json()
+    except Exception:
+        context.mission_location_get_body = {"raw": r.text}
+
+
+@then('the mission location get status is {code:d}')
+def assert_mission_location_get_status(context, code):
+    assert context.mission_location_get_status == code, (
+        f"Mission location get returned {context.mission_location_get_status}, expected {code}: {context.mission_location_get_body}"
+    )
+
+
+@then('the mission location get detail mentions "{expected_text}"')
+def assert_mission_location_get_detail_mentions(context, expected_text):
+    detail = context.mission_location_get_body.get("detail", "")
+    assert expected_text.lower() in detail.lower(), (
+        f"Expected mission location get detail to mention '{expected_text}', got '{detail}'"
+    )
+
+
 @when('I patch mission with id {mission_id:d} and radius {radius:d} meters')
 def patch_mission_radius(context, mission_id, radius):
     r = httpx.patch(
