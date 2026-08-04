@@ -1589,6 +1589,36 @@ def assert_mission_scan_list_detail_mentions(context, expected_text):
     )
 
 
+@when('I patch mission with id {mission_id:d} and radius {radius:d} meters')
+def patch_mission_radius(context, mission_id, radius):
+    r = httpx.patch(
+        f"{BASE_URL}/api/v1/missions/{mission_id}",
+        json={"radius_meters": radius},
+    )
+    context.mission_patch_status = r.status_code
+    try:
+        context.mission_patch_body = r.json()
+    except Exception:
+        context.mission_patch_body = {"raw": r.text}
+
+
+@then('the mission patch status is {code:d}')
+def assert_mission_patch_status(context, code):
+    assert context.mission_patch_status == code, (
+        f"Mission patch returned {context.mission_patch_status}, expected {code}: {context.mission_patch_body}"
+    )
+
+
+@then('the mission patch detail mentions "{expected_text}"')
+def assert_mission_patch_detail_mentions(context, expected_text):
+    detail = context.mission_patch_body.get("detail", "")
+    if isinstance(detail, list):
+        detail = json.dumps(detail)
+    assert expected_text.lower() in detail.lower(), (
+        f"Expected mission patch detail to mention '{expected_text}', got '{detail}'"
+    )
+
+
 @then('the planned route has no sequence order')
 def verify_route_no_sequence(context):
     r = httpx.get(f"{BASE_URL}/api/v1/missions/{context.mission_id}/route")

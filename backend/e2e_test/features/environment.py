@@ -36,6 +36,7 @@ TEST_NAME_PREFIXES = (
     "s26-",  # ADD: test mission create invalid radius
     "s27-",  # ADD: test scan list search filter
     "s28-",  # ADD: test mission scans list invalid
+    "s29-",  # ADD: test mission patch invalid radius
 )
 
 
