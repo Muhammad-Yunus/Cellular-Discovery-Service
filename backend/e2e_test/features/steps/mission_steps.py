@@ -1221,6 +1221,18 @@ def patch_mission_by_id_radius(context, mission_id, radius):
         context.patch_body = {"raw": r.text}
 
 
+@when('I send an empty PATCH to mission "{name}"')
+def patch_empty_body(context, name):
+    """Send PATCH with no body (null payload)."""
+    _switch_to_mission(context, name)
+    r = httpx.patch(f"{BASE_URL}/api/v1/missions/{context.mission_id}")
+    context.patch_status = r.status_code
+    try:
+        context.patch_body = r.json()
+    except Exception:
+        context.patch_body = {"raw": r.text}
+
+
 @then('the planned route has no sequence order')
 def verify_route_no_sequence(context):
     r = httpx.get(f"{BASE_URL}/api/v1/missions/{context.mission_id}/route")
