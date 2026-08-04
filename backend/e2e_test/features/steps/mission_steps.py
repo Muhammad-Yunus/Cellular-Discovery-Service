@@ -1377,6 +1377,70 @@ def assert_scan_list_detail_mentions(context, expected_text):
     )
 
 
+@when('I get scan result with id {result_id:d}')
+def get_scan_result(context, result_id):
+    r = httpx.get(f"{BASE_URL}/api/v1/scans/{result_id}")
+    context.scan_get_status = r.status_code
+    try:
+        context.scan_get_body = r.json()
+    except Exception:
+        context.scan_get_body = {"raw": r.text}
+
+
+@when('I get scan result with id from context.scan_get_id')
+def get_scan_result_from_context(context):
+    rid = context.scan_get_id
+    r = httpx.get(f"{BASE_URL}/api/v1/scans/{rid}")
+    context.scan_get_status = r.status_code
+    try:
+        context.scan_get_body = r.json()
+    except Exception:
+        context.scan_get_body = {"raw": r.text}
+
+
+@when('I list scans with page {page:d} and page_size {page_size:d}')
+def list_scans_paged(context, page, page_size):
+    r = httpx.get(
+        f"{BASE_URL}/api/v1/scans",
+        params={"page": page, "page_size": page_size},
+    )
+    context.scan_list_status = r.status_code
+    try:
+        context.scan_list_body = r.json()
+    except Exception:
+        context.scan_list_body = {"raw": r.text}
+
+
+@when('I save the first scan result id as context.scan_get_id')
+def save_first_scan_id(context):
+    items = context.scan_list_body.get("items", [])
+    assert items, "Expected scan list to have at least one item"
+    context.scan_get_id = items[0]["id"]
+
+
+@then('the scan get request returns status {code:d}')
+def assert_scan_get_status(context, code):
+    assert context.scan_get_status == code, (
+        f"Scan get returned {context.scan_get_status}, expected {code}: {context.scan_get_body}"
+    )
+
+
+@then('the scan get detail mentions "{expected_text}"')
+def assert_scan_get_detail_mentions(context, expected_text):
+    detail = context.scan_get_body.get("detail", "")
+    assert expected_text.lower() in detail.lower(), (
+        f"Expected scan get detail to mention '{expected_text}', got '{detail}'"
+    )
+
+
+@then('the scan get body has fields {fields}')
+def assert_scan_get_body_has_fields(context, fields):
+    body = context.scan_get_body
+    for field in fields.split(","):
+        field = field.strip()
+        assert field in body, f"Scan get body missing field '{field}': {body}"
+
+
 @then('the planned route has no sequence order')
 def verify_route_no_sequence(context):
     r = httpx.get(f"{BASE_URL}/api/v1/missions/{context.mission_id}/route")
