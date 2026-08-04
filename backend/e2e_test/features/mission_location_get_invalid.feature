@@ -9,4 +9,4 @@ Feature: Mission Locations — GET Location for Non-Existent Mission (P1)
   Scenario: S36 GET location for non-existent mission returns 404
     When I get mission location 999999 for mission id 999999
     Then the mission location get status is 404
-      And the mission location get detail mentions "Location not found"
+      And the mission location get detail mentions "Mission not found"
