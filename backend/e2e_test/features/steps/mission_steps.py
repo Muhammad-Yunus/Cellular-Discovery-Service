@@ -1619,6 +1619,23 @@ def assert_scan_get_status(context, code):
     )
 
 
+@when('I delete scan with id {scan_id:d}')
+def delete_scan_with_id(context, scan_id):
+    r = httpx.delete(f"{BASE_URL}/api/v1/scans/{scan_id}")
+    context.scan_delete_status = r.status_code
+    try:
+        context.scan_delete_body = r.json()
+    except Exception:
+        context.scan_delete_body = {"raw": r.text}
+
+
+@then('the scan delete status is {code:d}')
+def assert_scan_delete_status(context, code):
+    assert context.scan_delete_status == code, (
+        f"Scan delete returned {context.scan_delete_status}, expected {code}: {context.scan_delete_body}"
+    )
+
+
 @when('I patch mission with id {mission_id:d} and radius {radius:d} meters')
 def patch_mission_radius(context, mission_id, radius):
     r = httpx.patch(
