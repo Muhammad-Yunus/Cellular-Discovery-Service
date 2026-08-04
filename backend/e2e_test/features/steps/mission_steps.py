@@ -1619,8 +1619,8 @@ def assert_mission_patch_detail_mentions(context, expected_text):
     )
 
 
-@when('I patch mission with id {mission_id:d} and name "{name}"')
-def patch_mission_name(context, mission_id, name):
+@when('I patch mission with id {mission_id:d} and name "{name}" and expect 422')
+def patch_mission_name_expect_422(context, mission_id, name):
     r = httpx.patch(
         f"{BASE_URL}/api/v1/missions/{mission_id}",
         json={"name": name},
@@ -1630,6 +1630,10 @@ def patch_mission_name(context, mission_id, name):
         context.mission_patch_body = r.json()
     except Exception:
         context.mission_patch_body = {"raw": r.text}
+    assert context.mission_patch_status == 422, (
+        f"Expected 422 for whitespace name, got {context.mission_patch_status}: "
+        f"{context.mission_patch_body}"
+    )
 
 
 @then('the planned route has no sequence order')
