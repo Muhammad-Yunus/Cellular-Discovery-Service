@@ -1653,6 +1653,14 @@ def assert_mission_location_list_status(context, code):
     )
 
 
+@then('the mission location list detail mentions "{expected_text}"')
+def assert_mission_location_list_detail_mentions(context, expected_text):
+    detail = context.mission_location_list_body.get("detail", "")
+    assert expected_text.lower() in detail.lower(), (
+        f"Expected mission location list detail to mention '{expected_text}', got '{detail}'"
+    )
+
+
 @when('I patch mission with id {mission_id:d} and radius {radius:d} meters')
 def patch_mission_radius(context, mission_id, radius):
     r = httpx.patch(
