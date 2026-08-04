@@ -3,6 +3,7 @@
 import os
 import time
 import logging
+import json
 import httpx
 from behave import given, when, then
 
@@ -1463,6 +1464,36 @@ def assert_scan_delete_detail_mentions(context, expected_text):
     detail = context.scan_delete_body.get("detail", "")
     assert expected_text.lower() in detail.lower(), (
         f"Expected scan delete detail to mention '{expected_text}', got '{detail}'"
+    )
+
+
+@when('I put settings with object body {raw_json}')
+def put_settings_with_object_body(context, raw_json):
+    import json
+    body = json.loads(raw_json)
+    r = httpx.put(f"{BASE_URL}/api/v1/settings", json=body)
+    context.settings_put_status = r.status_code
+    try:
+        context.settings_put_body = r.json()
+    except Exception:
+        context.settings_put_body = {"raw": r.text}
+
+
+@then('the settings put status is {code:d}')
+def assert_settings_put_status(context, code):
+    assert context.settings_put_status == code, (
+        f"Settings put returned {context.settings_put_status}, expected {code}: {context.settings_put_body}"
+    )
+
+
+@then('the settings put detail mentions "{expected_text}"')
+def assert_settings_put_detail_mentions(context, expected_text):
+    detail = context.settings_put_body.get("detail", "")
+    if isinstance(detail, list):
+        # Pydantic returns a list of error dicts; convert to a string
+        detail = json.dumps(detail)
+    assert expected_text.lower() in detail.lower(), (
+        f"Expected settings put detail to mention '{expected_text}', got '{detail}'"
     )
 
 
