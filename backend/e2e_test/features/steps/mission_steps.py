@@ -1036,3 +1036,89 @@ def assert_mission_location_count(context, name, count):
         f"{[l['cellular_tower_id'] for l in r.json().get('items', [])]}"
     )
 
+
+# ---------- S10 Bulk delete by upload batch steps ----------
+
+@given('three locations (B1, B2, B3) uploaded via CSV for batch "first"')
+def upload_first_batch_b1_b3(context):
+    csv_content = """cellular_tower_id,cellular_tower_name,latitude,longitude
+B1,Tower B1,-6.20000,106.80000
+B2,Tower B2,-6.20010,106.80010
+B3,Tower B3,-6.20020,106.80020
+"""
+    r = httpx.post(
+        f"{BASE_URL}/api/v1/missions/{context.mission_id}/locations/upload",
+        files={"file": ("locations.csv", csv_content, "text/csv")},
+    )
+    assert r.status_code == 200, f"Batch 1 upload failed: {r.text}"
+    ctx_body = r.json()
+    context.batch_first_id = ctx_body["upload_batch_id"]
+    context.batch_first_deleted_count = None
+    context.batch_second_id = None
+
+
+@given('two locations (B4, B5) uploaded via CSV for batch "second"')
+def upload_second_batch_b4_b5(context):
+    csv_content = """cellular_tower_id,cellular_tower_name,latitude,longitude
+B4,Tower B4,-6.20030,106.80030
+B5,Tower B5,-6.20040,106.80040
+"""
+    r = httpx.post(
+        f"{BASE_URL}/api/v1/missions/{context.mission_id}/locations/upload",
+        files={"file": ("locations.csv", csv_content, "text/csv")},
+    )
+    assert r.status_code == 200, f"Batch 2 upload failed: {r.text}"
+    ctx_body = r.json()
+    context.batch_second_id = ctx_body["upload_batch_id"]
+
+
+@when('I bulk-delete by the "{batch_label}" upload batch id for mission "{name}"')
+def bulk_delete_by_batch(context, batch_label, name):
+    _switch_to_mission(context, name)
+    if batch_label == "first":
+        batch_id = context.batch_first_id
+    elif batch_label == "second":
+        batch_id = context.batch_second_id
+    else:
+        raise ValueError(f"Unknown batch label: {batch_label}")
+    r = httpx.post(
+        f"{BASE_URL}/api/v1/missions/{context.mission_id}/locations/bulk-delete",
+        json={"upload_batch_id": batch_id},
+    )
+    context.bulk_delete_status = r.status_code
+    context.bulk_delete_body = r.json()
+
+
+@then('the bulk-delete request returns status {code:d}')
+def assert_bulk_delete_status(context, code):
+    assert context.bulk_delete_status == code, (
+        f"Bulk-delete returned {context.bulk_delete_status}, expected {code}: "
+        f"{context.bulk_delete_body}"
+    )
+
+
+@then('the bulk-delete response reports {count:d} locations deleted')
+def assert_bulk_delete_count(context, count):
+    deleted = context.bulk_delete_body.get("deleted")
+    assert deleted == count, (
+        f"Expected {count} deleted, got {deleted}: {context.bulk_delete_body}"
+    )
+    context.batch_first_deleted_count = deleted
+
+
+@then('only "{label1}" and "{label2}" remain in mission "{name}" location list')
+def assert_only_remaining(context, label1, label2, name):
+    _switch_to_mission(context, name)
+    r = httpx.get(
+        f"{BASE_URL}/api/v1/missions/{context.mission_id}/locations",
+        params={"page_size": 100},
+    )
+    assert r.status_code == 200, f"Locations fetch failed: {r.text}"
+    locs = r.json().get("items", [])
+    tower_ids = {l["cellular_tower_id"] for l in locs}
+    expected = {label1, label2}
+    assert tower_ids == expected, (
+        f"Expected remaining towers {expected}, got {tower_ids}. "
+        f"All locations: {[l['cellular_tower_id'] for l in locs]}"
+    )
+

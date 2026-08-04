@@ -20,6 +20,7 @@ TEST_NAME_PREFIXES = (
     "route-",  # ADD: test mission S07 route management
     "skip-",  # ADD: test mission S08 skip location
     "delete-",  # ADD: test mission S09 delete single location
+    "bulk-",  # ADD: test mission S10 bulk delete by batch
 )
 
 
