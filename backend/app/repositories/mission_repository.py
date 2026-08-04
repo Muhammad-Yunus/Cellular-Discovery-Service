@@ -65,7 +65,11 @@ class MissionRepository:
         return mission
 
     def get_running_count(self) -> int:
-        return self.db.query(Mission).filter(Mission.status == "RUNNING").count()
+        return (
+            self.db.query(Mission)
+            .filter(Mission.status.in_(("STARTING", "RUNNING", "PAUSED")))
+            .count()
+        )
 
     def set_status(self, mission_id: int, status: str) -> Optional[Mission]:
         mission = self.get_by_id(mission_id)

@@ -1,6 +1,9 @@
+from pathlib import Path
 from pydantic import Field
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+import os
+from pydantic_settings import SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -23,8 +26,6 @@ class Settings(BaseSettings):
     MISSION_START_GPS_TIMEOUT: int = Field(default=5, gt=0, description="Maximum time to wait for GPS availability at mission start")
     MISSION_LOG_SIZE: int = Field(default=200, gt=0, description="Maximum number of log entries stored per mission")
 
-    # CLI command for lte-discovery scanner
-    # Set full path if running as a systemd service where PATH may not include user bin
     CLI_COMMAND: str = "lte-discovery"
 
     LOG_LEVEL: str = "INFO"
@@ -35,9 +36,8 @@ class Settings(BaseSettings):
 
     TIMEZONE: str = "Asia/Jakarta"
 
-    # CORS settings - for frontend running on different machines during development
     ALLOW_ALL_ORIGINS: bool = True
-    ORIGIN_WHITELIST: str = ""  # Comma-separated list of origins, e.g., http://localhost:3000,http://192.168.1.100:3000
+    ORIGIN_WHITELIST: str = ""
 
     @property
     def DATABASE_URL(self) -> str:
@@ -46,11 +46,19 @@ class Settings(BaseSettings):
             f"@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.DATABASE_NAME}"
         )
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",  # Ignore TEST_MANAGEMENT_ENDPOINTS dan var test-only lain
+    )
 
 
 @lru_cache()
 def get_settings() -> Settings:
-    return Settings()
+    settings = Settings()
+    # In test environments, use a shorter CLI timeout so end-to-end tests
+    # don't sit on a 30s subprocess.run timeout per location. Production stays
+    # at 30s.
+    if settings.APP_ENV == "test" and "MISSION_CLI_TIMEOUT" not in os.environ:
+        settings.MISSION_CLI_TIMEOUT = 20
+    return settings

@@ -12,7 +12,7 @@ Feature: Mission Planner End-to-End Flow
     When I start the mission
     Then the mission reaches COMPLETED state
       And exactly 3 scan sessions are linked to the mission's locations
-    When I fetch mission-scanned scans via GET /api/v1/missions/{id}/scans
+    When I fetch mission scans for the current mission
       Then the response contains 3 items with non-null mission_location_id
     When I export mission scans as CSV
       Then the download includes columns: cellular_tower_id, cellular_tower_name, mission_location_id

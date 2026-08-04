@@ -93,3 +93,56 @@ class TestCLIAdapter:
         stdout = '[]'
         result = self.adapter._parse_output(stdout)
         assert len(result.results) == 0
+
+    # ------------------------------------------------------------------
+    # Mock CLI Fault Injection Tests (S06)
+    # ------------------------------------------------------------------
+
+    def test_mock_cli_fail_enabled(self, monkeypatch):
+        """Test that CLIError is raised when MOCK_CLI_FAIL is set"""
+        import os
+        from unittest.mock import patch
+        from app.gps import test_management
+
+        monkeypatch.setenv("MOCK_CLI_FAIL", "1")
+        monkeypatch.setattr(test_management, "_cli_fail_remaining", 1)
+
+        with patch("app.cli.adapter.subprocess.run"):
+            with patch("app.cli.adapter.shutil.which", return_value="/usr/bin/lte-discovery"):
+                with pytest.raises(CLIError, match="Simulated CLI failure"):
+                    self.adapter.execute(port="/dev/ttyUSB0", timeout=10)
+
+    def test_mock_cli_fail_disabled(self, monkeypatch):
+        """Test that no error when MOCK_CLI_FAIL is not set"""
+        import os
+        monkeypatch.delenv("MOCK_CLI_FAIL", raising=False)
+
+        with patch("app.cli.adapter.subprocess.run") as mock_run:
+            with patch("app.cli.adapter.shutil.which", return_value="/usr/bin/lte-discovery"):
+                mock_run.return_value = MagicMock(
+                    returncode=0,
+                    stdout='{"results": []}',
+                    stderr="",
+                )
+                result = self.adapter.execute(port="/dev/ttyUSB0", timeout=10)
+                assert result.results == []
+
+    def test_mock_cli_fail_decrements_counter(self, monkeypatch):
+        """Test that remaining counter decrements and stops after N fails"""
+        import os
+        from app.gps.test_management import _decrement_cli_fail, _cli_fail_remaining
+
+        # Start with remaining=2
+        monkeypatch.setenv("MOCK_CLI_FAIL", "1")
+        monkeypatch.setattr(
+            "app.gps.test_management._cli_fail_remaining", 2
+        )
+
+        # First call should return True (fail)
+        assert _decrement_cli_fail() is True
+
+        # Second call should return True (fail)
+        assert _decrement_cli_fail() is True
+
+        # Third call should return False (no more fails)
+        assert _decrement_cli_fail() is False

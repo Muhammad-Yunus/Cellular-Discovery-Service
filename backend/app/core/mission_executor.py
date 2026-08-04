@@ -84,6 +84,15 @@ class MissionExecutor:
                 m.stopped_at = datetime.now(timezone.utc)
                 self._log(m.id, "STOPPED", "Mission restored to STOPPED on app startup")
             db.commit()
+            # Also clear any in-memory tasks that reference deleted or unknown missions.
+            # If the DB no longer has the mission but the executor still has a task,
+            # cancel it so it doesn't block future starts.
+            for mid in list(self.active_tasks.keys()):
+                mission = MissionRepository(db).get_by_id(mid)
+                if mission is None or mission.status not in ("STARTING", "RUNNING", "PAUSED"):
+                    task = self.active_tasks.pop(mid, None)
+                    if task and not task.done():
+                        task.cancel()
         finally:
             db.close()
 
@@ -178,6 +187,14 @@ class MissionExecutor:
         db = self._session_factory()
         try:
             mission = MissionRepository(db).get_by_id(mission_id)
+            # Guard: only complete if still RUNNING (prevent race where stop
+            # already set a terminal state).
+            if mission.status not in ("RUNNING", "STARTING"):
+                self._log(
+                    mission_id, mission.status.upper(),
+                    f"Skip _complete: mission already in {mission.status}",
+                )
+                return
             mission.status = "COMPLETED"
             mission.completed_at = completed_at = datetime.now(timezone.utc)
             visited = mission.visited_locations
@@ -231,6 +248,10 @@ class MissionExecutor:
                 timeout=get_settings().MISSION_CLI_TIMEOUT,
                 mission_location_id=target.id,
             )
+            # Respect pause/stop during the blocking scan
+            mission = self._load_mission(mission_id)
+            if mission is None or mission.status != "RUNNING":
+                return
         except Exception as e:
             self._log(
                 mission_id,
@@ -335,7 +356,14 @@ class MissionExecutor:
                             f"Target {target.cellular_tower_id} at {round(dist, 1)}m",
                         )
 
-                    await asyncio.sleep(get_settings().MISSION_POLL_INTERVAL)
+                    # Re-check status after each iteration so pause/stop are respected
+                    mission = self._load_mission(mission_id)
+                    if mission is None:
+                        break
+                    # PAUSED is handled above with sleep+continue; only break for
+                    # terminal states (STOPPED / COMPLETED / FAILED) or if not RUNNING.
+                    if mission.status not in ("RUNNING", "PAUSED"):
+                        break
             except asyncio.CancelledError:
                 raise
             except Exception as e:
@@ -346,26 +374,39 @@ class MissionExecutor:
     # ----- control -----
 
     async def start(self, mission_id: int) -> dict:
-        if mission_id in self.active_tasks:
-            raise HTTPException(409, "Mission is already running")
-        if self.lock.locked():
-            raise HTTPException(409, "Another mission is already running")
-
         async with self.start_lock:
             db = self._session_factory()
             try:
                 repo = MissionRepository(db)
+                # Purge any in-memory tasks for missions no longer in the DB, no
+                # longer in a transitional state, or already finished — protects
+                # against stale state left behind by tests that delete or mutate
+                # missions without waiting for task cleanup.
+                for stale_id in list(self.active_tasks.keys()):
+                    stale = MissionRepository(db).get_by_id(stale_id)
+                    task = self.active_tasks.get(stale_id)
+                    is_finished = task is None or task.done()
+                    db_missing = stale is None
+                    not_running = stale is not None and stale.status not in (
+                        "STARTING", "RUNNING", "PAUSED"
+                    )
+                    if is_finished or db_missing or not_running:
+                        self.active_tasks.pop(stale_id, None)
+                        if task and not task.done():
+                            task.cancel()
                 mission = repo.get_by_id(mission_id)
                 if not mission:
                     raise HTTPException(404, "Mission not found")
-                if mission.status == "RUNNING":
-                    raise HTTPException(409, "Mission is already running")
-                if repo.get_running_count() > 0:
-                    raise HTTPException(409, "Another mission is already running")
+                # Status check FIRST so that PAUSED/STOPPED/COMPLETED/FAILED missions
+                # get a precise error message instead of the generic "already running".
                 if mission.status not in ("IDLE", "READY"):
                     raise HTTPException(
                         409, f"Cannot start mission while it is {mission.status}"
                     )
+                if repo.get_running_count() > 0:
+                    raise HTTPException(409, "Another mission is already running")
+                if mission_id in self.active_tasks:
+                    raise HTTPException(409, "Mission is already running")
                 if not MissionLocationRepository(db).has_planned_locations(mission_id):
                     raise HTTPException(
                         422, "Mission has no planned locations. Run plan first"

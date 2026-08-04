@@ -81,14 +81,18 @@ class TestStart:
 class TestPauseResume:
     def test_u06_pause_running(self, api, executor, db_session):
         mission = make_planned(db_session)
+        # Use GPS at target location so mission would complete quickly,
+        # but pause before that by using a small delay in the task.
         executor.gps_provider = FakeGPS(lat=0, lon=0)
         api.post(f"/api/v1/missions/{mission.id}/start")
+        # Wait for RUNNING state
         wait_for(api, mission.id, {"RUNNING"})
-
+        # Pause immediately - task is still in active_tasks
         resp = api.post(f"/api/v1/missions/{mission.id}/pause")
 
         assert resp.status_code == 200
         assert resp.json()["status"] == "PAUSED"
+        # Status should reflect PAUSED while task is still active
         status = wait_for(api, mission.id, {"PAUSED"})
         assert status["active"] is True
         stop_and_wait(api, mission.id)

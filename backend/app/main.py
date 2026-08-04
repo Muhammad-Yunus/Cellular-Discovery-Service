@@ -9,9 +9,11 @@ from app.core.exceptions import (
     generic_exception_handler,
 )
 from app.api.routers import scan, history, settings as settings_router, ws_gps, ws_scan, ws_mission, mission_locations, missions, mission_planning, mission_control, mission_scans
+from app.gps import test_management
 import logging
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.mission_executor import MissionExecutor
+import os
 
 app_settings = get_settings()
 
@@ -72,6 +74,16 @@ app.include_router(missions.router)
 app.include_router(mission_planning.router)
 app.include_router(mission_control.router)
 app.include_router(mission_scans.router)
+
+# Test-only management endpoints — check env var at runtime so the import
+# succeeds even if the server was already running before the env var was set.
+if os.environ.get("TEST_MANAGEMENT_ENDPOINTS") == "1":
+    test_management.attach(app)
+    # Ensure mission_executor is available in app.state if lifespan wasn't triggered
+    if not hasattr(app.state, "mission_executor"):
+        from app.core.mission_executor import MissionExecutor
+        app.state.mission_executor = MissionExecutor()
+    logger.info("[TEST] Test management endpoints activated")
 
 
 @app.get("/health")

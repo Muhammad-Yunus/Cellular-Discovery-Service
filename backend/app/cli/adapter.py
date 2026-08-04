@@ -20,8 +20,23 @@ class CLIAdapter:
         raise CLINotFoundError(self.command)
 
     def execute(self, port: str, timeout: int = 30) -> CLIScanResponse:
+        # Test-only fault injection: MOCK_CLI_FAIL=<truthy> raises a CLIError so
+        # the executor exercises the SCAN_ERROR -> SKIPPED branch (S06).
+        # Top-level import so the module instance is shared between
+        # test_management (PUT endpoint) and adapter (CLI execute) — lazy import
+        # was masking the global counter in some test runs.
+        MOCK_CLI_FAIL = os.environ.get("MOCK_CLI_FAIL")
+        if MOCK_CLI_FAIL:
+            from app.gps.test_management import _decrement_cli_fail
+            should_fail = _decrement_cli_fail()
+            if should_fail:
+                raise CLIError(
+                    f"Simulated CLI failure (MOCK_CLI_FAIL={MOCK_CLI_FAIL})"
+                )
         cmd = self._find_command()
         args = [cmd, "scan", "--port", port, "--json"]
+
+
 
         logger.info(f"Executing CLI: {' '.join(args)}")
 

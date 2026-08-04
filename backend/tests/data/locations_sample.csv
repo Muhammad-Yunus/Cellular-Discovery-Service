@@ -1,0 +1,4 @@
+cellular_tower_id,cellular_tower_name,latitude,longitude
+T1,Tower A,-6.20000,106.80000
+T2,Tower B,-6.20001,106.80001
+T3,Tower C,-6.20002,106.80002
