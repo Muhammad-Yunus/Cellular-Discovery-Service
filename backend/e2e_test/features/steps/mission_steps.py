@@ -1636,6 +1636,23 @@ def assert_scan_delete_status(context, code):
     )
 
 
+@when('I list mission locations with mission id {mission_id:d}')
+def list_mission_locations(context, mission_id):
+    r = httpx.get(f"{BASE_URL}/api/v1/missions/{mission_id}/locations")
+    context.mission_location_list_status = r.status_code
+    try:
+        context.mission_location_list_body = r.json()
+    except Exception:
+        context.mission_location_list_body = {"raw": r.text}
+
+
+@then('the mission location list status is {code:d}')
+def assert_mission_location_list_status(context, code):
+    assert context.mission_location_list_status == code, (
+        f"Mission location list returned {context.mission_location_list_status}, expected {code}: {context.mission_location_list_body}"
+    )
+
+
 @when('I patch mission with id {mission_id:d} and radius {radius:d} meters')
 def patch_mission_radius(context, mission_id, radius):
     r = httpx.patch(
