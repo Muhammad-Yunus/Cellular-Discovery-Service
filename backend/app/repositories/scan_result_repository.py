@@ -99,9 +99,9 @@ class ScanResultRepository:
         total = query.count()
 
         if sort.startswith("-"):
-            query = query.order_by(desc(ScanSession.scan_time))
+            query = query.order_by(desc(ScanSession.scan_time), desc(ScanSession.id))
         else:
-            query = query.order_by(asc(ScanSession.scan_time))
+            query = query.order_by(asc(ScanSession.scan_time), asc(ScanSession.id))
 
         offset = (page - 1) * page_size
         results = query.offset(offset).limit(page_size).all()
@@ -150,9 +150,9 @@ class ScanResultRepository:
         total = query.count()
 
         if sort.startswith("-"):
-            query = query.order_by(desc(ScanSession.scan_time))
+            query = query.order_by(desc(ScanSession.scan_time), desc(ScanSession.id))
         else:
-            query = query.order_by(asc(ScanSession.scan_time))
+            query = query.order_by(asc(ScanSession.scan_time), asc(ScanSession.id))
 
         offset = (page - 1) * page_size
         results = query.offset(offset).limit(page_size).all()

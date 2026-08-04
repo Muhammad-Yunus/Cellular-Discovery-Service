@@ -146,8 +146,8 @@ class TestMissionScanRepository:
         results, total = repo.get_mission_flat(mission.id, page=1, page_size=10)
         assert total == 25
         assert len(results) == 10
-        # Check the first and last session IDs correspond to correct indices
-        assert results[0].session_id < results[9].session_id  # They are ordered by scan_time desc
+        # They are ordered by scan_time desc, so the newest session (highest id) is first
+        assert results[0].session_id > results[9].session_id  # desc by scan_time
 
         results, _ = repo.get_mission_flat(mission.id, page=2, page_size=10)
         assert len(results) == 10

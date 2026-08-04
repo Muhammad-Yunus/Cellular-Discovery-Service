@@ -25,6 +25,7 @@ TEST_NAME_PREFIXES = (
     "delete-run",  # ADD: test mission S12 delete RUNNING mission guard
     "patch-mission",  # ADD: test mission S13 patch IDLE mission
     "patch-run",  # ADD: test mission S14 patch RUNNING mission guard
+    "patch-bad",  # ADD: test mission S15 patch invalid mission data
 )
 
 

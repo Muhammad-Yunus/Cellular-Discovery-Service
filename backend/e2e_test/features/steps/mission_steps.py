@@ -1169,6 +1169,30 @@ def assert_mission_radius(context, expected_radius):
     )
 
 
+@then('the mission name is still "{expected_name}"')
+def assert_mission_name_unchanged(context, expected_name):
+    _switch_to_mission(context, expected_name)
+    r = httpx.get(f"{BASE_URL}/api/v1/missions/{context.mission_id}")
+    assert r.status_code == 200, f"Mission fetch failed: {r.text}"
+    actual = r.json().get("name")
+    assert actual == expected_name, (
+        f"Expected mission name to remain '{expected_name}', got '{actual}'"
+    )
+
+
+@then('the mission radius is still {expected_radius:d} meters')
+def assert_mission_radius_unchanged(context, expected_radius):
+    # Get the original mission name from context
+    mname = context.mission.get("name", "patch-bad") if hasattr(context, 'mission') else "patch-bad"
+    _switch_to_mission(context, mname)
+    r = httpx.get(f"{BASE_URL}/api/v1/missions/{context.mission_id}")
+    assert r.status_code == 200, f"Mission fetch failed: {r.text}"
+    actual = r.json().get("radius_meters")
+    assert actual == expected_radius, (
+        f"Expected mission radius to remain {expected_radius}, got {actual}"
+    )
+
+
 @then('the planned route has no sequence order')
 def verify_route_no_sequence(context):
     r = httpx.get(f"{BASE_URL}/api/v1/missions/{context.mission_id}/route")
