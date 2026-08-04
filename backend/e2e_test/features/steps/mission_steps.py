@@ -1105,6 +1105,81 @@ def assert_mission_present(context, name):
         f"Expected 200 for existing mission, got {r.status_code}: {r.text}"
     )
 
+
+# ---------- S13 Patch IDLE mission steps ----------
+
+@when('I patch the mission "{name}" with name "{new_name}"')
+def patch_mission_name(context, name, new_name):
+    _switch_to_mission(context, name)
+    r = httpx.patch(
+        f"{BASE_URL}/api/v1/missions/{context.mission_id}",
+        json={"name": new_name},
+    )
+    context.patch_status = r.status_code
+    context.patch_body = r.json() if r.status_code == 200 else {"raw": r.text}
+
+
+@when('I patch the mission "{name}" with radius {radius:d} meters')
+def patch_mission_radius(context, name, radius):
+    _switch_to_mission(context, name)
+    r = httpx.patch(
+        f"{BASE_URL}/api/v1/missions/{context.mission_id}",
+        json={"radius_meters": radius},
+    )
+    context.patch_status = r.status_code
+    context.patch_body = r.json() if r.status_code == 200 else {"raw": r.text}
+
+
+@then('the patch request returns status {code:d}')
+def assert_patch_status(context, code):
+    assert context.patch_status == code, (
+        f"PATCH returned {context.patch_status}, expected {code}: {context.patch_body}"
+    )
+
+
+@then('the mission name is "{expected_name}"')
+def assert_mission_name(context, expected_name):
+    actual = context.patch_body.get("name") or context.mission.get("name")
+    if "patch_body" in dir(context) and context.patch_body and "name" in context.patch_body:
+        actual = context.patch_body["name"]
+    assert actual == expected_name, (
+        f"Expected mission name '{expected_name}', got '{actual}'"
+    )
+
+
+@then('the mission radius is {expected_radius:d} meters')
+def assert_mission_radius(context, expected_radius):
+    actual = context.patch_body.get("radius_meters")
+    assert actual == expected_radius, (
+        f"Expected mission radius {expected_radius}, got {actual}"
+    )
+
+
+@then('the planned route has no sequence order')
+def verify_route_no_sequence(context):
+    r = httpx.get(f"{BASE_URL}/api/v1/missions/{context.mission_id}/route")
+    assert r.status_code == 200, f"Route fetch failed: {r.text}"
+    items = r.json().get("items", [])
+    sequenced = [i for i in items if i.get("sequence_order") is not None]
+    assert len(sequenced) == 0, (
+        f"Expected no sequence_order on any route item, got {len(sequenced)}: {sequenced}"
+    )
+
+
+@when('I replan the mission "{name}"')
+def replan_mission(context, name):
+    _switch_to_mission(context, name)
+    r = httpx.post(f"{BASE_URL}/api/v1/missions/{context.mission_id}/plan")
+    context.replan_status = r.status_code
+    context.replan_body = r.json() if r.status_code == 200 else {"raw": r.text}
+
+
+@then('the replan request returns status {code:d}')
+def assert_replan_status(context, code):
+    assert context.replan_status == code, (
+        f"Replan returned {context.replan_status}, expected {code}: {context.replan_body}"
+    )
+
 @given('three locations (B1, B2, B3) uploaded via CSV for batch "first"')
 def upload_first_batch_b1_b3(context):
     csv_content = """cellular_tower_id,cellular_tower_name,latitude,longitude
