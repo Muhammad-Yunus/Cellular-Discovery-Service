@@ -31,6 +31,7 @@ TEST_NAME_PREFIXES = (
     "s21-",  # ADD: test mission S21 list invalid status filter
     "s22-",  # ADD: test scan list invalid filters
     "s23-",  # ADD: test scan get by id
+    "s24-",  # ADD: test scan delete by id
 )
 
 

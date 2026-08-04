@@ -1441,6 +1441,31 @@ def assert_scan_get_body_has_fields(context, fields):
         assert field in body, f"Scan get body missing field '{field}': {body}"
 
 
+@when('I delete scan result with id {result_id:d}')
+def delete_scan_result(context, result_id):
+    r = httpx.delete(f"{BASE_URL}/api/v1/scans/{result_id}")
+    context.scan_delete_status = r.status_code
+    try:
+        context.scan_delete_body = r.json()
+    except Exception:
+        context.scan_delete_body = {"raw": r.text}
+
+
+@then('the scan delete request returns status {code:d}')
+def assert_scan_delete_status(context, code):
+    assert context.scan_delete_status == code, (
+        f"Scan delete returned {context.scan_delete_status}, expected {code}: {context.scan_delete_body}"
+    )
+
+
+@then('the scan delete detail mentions "{expected_text}"')
+def assert_scan_delete_detail_mentions(context, expected_text):
+    detail = context.scan_delete_body.get("detail", "")
+    assert expected_text.lower() in detail.lower(), (
+        f"Expected scan delete detail to mention '{expected_text}', got '{detail}'"
+    )
+
+
 @then('the planned route has no sequence order')
 def verify_route_no_sequence(context):
     r = httpx.get(f"{BASE_URL}/api/v1/missions/{context.mission_id}/route")
