@@ -1193,6 +1193,34 @@ def assert_mission_radius_unchanged(context, expected_radius):
     )
 
 
+@when('I patch mission id {mission_id:d} with name "{new_name}"')
+def patch_mission_by_id_name(context, mission_id, new_name):
+    """PATCH a mission by raw ID — no need for prior context setup."""
+    r = httpx.patch(
+        f"{BASE_URL}/api/v1/missions/{mission_id}",
+        json={"name": new_name},
+    )
+    context.patch_status = r.status_code
+    try:
+        context.patch_body = r.json()
+    except Exception:
+        context.patch_body = {"raw": r.text}
+
+
+@when('I patch mission id {mission_id:d} with radius {radius:d} meters')
+def patch_mission_by_id_radius(context, mission_id, radius):
+    """PATCH a mission by raw ID with radius — no need for prior context setup."""
+    r = httpx.patch(
+        f"{BASE_URL}/api/v1/missions/{mission_id}",
+        json={"radius_meters": radius},
+    )
+    context.patch_status = r.status_code
+    try:
+        context.patch_body = r.json()
+    except Exception:
+        context.patch_body = {"raw": r.text}
+
+
 @then('the planned route has no sequence order')
 def verify_route_no_sequence(context):
     r = httpx.get(f"{BASE_URL}/api/v1/missions/{context.mission_id}/route")
