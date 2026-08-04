@@ -1116,7 +1116,10 @@ def patch_mission_name(context, name, new_name):
         json={"name": new_name},
     )
     context.patch_status = r.status_code
-    context.patch_body = r.json() if r.status_code == 200 else {"raw": r.text}
+    try:
+        context.patch_body = r.json()
+    except Exception:
+        context.patch_body = {"raw": r.text}
 
 
 @when('I patch the mission "{name}" with radius {radius:d} meters')
@@ -1127,13 +1130,24 @@ def patch_mission_radius(context, name, radius):
         json={"radius_meters": radius},
     )
     context.patch_status = r.status_code
-    context.patch_body = r.json() if r.status_code == 200 else {"raw": r.text}
+    try:
+        context.patch_body = r.json()
+    except Exception:
+        context.patch_body = {"raw": r.text}
 
 
 @then('the patch request returns status {code:d}')
 def assert_patch_status(context, code):
     assert context.patch_status == code, (
         f"PATCH returned {context.patch_status}, expected {code}: {context.patch_body}"
+    )
+
+
+@then('the patch detail mentions "{expected_text}"')
+def assert_patch_detail_mentions(context, expected_text):
+    detail = context.patch_body.get("detail", "")
+    assert expected_text.lower() in detail.lower(), (
+        f"Expected patch detail to mention '{expected_text}', got '{detail}'"
     )
 
 
