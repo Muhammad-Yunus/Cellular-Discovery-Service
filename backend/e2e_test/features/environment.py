@@ -47,6 +47,7 @@ TEST_NAME_PREFIXES = (
     "s37-",  # ADD: test mission scans list invalid
     "s38-",  # ADD: test mission status invalid
     "s39-",  # ADD: test mission plan invalid
+    "s40-",  # ADD: test mission route get invalid
 )
 
 
