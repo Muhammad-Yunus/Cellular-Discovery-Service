@@ -1331,6 +1331,14 @@ def assert_list_items_count_lte(context, limit):
     )
 
 
+@then('the list detail mentions "{expected_text}"')
+def assert_list_detail_mentions(context, expected_text):
+    detail = context.list_body.get("detail", "")
+    assert expected_text.lower() in detail.lower(), (
+        f"Expected list detail to mention '{expected_text}', got '{detail}'"
+    )
+
+
 @then('the planned route has no sequence order')
 def verify_route_no_sequence(context):
     r = httpx.get(f"{BASE_URL}/api/v1/missions/{context.mission_id}/route")
