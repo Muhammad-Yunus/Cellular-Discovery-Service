@@ -1272,6 +1272,65 @@ def assert_get_mission_detail_mentions(context, expected_text):
     )
 
 
+@when('I get all missions with status "{status}"')
+def list_missions_by_status(context, status):
+    r = httpx.get(f"{BASE_URL}/api/v1/missions", params={"status": status, "page": 1, "page_size": 50})
+    context.list_status = r.status_code
+    try:
+        context.list_body = r.json()
+    except Exception:
+        context.list_body = {"raw": r.text}
+
+
+@when('I get all missions with page {page:d} and page size {page_size:d}')
+def list_missions_paginated(context, page, page_size):
+    r = httpx.get(
+        f"{BASE_URL}/api/v1/missions",
+        params={"page": page, "page_size": page_size},
+    )
+    context.list_status = r.status_code
+    try:
+        context.list_body = r.json()
+    except Exception:
+        context.list_body = {"raw": r.text}
+
+
+@then('the list request returns status {code:d}')
+def assert_list_status(context, code):
+    assert context.list_status == code, (
+        f"List returned {context.list_status}, expected {code}: {context.list_body}"
+    )
+
+
+@then('the list total is greater than 0')
+def assert_list_total_positive(context):
+    total = context.list_body.get("total", 0)
+    assert total > 0, f"Expected total > 0, got {total}"
+
+
+@then('the list total is 0')
+def assert_list_total_zero(context):
+    total = context.list_body.get("total", 0)
+    assert total == 0, f"Expected total 0, got {total}"
+
+
+@then('the list items count is within page size')
+def assert_list_items_count_within_page_size(context):
+    items = context.list_body.get("items", [])
+    page_size = context.list_body.get("page_size", 100)
+    assert len(items) <= page_size, (
+        f"Items count {len(items)} exceeds page size {page_size}"
+    )
+
+
+@then('the list items count is less than or equal to {limit:d}')
+def assert_list_items_count_lte(context, limit):
+    items = context.list_body.get("items", [])
+    assert len(items) <= limit, (
+        f"Items count {len(items)} exceeds limit {limit}"
+    )
+
+
 @then('the planned route has no sequence order')
 def verify_route_no_sequence(context):
     r = httpx.get(f"{BASE_URL}/api/v1/missions/{context.mission_id}/route")

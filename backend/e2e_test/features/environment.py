@@ -27,6 +27,7 @@ TEST_NAME_PREFIXES = (
     "patch-run",  # ADD: test mission S14 patch RUNNING mission guard
     "patch-bad",  # ADD: test mission S15 patch invalid mission data
     "patch-empty",  # ADD: test mission S17 patch empty body validation
+    "s20-",  # ADD: test mission S20 list pagination
 )
 
 
