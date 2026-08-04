@@ -57,7 +57,7 @@ class TestSerialGPSProviderIntegration:
             provider = SerialGPSProvider(port="/dev/ttyTEST")
             with pytest.raises(GPSReadError) as exc_info:
                 provider.get_location()
-            assert "Failed to parse GPS coordinates" in str(exc_info.value)
+            assert "Empty coordinate" in str(exc_info.value)
 
     def test_get_location_parse_error_value(self):
         """Test get_location raises GPSReadError on non-numeric coordinate."""
