@@ -14,8 +14,8 @@ class Settings(BaseSettings):
     DATABASE_PASSWORD: str = "engen1us"
     DATABASE_SCHEMA: str = "app"
 
-    GPS_PROVIDER: str = "mock"
-    DEFAULT_TTY: str = "/dev/ttyUSB0"
+    GPS_PROVIDER: str = "cli"
+    DEFAULT_TTY: str = "/dev/ttyAMA0"
     SCAN_TIMEOUT: int = 30
 
     MISSION_MAX_LOCATIONS: int = Field(default=10_000, gt=0, description="Maximum number of locations allowed per mission upload")
