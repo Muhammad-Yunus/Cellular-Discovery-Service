@@ -34,6 +34,7 @@ TEST_NAME_PREFIXES = (
     "s24-",  # ADD: test scan delete by id
     "s25-",  # ADD: test settings put invalid body
     "s26-",  # ADD: test mission create invalid radius
+    "s27-",  # ADD: test scan list search filter
 )
 
 

@@ -1524,6 +1524,46 @@ def assert_mission_create_detail_mentions(context, expected_text):
     )
 
 
+@when('I list scans with search "{search}" and page_size {page_size:d}')
+def list_scans_with_search(context, search, page_size):
+    r = httpx.get(
+        f"{BASE_URL}/api/v1/scans",
+        params={"page": 1, "page_size": page_size, "search": search},
+    )
+    context.scan_list_status = r.status_code
+    try:
+        context.scan_list_body = r.json()
+    except Exception:
+        context.scan_list_body = {"raw": r.text}
+
+
+@then('the scan list items count is at least {minimum:d}')
+def assert_scan_list_items_count_at_least(context, minimum):
+    items = context.scan_list_body.get("items", [])
+    assert len(items) >= minimum, (
+        f"Expected scan list items count >= {minimum}, got {len(items)}"
+    )
+
+
+@then('all scan list items have operator_name matching "{expected}"')
+def assert_scan_list_items_operator_match(context, expected):
+    items = context.scan_list_body.get("items", [])
+    for item in items:
+        actual = item.get("operator_name", "")
+        assert expected.lower() in actual.lower(), (
+            f"Scan list item {item.get('id')} has operator_name '{actual}', "
+            f"expected to contain '{expected}'"
+        )
+
+
+@then('the scan list body has total {expected_total:d}')
+def assert_scan_list_body_total(context, expected_total):
+    total = context.scan_list_body.get("total", -1)
+    assert total == expected_total, (
+        f"Expected scan list total {expected_total}, got {total}"
+    )
+
+
 @then('the planned route has no sequence order')
 def verify_route_no_sequence(context):
     r = httpx.get(f"{BASE_URL}/api/v1/missions/{context.mission_id}/route")
