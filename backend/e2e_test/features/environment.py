@@ -22,6 +22,7 @@ TEST_NAME_PREFIXES = (
     "delete-",  # ADD: test mission S09 delete single location
     "bulk-",  # ADD: test mission S10 bulk delete by batch
     "delete-mission-",  # ADD: test mission S11 delete IDLE mission
+    "delete-run",  # ADD: test mission S12 delete RUNNING mission guard
 )
 
 

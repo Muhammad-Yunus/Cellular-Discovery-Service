@@ -1058,7 +1058,10 @@ def delete_mission_via_api(context, name):
     _switch_to_mission(context, name)
     r = httpx.delete(f"{BASE_URL}/api/v1/missions/{context.mission_id}")
     context.delete_mission_status = r.status_code
-    context.delete_mission_body = r.json()
+    try:
+        context.delete_mission_body = r.json()
+    except Exception:
+        context.delete_mission_body = {"raw": r.text}
 
 
 @then('the mission delete request returns status {code:d}')
@@ -1077,12 +1080,29 @@ def assert_delete_mission_message(context, expected_message):
     )
 
 
+@then('the mission delete detail mentions "{expected_text}"')
+def assert_delete_mission_detail_mentions(context, expected_text):
+    detail = context.delete_mission_body.get("detail", "")
+    assert expected_text.lower() in detail.lower(), (
+        f"Expected detail to mention '{expected_text}', got '{detail}'"
+    )
+
+
 @then('getting the mission "{name}" returns status 404')
 def assert_mission_gone(context, name):
     _switch_to_mission(context, name)
     r = httpx.get(f"{BASE_URL}/api/v1/missions/{context.mission_id}")
     assert r.status_code == 404, (
         f"Expected 404 for deleted mission, got {r.status_code}: {r.text}"
+    )
+
+
+@then('getting the mission "{name}" returns status 200')
+def assert_mission_present(context, name):
+    _switch_to_mission(context, name)
+    r = httpx.get(f"{BASE_URL}/api/v1/missions/{context.mission_id}")
+    assert r.status_code == 200, (
+        f"Expected 200 for existing mission, got {r.status_code}: {r.text}"
     )
 
 @given('three locations (B1, B2, B3) uploaded via CSV for batch "first"')
