@@ -1602,6 +1602,23 @@ def list_scans_with_rat(context, rat):
         context.scan_list_body = {"raw": r.text}
 
 
+@when('I get scan with id {scan_id:d}')
+def get_scan_with_id(context, scan_id):
+    r = httpx.get(f"{BASE_URL}/api/v1/scans/{scan_id}")
+    context.scan_get_status = r.status_code
+    try:
+        context.scan_get_body = r.json()
+    except Exception:
+        context.scan_get_body = {"raw": r.text}
+
+
+@then('the scan get status is {code:d}')
+def assert_scan_get_status(context, code):
+    assert context.scan_get_status == code, (
+        f"Scan get returned {context.scan_get_status}, expected {code}: {context.scan_get_body}"
+    )
+
+
 @when('I patch mission with id {mission_id:d} and radius {radius:d} meters')
 def patch_mission_radius(context, mission_id, radius):
     r = httpx.patch(
