@@ -1081,6 +1081,7 @@ def assert_delete_mission_message(context, expected_message):
 
 
 @then('the mission delete detail mentions "{expected_text}"')
+@then('the delete detail mentions "{expected_text}"')
 def assert_delete_mission_detail_mentions(context, expected_text):
     detail = context.delete_mission_body.get("detail", "")
     assert expected_text.lower() in detail.lower(), (
@@ -1231,6 +1232,36 @@ def patch_empty_body(context, name):
         context.patch_body = r.json()
     except Exception:
         context.patch_body = {"raw": r.text}
+
+
+@when('I delete mission id {mission_id:d} via the API')
+def delete_mission_by_id(context, mission_id):
+    """DELETE a mission by raw ID — no need for prior creation."""
+    r = httpx.delete(f"{BASE_URL}/api/v1/missions/{mission_id}")
+    context.delete_mission_status = r.status_code
+    try:
+        context.delete_mission_body = r.json()
+    except Exception:
+        context.delete_mission_body = {"raw": r.text}
+
+
+@when('I get mission id {mission_id:d}')
+def get_mission_by_id(context, mission_id):
+    """GET a mission by raw ID — no need for prior context setup."""
+    r = httpx.get(f"{BASE_URL}/api/v1/missions/{mission_id}")
+    context.get_mission_status = r.status_code
+    try:
+        context.get_mission_body = r.json()
+    except Exception:
+        context.get_mission_body = {"raw": r.text}
+
+
+@then('the mission get request returns status {code:d}')
+def assert_get_mission_status(context, code):
+    assert context.get_mission_status == code, (
+        f"GET mission returned {context.get_mission_status}, expected {code}: "
+        f"{context.get_mission_body}"
+    )
 
 
 @then('the planned route has no sequence order')
