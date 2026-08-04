@@ -955,3 +955,84 @@ def verify_location_absent_from_route(context, label):
         f"but found: {sequenced}"
     )
 
+
+# ---------- S09 Delete single location steps ----------
+
+@given('five locations (D1-D5) uploaded via CSV')
+def upload_five_delete_locations(context):
+    csv_content = """cellular_tower_id,cellular_tower_name,latitude,longitude
+D1,Tower D1,-6.20000,106.80000
+D2,Tower D2,-6.20010,106.80010
+D3,Tower D3,-6.20020,106.80020
+D4,Tower D4,-6.20030,106.80030
+D5,Tower D5,-6.20040,106.80040
+"""
+    r = httpx.post(
+        f"{BASE_URL}/api/v1/missions/{context.mission_id}/locations/upload",
+        files={"file": ("locations.csv", csv_content, "text/csv")},
+    )
+    assert r.status_code == 200, f"5-location upload (D1-D5) failed: {r.text}"
+
+
+@when('I delete the location "{label}" for mission "{name}"')
+def delete_location(context, label, name):
+    _switch_to_mission(context, name)
+    # Fetch all locations to find the one matching the label
+    r = httpx.get(
+        f"{BASE_URL}/api/v1/missions/{context.mission_id}/locations",
+        params={"page_size": 100},
+    )
+    assert r.status_code == 200, f"Locations fetch failed: {r.text}"
+    locs = r.json().get("items", [])
+    match = [l for l in locs if l["cellular_tower_id"] == label]
+    assert match, f"Location {label} not found in mission locations"
+    location_id = match[0]["id"]
+    # Store for later assertions
+    context.deleted_location_id = location_id
+    context.deleted_location_label = label
+    # Perform delete
+    r = httpx.delete(
+        f"{BASE_URL}/api/v1/missions/{context.mission_id}/locations/{location_id}",
+    )
+    context.delete_response_status = r.status_code
+    context.delete_response_body = r.text
+    context.delete_response_json = r.json()
+
+
+@then('the delete request returns status {code:d}')
+def assert_delete_status(context, code):
+    assert context.delete_response_status == code, (
+        f"Delete request returned {context.delete_response_status}, expected {code}: "
+        f"{context.delete_response_body}"
+    )
+
+
+@then('the location "{label}" is not present in mission "{name}" location list')
+def verify_location_deleted(context, label, name):
+    _switch_to_mission(context, name)
+    r = httpx.get(
+        f"{BASE_URL}/api/v1/missions/{context.mission_id}/locations",
+        params={"page_size": 100},
+    )
+    assert r.status_code == 200, f"Locations fetch failed: {r.text}"
+    locs = r.json().get("items", [])
+    remaining = [l for l in locs if l["cellular_tower_id"] == label]
+    assert not remaining, (
+        f"Location {label} should have been deleted but is still present: {remaining}"
+    )
+
+
+@then('the mission "{name}" has {count:d} locations')
+def assert_mission_location_count(context, name, count):
+    _switch_to_mission(context, name)
+    r = httpx.get(
+        f"{BASE_URL}/api/v1/missions/{context.mission_id}/locations",
+        params={"page_size": 100},
+    )
+    assert r.status_code == 200, f"Locations fetch failed: {r.text}"
+    total = r.json().get("total", 0)
+    assert total == count, (
+        f"Expected {count} locations, got {total}: "
+        f"{[l['cellular_tower_id'] for l in r.json().get('items', [])]}"
+    )
+
