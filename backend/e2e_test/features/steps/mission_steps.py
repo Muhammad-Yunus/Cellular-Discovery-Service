@@ -1614,6 +1614,31 @@ def assert_mission_status_response_detail_mentions(context, expected_text):
     )
 
 
+@when('I plan route for mission id {mission_id:d}')
+def plan_mission_route(context, mission_id):
+    r = httpx.post(f"{BASE_URL}/api/v1/missions/{mission_id}/plan", json={})
+    context.mission_plan_status = r.status_code
+    try:
+        context.mission_plan_body = r.json()
+    except Exception:
+        context.mission_plan_body = {"raw": r.text}
+
+
+@then('the mission plan response status is {code:d}')
+def assert_mission_plan_response_status(context, code):
+    assert context.mission_plan_status == code, (
+        f"Mission plan response returned {context.mission_plan_status}, expected {code}: {context.mission_plan_body}"
+    )
+
+
+@then('the mission plan response detail mentions "{expected_text}"')
+def assert_mission_plan_response_detail_mentions(context, expected_text):
+    detail = context.mission_plan_body.get("detail", "")
+    assert expected_text.lower() in detail.lower(), (
+        f"Expected mission plan response detail to mention '{expected_text}', got '{detail}'"
+    )
+
+
 @when('I list scans with rat "{rat}"')
 def list_scans_with_rat(context, rat):
     r = httpx.get(
