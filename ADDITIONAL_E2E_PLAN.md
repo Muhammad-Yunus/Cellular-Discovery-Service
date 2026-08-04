@@ -148,7 +148,7 @@ focuses on state-transition edge cases, guards, error paths, and operator workfl
   - Create + upload + plan.
   - `GET /missions/{id}` → contains `locations` array ordered by `sequence_order`, includes `progress_percent`, `current_location_id` (null when IDLE).
 
-- [ ] **S28. GET non-existent mission → 404** — Error path.
+- [x] **S28. GET non-existent mission → 404** — Error path.
   - `GET /missions/99999` → 404 with `Mission not found`.
 
 - [ ] **S29. List missions with status filter** — `?status=RUNNING`, `?status=COMPLETED`.

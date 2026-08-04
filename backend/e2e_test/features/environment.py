@@ -35,7 +35,8 @@ TEST_NAME_PREFIXES = (
     "s25-",  # ADD: test settings put invalid body
     "s26-",  # ADD: test mission create invalid radius
     "s27-",  # ADD: test scan list search filter
-    "s28-",  # ADD: test mission scans list invalid
+    "s28-",  # ADD: test mission get non-existent (404)
+    "s28-mission",  # ADD: alternative prefix for S28
     "s29-",  # ADD: test mission patch invalid radius
     "s30-",  # ADD: test mission patch invalid name
     "s31-",  # ADD: test scan list invalid rat
