@@ -853,3 +853,105 @@ def verify_distances_recomputed(context):
         # Bearings should be non-null for items after the first
         pass  # At minimum, the response is well-formed RouteResponse
 
+
+# ---------- S08 Skip mid-planning steps ----------
+
+@given('four locations (K1-K4) uploaded via CSV')
+def upload_four_k_locations(context):
+    csv_content = """cellular_tower_id,cellular_tower_name,latitude,longitude
+K1,Tower K1,-6.20000,106.80000
+K2,Tower K2,-6.20010,106.80010
+K3,Tower K3,-6.20020,106.80020
+K4,Tower K4,-6.20030,106.80030
+"""
+    r = httpx.post(
+        f"{BASE_URL}/api/v1/missions/{context.mission_id}/locations/upload",
+        files={"file": ("locations.csv", csv_content, "text/csv")},
+    )
+    assert r.status_code == 200, f"4-location upload failed: {r.text}"
+
+
+@step('the planned route has {count:d} locations in sequence')
+def verify_route_count(context, count):
+    r = httpx.get(f"{BASE_URL}/api/v1/missions/{context.mission_id}/route")
+    assert r.status_code == 200, f"Route fetch failed: {r.text}"
+    items = [i for i in r.json()["items"] if i.get("sequence_order") is not None]
+    assert len(items) == count, (
+        f"Expected {count} sequenced route items, got {len(items)}: {items}"
+    )
+    context.expected_route_count = count
+
+
+@when('I skip the location "{label}"')
+def skip_location(context, label):
+    # Resolve cellular_tower_id → location_id
+    r = httpx.get(
+        f"{BASE_URL}/api/v1/missions/{context.mission_id}/locations",
+        params={"page_size": 100},
+    )
+    assert r.status_code == 200, f"Locations fetch failed: {r.text}"
+    locs = r.json().get("items", [])
+    match = [l for l in locs if l["cellular_tower_id"] == label]
+    assert match, f"Location {label} not found in mission locations"
+    location_id = match[0]["id"]
+    context.skipped_location_id = location_id
+    r = httpx.post(
+        f"{BASE_URL}/api/v1/missions/{context.mission_id}/route/skip",
+        json={"location_id": location_id},
+    )
+    context.skip_response_status = r.status_code
+    context.skip_response_body = r.text
+
+
+@then('the skip request returns status {code:d}')
+def assert_skip_status(context, code):
+    assert context.skip_response_status == code, (
+        f"Skip request returned {context.skip_response_status}, expected {code}: "
+        f"{context.skip_response_body}"
+    )
+
+
+@then('the location "{label}" has status SKIPPED')
+def verify_location_status(context, label):
+    r = httpx.get(
+        f"{BASE_URL}/api/v1/missions/{context.mission_id}/locations",
+        params={"page_size": 100},
+    )
+    assert r.status_code == 200, f"Locations fetch failed: {r.text}"
+    locs = r.json().get("items", [])
+    match = [l for l in locs if l["cellular_tower_id"] == label]
+    assert match, f"Location {label} not found"
+    assert match[0]["status"] == "SKIPPED", (
+        f"Expected {label} status SKIPPED, got {match[0]['status']}"
+    )
+
+
+@then('the location "{label}" has no sequence order')
+def verify_location_no_sequence(context, label):
+    r = httpx.get(
+        f"{BASE_URL}/api/v1/missions/{context.mission_id}/locations",
+        params={"page_size": 100},
+    )
+    assert r.status_code == 200, f"Locations fetch failed: {r.text}"
+    locs = r.json().get("items", [])
+    match = [l for l in locs if l["cellular_tower_id"] == label]
+    assert match, f"Location {label} not found"
+    assert match[0].get("sequence_order") is None, (
+        f"Expected {label} sequence_order None, got {match[0]['sequence_order']}"
+    )
+
+
+@then('the location "{label}" is not present in the route')
+def verify_location_absent_from_route(context, label):
+    r = httpx.get(f"{BASE_URL}/api/v1/missions/{context.mission_id}/route")
+    assert r.status_code == 200, f"Route fetch failed: {r.text}"
+    items = r.json()["items"]
+    matched = [i for i in items if i["cellular_tower_id"] == label]
+    # The route may still include the skipped location for visibility,
+    # but it must have no sequence_order (i.e. removed from the active sequence).
+    sequenced = [i for i in matched if i.get("sequence_order") is not None]
+    assert not sequenced, (
+        f"Location {label} should have no sequence_order in route, "
+        f"but found: {sequenced}"
+    )
+

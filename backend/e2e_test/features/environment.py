@@ -18,6 +18,7 @@ TEST_NAME_PREFIXES = (
     "e2e-",
     "s06-",  # ADD: test mission S06 scan failure handling
     "route-",  # ADD: test mission S07 route management
+    "skip-",  # ADD: test mission S08 skip location
 )
 
 
