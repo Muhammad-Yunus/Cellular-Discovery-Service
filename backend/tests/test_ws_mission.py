@@ -155,6 +155,8 @@ class TestPayload:
 
 class TestChannels:
     def test_u07_connection_manager_multichannel(self, api):
+        import time
+
         assert manager.get_connections_count("mission") == 0
 
         with api.websocket_connect("/ws/mission") as m1, api.websocket_connect(
@@ -168,6 +170,8 @@ class TestChannels:
 
             assert manager.get_connections_count("mission") == 1
 
+        # Allow async disconnect callbacks to complete
+        time.sleep(0.1)
         assert manager.get_connections_count("mission") == 0
         assert manager.get_connections_count("scan") == 0
 
