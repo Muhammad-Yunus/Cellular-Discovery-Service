@@ -1619,6 +1619,19 @@ def assert_mission_patch_detail_mentions(context, expected_text):
     )
 
 
+@when('I patch mission with id {mission_id:d} and name "{name}"')
+def patch_mission_name(context, mission_id, name):
+    r = httpx.patch(
+        f"{BASE_URL}/api/v1/missions/{mission_id}",
+        json={"name": name},
+    )
+    context.mission_patch_status = r.status_code
+    try:
+        context.mission_patch_body = r.json()
+    except Exception:
+        context.mission_patch_body = {"raw": r.text}
+
+
 @then('the planned route has no sequence order')
 def verify_route_no_sequence(context):
     r = httpx.get(f"{BASE_URL}/api/v1/missions/{context.mission_id}/route")
