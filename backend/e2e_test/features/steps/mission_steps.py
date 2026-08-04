@@ -1951,3 +1951,265 @@ def assert_only_remaining(context, label1, label2, name):
         f"All locations: {[l['cellular_tower_id'] for l in locs]}"
     )
 
+
+
+# === S41 — Export scans for non-existent mission ===
+
+@when('I export scans for mission id {mission_id:d}')
+def export_mission_scans(context, mission_id):
+    r = httpx.get(f"{BASE_URL}/api/v1/missions/{mission_id}/scans/export")
+    context.mission_scans_export_status = r.status_code
+    try:
+        context.mission_scans_export_body = r.json()
+    except Exception:
+        context.mission_scans_export_body = {"raw": r.text}
+
+
+@then('the mission scans export response status is {code:d}')
+def assert_mission_scans_export_response_status(context, code):
+    assert context.mission_scans_export_status == code, (
+        f"Mission scans export returned {context.mission_scans_export_status}, expected {code}: {context.mission_scans_export_body}"
+    )
+
+
+@then('the mission scans export response detail mentions "{expected_text}"')
+def assert_mission_scans_export_response_detail_mentions(context, expected_text):
+    detail = context.mission_scans_export_body.get("detail", "")
+    assert expected_text.lower() in detail.lower(), (
+        f"Expected mission scans export detail to mention '{expected_text}', got '{detail}'"
+    )
+
+
+# === S42 — Upload locations for non-existent mission ===
+
+@when('I upload an empty file to mission id {mission_id:d} locations')
+def upload_empty_file_to_mission(context, mission_id):
+    files = {"file": ("empty.csv", b"", "text/csv")}
+    r = httpx.post(
+        f"{BASE_URL}/api/v1/missions/{mission_id}/locations/upload",
+        files=files,
+    )
+    context.mission_locations_upload_status = r.status_code
+    try:
+        context.mission_locations_upload_body = r.json()
+    except Exception:
+        context.mission_locations_upload_body = {"raw": r.text}
+
+
+@then('the mission locations upload response status is {code:d}')
+def assert_mission_locations_upload_response_status(context, code):
+    assert context.mission_locations_upload_status == code, (
+        f"Mission locations upload returned {context.mission_locations_upload_status}, expected {code}: {context.mission_locations_upload_body}"
+    )
+
+
+@then('the mission locations upload response detail mentions "{expected_text}"')
+def assert_mission_locations_upload_response_detail_mentions(context, expected_text):
+    detail = context.mission_locations_upload_body.get("detail", "")
+    assert expected_text.lower() in detail.lower(), (
+        f"Expected mission locations upload detail to mention '{expected_text}', got '{detail}'"
+    )
+
+
+# === S43 — Bulk-delete locations for non-existent mission ===
+
+@when('I bulk-delete locations for mission id {mission_id:d} with batch "{batch_id}"')
+def bulk_delete_locations_for_mission(context, mission_id, batch_id):
+    r = httpx.post(
+        f"{BASE_URL}/api/v1/missions/{mission_id}/locations/bulk-delete",
+        json={"upload_batch_id": batch_id},
+    )
+    context.mission_locations_bulk_delete_status = r.status_code
+    try:
+        context.mission_locations_bulk_delete_body = r.json()
+    except Exception:
+        context.mission_locations_bulk_delete_body = {"raw": r.text}
+
+
+@then('the mission locations bulk-delete response status is {code:d}')
+def assert_mission_locations_bulk_delete_response_status(context, code):
+    assert context.mission_locations_bulk_delete_status == code, (
+        f"Mission locations bulk-delete returned {context.mission_locations_bulk_delete_status}, expected {code}: {context.mission_locations_bulk_delete_body}"
+    )
+
+
+@then('the mission locations bulk-delete response detail mentions "{expected_text}"')
+def assert_mission_locations_bulk_delete_response_detail_mentions(context, expected_text):
+    detail = context.mission_locations_bulk_delete_body.get("detail", "")
+    assert expected_text.lower() in detail.lower(), (
+        f"Expected mission locations bulk-delete detail to mention '{expected_text}', got '{detail}'"
+    )
+
+
+# === S44 — Reorder route for non-existent mission ===
+
+@when('I reorder route for mission id {mission_id:d} with items "{ids_json}"')
+def reorder_route_for_mission(context, mission_id, ids_json):
+    import json as _json
+    ids = _json.loads(ids_json)
+    items = [
+        {"location_id": loc_id, "sequence_order": idx}
+        for idx, loc_id in enumerate(ids)
+    ]
+    r = httpx.post(
+        f"{BASE_URL}/api/v1/missions/{mission_id}/route/reorder",
+        json=items,
+    )
+    context.mission_route_reorder_status = r.status_code
+    try:
+        context.mission_route_reorder_body = r.json()
+    except Exception:
+        context.mission_route_reorder_body = {"raw": r.text}
+
+
+@then('the mission route reorder response status is {code:d}')
+def assert_mission_route_reorder_response_status(context, code):
+    assert context.mission_route_reorder_status == code, (
+        f"Mission route reorder returned {context.mission_route_reorder_status}, expected {code}: {context.mission_route_reorder_body}"
+    )
+
+
+@then('the mission route reorder response detail mentions "{expected_text}"')
+def assert_mission_route_reorder_response_detail_mentions(context, expected_text):
+    detail = context.mission_route_reorder_body.get("detail", "")
+    assert expected_text.lower() in detail.lower(), (
+        f"Expected mission route reorder detail to mention '{expected_text}', got '{detail}'"
+    )
+
+
+# === S45 — Skip route location for non-existent mission ===
+
+@when('I skip route location {location_id:d} for mission id {mission_id:d}')
+def skip_route_location_for_mission(context, location_id, mission_id):
+    r = httpx.post(
+        f"{BASE_URL}/api/v1/missions/{mission_id}/route/skip",
+        json={"location_id": location_id},
+    )
+    context.mission_route_skip_status = r.status_code
+    try:
+        context.mission_route_skip_body = r.json()
+    except Exception:
+        context.mission_route_skip_body = {"raw": r.text}
+
+
+@then('the mission route skip response status is {code:d}')
+def assert_mission_route_skip_response_status(context, code):
+    assert context.mission_route_skip_status == code, (
+        f"Mission route skip returned {context.mission_route_skip_status}, expected {code}: {context.mission_route_skip_body}"
+    )
+
+
+@then('the mission route skip response detail mentions "{expected_text}"')
+def assert_mission_route_skip_response_detail_mentions(context, expected_text):
+    detail = context.mission_route_skip_body.get("detail", "")
+    assert expected_text.lower() in detail.lower(), (
+        f"Expected mission route skip detail to mention '{expected_text}', got '{detail}'"
+    )
+
+
+# === S46 — Start non-existent mission ===
+
+@when('I start mission id {mission_id:d}')
+def start_mission_by_id(context, mission_id):
+    r = httpx.post(f"{BASE_URL}/api/v1/missions/{mission_id}/start", json={})
+    context.mission_control_start_status = r.status_code
+    try:
+        context.mission_control_start_body = r.json()
+    except Exception:
+        context.mission_control_start_body = {"raw": r.text}
+
+
+@then('the mission control start response status is {code:d}')
+def assert_mission_control_start_response_status(context, code):
+    assert context.mission_control_start_status == code, (
+        f"Mission control start returned {context.mission_control_start_status}, expected {code}: {context.mission_control_start_body}"
+    )
+
+
+@then('the mission control start response detail mentions "{expected_text}"')
+def assert_mission_control_start_response_detail_mentions(context, expected_text):
+    detail = context.mission_control_start_body.get("detail", "")
+    assert expected_text.lower() in detail.lower(), (
+        f"Expected mission control start detail to mention '{expected_text}', got '{detail}'"
+    )
+
+
+# === S47 — Pause non-existent mission ===
+
+@when('I pause mission id {mission_id:d}')
+def pause_mission_by_id(context, mission_id):
+    r = httpx.post(f"{BASE_URL}/api/v1/missions/{mission_id}/pause", json={})
+    context.mission_control_pause_status = r.status_code
+    try:
+        context.mission_control_pause_body = r.json()
+    except Exception:
+        context.mission_control_pause_body = {"raw": r.text}
+
+
+@then('the mission control pause response status is {code:d}')
+def assert_mission_control_pause_response_status(context, code):
+    assert context.mission_control_pause_status == code, (
+        f"Mission control pause returned {context.mission_control_pause_status}, expected {code}: {context.mission_control_pause_body}"
+    )
+
+
+@then('the mission control pause response detail mentions "{expected_text}"')
+def assert_mission_control_pause_response_detail_mentions(context, expected_text):
+    detail = context.mission_control_pause_body.get("detail", "")
+    assert expected_text.lower() in detail.lower(), (
+        f"Expected mission control pause detail to mention '{expected_text}', got '{detail}'"
+    )
+
+
+# === S48 — Stop non-existent mission ===
+
+@when('I stop mission id {mission_id:d}')
+def stop_mission_by_id(context, mission_id):
+    r = httpx.post(f"{BASE_URL}/api/v1/missions/{mission_id}/stop", json={})
+    context.mission_control_stop_status = r.status_code
+    try:
+        context.mission_control_stop_body = r.json()
+    except Exception:
+        context.mission_control_stop_body = {"raw": r.text}
+
+
+@then('the mission control stop response status is {code:d}')
+def assert_mission_control_stop_response_status(context, code):
+    assert context.mission_control_stop_status == code, (
+        f"Mission control stop returned {context.mission_control_stop_status}, expected {code}: {context.mission_control_stop_body}"
+    )
+
+
+@then('the mission control stop response detail mentions "{expected_text}"')
+def assert_mission_control_stop_response_detail_mentions(context, expected_text):
+    detail = context.mission_control_stop_body.get("detail", "")
+    assert expected_text.lower() in detail.lower(), (
+        f"Expected mission control stop detail to mention '{expected_text}', got '{detail}'"
+    )
+
+
+# === S49 — Get logs for non-existent mission ===
+
+@when('I get logs for mission id {mission_id:d}')
+def get_mission_logs(context, mission_id):
+    r = httpx.get(f"{BASE_URL}/api/v1/missions/{mission_id}/logs")
+    context.mission_logs_status = r.status_code
+    try:
+        context.mission_logs_body = r.json()
+    except Exception:
+        context.mission_logs_body = {"raw": r.text}
+
+
+@then('the mission logs response status is {code:d}')
+def assert_mission_logs_response_status(context, code):
+    assert context.mission_logs_status == code, (
+        f"Mission logs returned {context.mission_logs_status}, expected {code}: {context.mission_logs_body}"
+    )
+
+
+@then('the mission logs response detail mentions "{expected_text}"')
+def assert_mission_logs_response_detail_mentions(context, expected_text):
+    detail = context.mission_logs_body.get("detail", "")
+    assert expected_text.lower() in detail.lower(), (
+        f"Expected mission logs detail to mention '{expected_text}', got '{detail}'"
+    )

@@ -48,6 +48,15 @@ TEST_NAME_PREFIXES = (
     "s38-",  # ADD: test mission status invalid
     "s39-",  # ADD: test mission plan invalid
     "s40-",  # ADD: test mission route get invalid
+    "s41-",  # ADD: test mission scans export invalid
+    "s42-",  # ADD: test mission locations upload invalid
+    "s43-",  # ADD: test mission locations bulk-delete invalid
+    "s44-",  # ADD: test mission route reorder invalid
+    "s45-",  # ADD: test mission route skip invalid
+    "s46-",  # ADD: test mission start invalid
+    "s47-",  # ADD: test mission pause invalid
+    "s48-",  # ADD: test mission stop invalid
+    "s49-",  # ADD: test mission logs invalid
 )
 
 
