@@ -1589,6 +1589,19 @@ def assert_mission_scan_list_detail_mentions(context, expected_text):
     )
 
 
+@when('I list scans with rat "{rat}"')
+def list_scans_with_rat(context, rat):
+    r = httpx.get(
+        f"{BASE_URL}/api/v1/scans",
+        params={"page": 1, "page_size": 5, "rat": rat},
+    )
+    context.scan_list_status = r.status_code
+    try:
+        context.scan_list_body = r.json()
+    except Exception:
+        context.scan_list_body = {"raw": r.text}
+
+
 @when('I patch mission with id {mission_id:d} and radius {radius:d} meters')
 def patch_mission_radius(context, mission_id, radius):
     r = httpx.patch(
