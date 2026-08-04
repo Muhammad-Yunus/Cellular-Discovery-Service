@@ -1711,6 +1711,31 @@ def assert_mission_location_get_detail_mentions(context, expected_text):
     )
 
 
+@when('I list mission scans with mission id {mission_id:d}')
+def list_mission_scans(context, mission_id):
+    r = httpx.get(f"{BASE_URL}/api/v1/missions/{mission_id}/scans")
+    context.mission_scan_list_status = r.status_code
+    try:
+        context.mission_scan_list_body = r.json()
+    except Exception:
+        context.mission_scan_list_body = {"raw": r.text}
+
+
+@then('the mission scan list status is {code:d}')
+def assert_mission_scan_list_status(context, code):
+    assert context.mission_scan_list_status == code, (
+        f"Mission scan list returned {context.mission_scan_list_status}, expected {code}: {context.mission_scan_list_body}"
+    )
+
+
+@then('the mission scan list detail mentions "{expected_text}"')
+def assert_mission_scan_list_detail_mentions(context, expected_text):
+    detail = context.mission_scan_list_body.get("detail", "")
+    assert expected_text.lower() in detail.lower(), (
+        f"Expected mission scan list detail to mention '{expected_text}', got '{detail}'"
+    )
+
+
 @when('I patch mission with id {mission_id:d} and radius {radius:d} meters')
 def patch_mission_radius(context, mission_id, radius):
     r = httpx.patch(
