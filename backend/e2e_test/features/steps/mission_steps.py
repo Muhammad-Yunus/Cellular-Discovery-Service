@@ -1264,6 +1264,14 @@ def assert_get_mission_status(context, code):
     )
 
 
+@then('the get mission detail mentions "{expected_text}"')
+def assert_get_mission_detail_mentions(context, expected_text):
+    detail = context.get_mission_body.get("detail", "")
+    assert expected_text.lower() in detail.lower(), (
+        f"Expected get detail to mention '{expected_text}', got '{detail}'"
+    )
+
+
 @then('the planned route has no sequence order')
 def verify_route_no_sequence(context):
     r = httpx.get(f"{BASE_URL}/api/v1/missions/{context.mission_id}/route")
