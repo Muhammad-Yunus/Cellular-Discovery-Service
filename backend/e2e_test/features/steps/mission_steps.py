@@ -1497,6 +1497,33 @@ def assert_settings_put_detail_mentions(context, expected_text):
     )
 
 
+@when('I create mission with name "{name}" and radius {radius:d} meters')
+def create_mission_with_radius(context, name, radius):
+    r = httpx.post(f"{BASE_URL}/api/v1/missions", json={"name": name, "radius_meters": radius})
+    context.mission_create_status = r.status_code
+    try:
+        context.mission_create_body = r.json()
+    except Exception:
+        context.mission_create_body = {"raw": r.text}
+
+
+@then('the mission create status is {code:d}')
+def assert_mission_create_status(context, code):
+    assert context.mission_create_status == code, (
+        f"Mission create returned {context.mission_create_status}, expected {code}: {context.mission_create_body}"
+    )
+
+
+@then('the mission create detail mentions "{expected_text}"')
+def assert_mission_create_detail_mentions(context, expected_text):
+    detail = context.mission_create_body.get("detail", "")
+    if isinstance(detail, list):
+        detail = json.dumps(detail)
+    assert expected_text.lower() in detail.lower(), (
+        f"Expected mission create detail to mention '{expected_text}', got '{detail}'"
+    )
+
+
 @then('the planned route has no sequence order')
 def verify_route_no_sequence(context):
     r = httpx.get(f"{BASE_URL}/api/v1/missions/{context.mission_id}/route")

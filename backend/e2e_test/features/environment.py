@@ -33,6 +33,7 @@ TEST_NAME_PREFIXES = (
     "s23-",  # ADD: test scan get by id
     "s24-",  # ADD: test scan delete by id
     "s25-",  # ADD: test settings put invalid body
+    "s26-",  # ADD: test mission create invalid radius
 )
 
 
