@@ -7,6 +7,49 @@ from app.db.models.scan_session import ScanSession
 from app.db.models.mission_location import MissionLocation
 
 
+# Map of sortable fields → SQLAlchemy column expression.
+# Accepted query params: scan_time, operator_name, mcc, mnc, rat.
+# Prefix "-" means DESC; otherwise ASC. Unknown fields fall back to scan_time DESC.
+_SORTABLE_FIELDS = {
+    "scan_time": ScanSession.scan_time,
+    "operator_name": ScanResult.operator_name,
+    "mcc": ScanResult.mcc,
+    "mnc": ScanResult.mnc,
+    "rat": ScanResult.rat,
+}
+
+
+def _resolve_sort(sort: str):
+    """Resolve a `?sort=field` or `?sort=-field` value into a list of
+    SQLAlchemy ``order_by`` clauses.
+
+    The previous behavior (always order by ``scan_time``) was wrong for any
+    field other than ``scan_time`` and made pagination over an unstable order
+    silently drop/duplicate rows when scan_time ties occurred.
+
+    Always tie-breaks on ``scan_session.id`` and ``scan_result.id`` so the
+    order is deterministic even when the chosen sort column has many ties.
+    """
+    if not sort:
+        sort = "-scan_time"
+
+    desc_flag = sort.startswith("-")
+    field = sort[1:] if desc_flag else sort
+
+    column = _SORTABLE_FIELDS.get(field)
+    if column is None:
+        # Unknown field — fall back to scan_time descending (stable, default).
+        column = ScanSession.scan_time
+        desc_flag = True
+
+    direction = desc if desc_flag else asc
+    return [
+        direction(column),
+        desc(ScanSession.id),
+        desc(ScanResult.id),
+    ]
+
+
 class ScanResultRepository:
     def __init__(self, db: Session):
         self.db = db
@@ -98,10 +141,8 @@ class ScanResultRepository:
 
         total = query.count()
 
-        if sort.startswith("-"):
-            query = query.order_by(desc(ScanSession.scan_time), desc(ScanSession.id))
-        else:
-            query = query.order_by(asc(ScanSession.scan_time), asc(ScanSession.id))
+        for clause in _resolve_sort(sort):
+            query = query.order_by(clause)
 
         offset = (page - 1) * page_size
         results = query.offset(offset).limit(page_size).all()
@@ -149,10 +190,8 @@ class ScanResultRepository:
 
         total = query.count()
 
-        if sort.startswith("-"):
-            query = query.order_by(desc(ScanSession.scan_time), desc(ScanSession.id))
-        else:
-            query = query.order_by(asc(ScanSession.scan_time), asc(ScanSession.id))
+        for clause in _resolve_sort(sort):
+            query = query.order_by(clause)
 
         offset = (page - 1) * page_size
         results = query.offset(offset).limit(page_size).all()

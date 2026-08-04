@@ -113,6 +113,97 @@ class TestScanResultRepository:
 
         assert len(results) == 2
 
+    # ------------------------------------------------------------------
+    # get_all_flat sorting (ASC + DESC across operator_name, mcc, mnc, rat, scan_time)
+    # ------------------------------------------------------------------
+
+    def _seed_flat_sort_fixture(self, db_session):
+        """Seed 5 sessions × 5 results. Every sortable field has a distinct
+        value so tie-breakers never influence the order. Return the created
+        results ordered by ascending scan_time (= insertion order)."""
+        self.session_repo = ScanSessionRepository(db_session)
+        self.repo = ScanResultRepository(db_session)
+
+        # Distinct values for each sortable field, alphabetic/lexical order:
+        # operator_name ASC = Indosat < Smartfren < Telkomsel < Three < XL
+        # mcc             ASC = 310 < 401 < 502 < 603 < 704
+        # mnc             ASC = 10 < 20 < 30 < 40 < 50
+        # rat             ASC = 2G < 3G < 4G < 5G < LTE
+        plan = [
+            # (operator_name, mcc, mnc, rat)
+            ("Telkomsel", "502", "30", "4G"),
+            ("XL",        "704", "50", "3G"),
+            ("Indosat",   "310", "10", "5G"),
+            ("Three",     "603", "40", "2G"),
+            ("Smartfren", "401", "20", "LTE"),
+        ]
+        sessions = []
+        results = []
+        for tty, payload in enumerate(plan):
+            s = self.session_repo.create(tty_port=f"/dev/ttyUSB{tty}")
+            sessions.append(s)
+            r = self.repo.create(
+                session_id=s.id,
+                operator_name=payload[0],
+                mcc=payload[1],
+                mnc=payload[2],
+                rat=payload[3],
+            )
+            results.append(r)
+        return results
+
+    @pytest.mark.parametrize(
+        "sort_key, expected_order",
+        [
+            ("operator_name", ["Indosat", "Smartfren", "Telkomsel", "Three", "XL"]),
+            ("mcc",           ["Indosat", "Smartfren", "Telkomsel", "Three", "XL"]),
+            ("mnc",           ["Indosat", "Smartfren", "Telkomsel", "Three", "XL"]),
+            ("rat",           ["Three", "XL", "Telkomsel", "Indosat", "Smartfren"]),
+            ("scan_time",     ["Smartfren", "Three", "Indosat", "XL", "Telkomsel"]),
+        ],
+    )
+    def test_get_all_flat_sort_asc(self, db_session, sort_key, expected_order):
+        self._seed_flat_sort_fixture(db_session)
+
+        results, total = ScanResultRepository(db_session).get_all_flat(
+            page=1, page_size=10, sort=sort_key
+        )
+        assert total == 5
+        actual = [r.operator_name for r in results]
+        assert actual == expected_order
+
+    @pytest.mark.parametrize(
+        "sort_key, expected_order",
+        [
+            ("-operator_name", ["XL", "Three", "Telkomsel", "Smartfren", "Indosat"]),
+            ("-mcc",           ["XL", "Three", "Telkomsel", "Smartfren", "Indosat"]),
+            ("-mnc",           ["XL", "Three", "Telkomsel", "Smartfren", "Indosat"]),
+            ("-rat",           ["Smartfren", "Indosat", "Telkomsel", "XL", "Three"]),
+            ("-scan_time",     ["Smartfren", "Three", "Indosat", "XL", "Telkomsel"]),
+        ],
+    )
+    def test_get_all_flat_sort_desc(self, db_session, sort_key, expected_order):
+        self._seed_flat_sort_fixture(db_session)
+
+        results, total = ScanResultRepository(db_session).get_all_flat(
+            page=1, page_size=10, sort=sort_key
+        )
+        assert total == 5
+        actual = [r.operator_name for r in results]
+        assert actual == expected_order
+
+    def test_get_all_flat_sort_unknown_field_falls_back_to_scan_time_desc(
+        self, db_session
+    ):
+        self._seed_flat_sort_fixture(db_session)
+
+        results, _ = ScanResultRepository(db_session).get_all_flat(
+            page=1, page_size=10, sort="bogus_field"
+        )
+        # Unknown sort key must fall back to scan_time DESC.
+        actual = [r.operator_name for r in results]
+        assert actual == ["Smartfren", "Three", "Indosat", "XL", "Telkomsel"]
+
 
 class TestSettingRepository:
     def setup_method(self):

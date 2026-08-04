@@ -2213,3 +2213,127 @@ def assert_mission_logs_response_detail_mentions(context, expected_text):
     assert expected_text.lower() in detail.lower(), (
         f"Expected mission logs detail to mention '{expected_text}', got '{detail}'"
     )
+
+
+# ------------------------------------------------------------------
+# Scan list sort steps
+# ------------------------------------------------------------------
+
+
+@when('I list scans with sort "{sort}" and page_size {page_size:d}')
+def list_scans_with_sort(context, sort, page_size):
+    r = httpx.get(
+        f"{BASE_URL}/api/v1/scans",
+        params={"page": 1, "page_size": page_size, "sort": sort},
+    )
+    context.scan_list_status = r.status_code
+    try:
+        context.scan_list_body = r.json()
+    except Exception:
+        context.scan_list_body = {"raw": r.text}
+
+
+@then('the scan list body has total greater than 0')
+def assert_scan_list_total_positive(context):
+    total = context.scan_list_body.get("total", 0)
+    assert total > 0, f"Expected total > 0, got {total}"
+
+
+@then('the scan list items are sorted by operator_name ascending')
+def assert_scan_items_sorted_operator_asc(context):
+    items = context.scan_list_body.get("items", [])
+    assert items, "Expected at least one scan item"
+    operators = [item.get("operator_name", "") for item in items]
+    assert operators == sorted(operators, key=lambda x: x.lower()), (
+        f"Scan list not sorted ASC by operator_name: {operators}"
+    )
+
+
+@then('the scan list items are sorted by operator_name descending')
+def assert_scan_items_sorted_operator_desc(context):
+    items = context.scan_list_body.get("items", [])
+    assert items, "Expected at least one scan item"
+    operators = [item.get("operator_name", "") for item in items]
+    assert operators == sorted(operators, key=lambda x: x.lower(), reverse=True), (
+        f"Scan list not sorted DESC by operator_name: {operators}"
+    )
+
+
+@then('the scan list items are sorted by mcc ascending')
+def assert_scan_items_sorted_mcc_asc(context):
+    items = context.scan_list_body.get("items", [])
+    assert items, "Expected at least one scan item"
+    mccs = [item.get("mcc", "") for item in items]
+    assert mccs == sorted(mccs), (
+        f"Scan list not sorted ASC by mcc: {mccs}"
+    )
+
+
+@then('the scan list items are sorted by mcc descending')
+def assert_scan_items_sorted_mcc_desc(context):
+    items = context.scan_list_body.get("items", [])
+    assert items, "Expected at least one scan item"
+    mccs = [item.get("mcc", "") for item in items]
+    assert mccs == sorted(mccs, reverse=True), (
+        f"Scan list not sorted DESC by mcc: {mccs}"
+    )
+
+
+@then('the scan list items are sorted by mnc ascending')
+def assert_scan_items_sorted_mnc_asc(context):
+    items = context.scan_list_body.get("items", [])
+    assert items, "Expected at least one scan item"
+    mncs = [item.get("mnc", "") for item in items]
+    assert mncs == sorted(mncs), (
+        f"Scan list not sorted ASC by mnc: {mncs}"
+    )
+
+
+@then('the scan list items are sorted by mnc descending')
+def assert_scan_items_sorted_mnc_desc(context):
+    items = context.scan_list_body.get("items", [])
+    assert items, "Expected at least one scan item"
+    mncs = [item.get("mnc", "") for item in items]
+    assert mncs == sorted(mncs, reverse=True), (
+        f"Scan list not sorted DESC by mnc: {mncs}"
+    )
+
+
+@then('the scan list items are sorted by rat ascending')
+def assert_scan_items_sorted_rat_asc(context):
+    items = context.scan_list_body.get("items", [])
+    assert items, "Expected at least one scan item"
+    rats = [item.get("rat", "") for item in items]
+    assert rats == sorted(rats), (
+        f"Scan list not sorted ASC by rat: {rats}"
+    )
+
+
+@then('the scan list items are sorted by rat descending')
+def assert_scan_items_sorted_rat_desc(context):
+    items = context.scan_list_body.get("items", [])
+    assert items, "Expected at least one scan item"
+    rats = [item.get("rat", "") for item in items]
+    assert rats == sorted(rats, reverse=True), (
+        f"Scan list not sorted DESC by rat: {rats}"
+    )
+
+
+@then('the scan list items are sorted by scan_time ascending')
+def assert_scan_items_sorted_scan_time_asc(context):
+    items = context.scan_list_body.get("items", [])
+    assert items, "Expected at least one scan item"
+    times = [item.get("scan_time", "") for item in items]
+    assert times == sorted(times), (
+        f"Scan list not sorted ASC by scan_time: {times}"
+    )
+
+
+@then('the scan list items are sorted by scan_time descending')
+def assert_scan_items_sorted_scan_time_desc(context):
+    items = context.scan_list_body.get("items", [])
+    assert items, "Expected at least one scan item"
+    times = [item.get("scan_time", "") for item in items]
+    assert times == sorted(times, reverse=True), (
+        f"Scan list not sorted DESC by scan_time: {times}"
+    )
