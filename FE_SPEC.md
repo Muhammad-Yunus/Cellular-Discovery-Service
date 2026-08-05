@@ -2,6 +2,8 @@
 
 # USB Modem LTE Network Discovery Web Frontend
 
+> This document defines the **base frontend specification**. The Mission Planner feature (missions, locations, route planning, WebSocket mission events) is specified separately in [`FE_IMPROVEMENT_SPEC.md`](./FE_IMPROVEMENT_SPEC.md).
+
 **Framework:** Nuxt 4  
 **Language:** TypeScript  
 **Build Tool:** Vite  
@@ -139,8 +141,10 @@ No neumorphism.
 Top Navigation
 
 - Home
+- Scan
+- History
+- Missions *(see [`FE_IMPROVEMENT_SPEC.md`](./FE_IMPROVEMENT_SPEC.md))*
 - Settings
-- Scan Result
 - About
 
 The navigation bar remains fixed.
@@ -259,12 +263,24 @@ pages/
 
 index.vue
 
-settings.vue
+scan.vue
 
 history.vue
 
+missions/                       # Mission Planner feature (see FE_IMPROVEMENT_SPEC.md)
+  index.vue                     # MissionListPage
+  [id]/
+    index.vue                   # MissionDetailPage
+    locations/
+      index.vue                 # LocationListPage
+      upload.vue                # LocationUploadPage
+
+settings.vue
+
 about.vue
 ```
+
+> Note: Mission Planner pages are part of the Mission Planner feature described in [`FE_IMPROVEMENT_SPEC.md`](./FE_IMPROVEMENT_SPEC.md).
 
 ---
 
@@ -300,6 +316,22 @@ LoadingOverlay.vue
 StatusBadge.vue
 
 ConfirmationDialog.vue
+
+# Mission Planner feature components (see FE_IMPROVEMENT_SPEC.md)
+
+MissionCard.vue
+
+MissionList.vue
+
+MissionDetail.vue
+
+LocationUpload.vue
+
+LocationList.vue
+
+MissionsWebSocket.vue
+
+RouteMap.vue
 ```
 
 Components SHALL remain small.
@@ -341,7 +373,11 @@ gpsStore
 settingsStore
 
 systemStore
+
+missionStore
 ```
+
+> See [`FE_IMPROVEMENT_SPEC.md`](./FE_IMPROVEMENT_SPEC.md) §4 for full `missionStore` specification (Mission Planner feature).
 
 Global application state belongs only inside Pinia.
 
@@ -408,6 +444,30 @@ GET  /scans/{result_id}             → ScanResultFlatResponse
 DELETE /scans/{result_id}           → ScanDeleteResponse
 GET  /settings                      → list[SettingResponse]
 PUT  /settings                      → list[SettingResponse]
+
+# Mission Planner Endpoints (see FE_IMPROVEMENT_SPEC.md §Full API Inventory)
+POST /missions                      → MissionResponse (201)
+GET  /missions?page=1&page_size=10  → PaginatedMissionResponse
+GET  /missions/{id}                 → MissionDetailResponse
+PATCH /missions/{id}                → MissionResponse
+DELETE /missions/{id}               → MissionDeleteResponse
+POST /missions/{id}/plan            → RouteResponse
+GET  /missions/{id}/route           → RouteResponse
+POST /missions/{id}/route/reorder   → RouteResponse
+POST /missions/{id}/route/skip      → SkipResponse
+POST /missions/{id}/start           → MissionControlResponse
+POST /missions/{id}/pause           → MissionControlResponse
+POST /missions/{id}/resume          → MissionControlResponse
+POST /missions/{id}/stop            → MissionControlResponse
+GET  /missions/{id}/status          → MissionControlResponse
+GET  /missions/{id}/logs            → MissionLogEntry[]
+POST /missions/{id}/locations/upload → UploadLocationResponse
+GET  /missions/{id}/locations       → PaginatedMissionLocationResponse
+GET  /missions/{id}/locations/{lid} → MissionLocationResponse
+DELETE /missions/{id}/locations/{lid} → DeleteLocationResponse
+POST /missions/{id}/locations/bulk-delete → BulkDeleteResponse
+GET  /missions/{id}/scans           → PaginatedResponse (ScanResultFlat, filtered by mission)
+GET  /missions/{id}/scans/export    → CSV (attachment)
 ```
 
 ### Response Schemas
@@ -482,6 +542,7 @@ interface ScanResultFlat {
   tty_port: string
   latitude: number | null
   longitude: number | null
+  mission_location_id: number | null  // FK → mission_locations.id (null if not from mission)
   created_at: string
   operator_name: string | null
   mcc: string | null
@@ -514,17 +575,37 @@ For systemd service deployment, ensure `CLI_COMMAND` is set to the full path of 
 
 # WebSocket Integration
 
-The frontend SHALL connect to two WebSocket endpoints for realtime updates:
+The frontend SHALL connect to three WebSocket endpoints for realtime updates:
 
-1. **`/ws/gps`** — Receives live GPS coordinate updates
-   - Message format: `{ "latitude": -6.150677, "longitude": 106.896652, "provider": "mock" }`
-   - On update: refresh map marker, update GPS panel, update `gpsStore`
+## 1. `/ws/gps` — Live GPS Coordinate Updates
+- Message format: `{ "latitude": -6.150677, "longitude": 106.896652, "provider": "mock" }`
+- On update: refresh map marker, update GPS panel, update `gpsStore`
 
-2. **`/ws/scan`** — Receives scan completion notifications
-   - Message format: `{ "event": "scan_complete", "scan_id": "uuid" }`
-   - On event: refresh history list, update signal panel with latest scan, show toast notification
+## 2. `/ws/scan` — Scan Completion Notifications
+- Message format: `{ "event": "scan_complete", "scan_id": "uuid" }`
+- On event: refresh history list, update signal panel with latest scan, show toast notification
 
-WebSocket connection logic:
+## 3. `/ws/mission` — Mission Event Stream
+- Message format:
+  ```json
+  {
+    "type": "mission_progress",
+    "mission_id": 1,
+    "data": {
+      "visited_locations": 3,
+      "current_location_id": 12,
+      "distance_to_target": 150.5,
+      "status": "RUNNING"
+    }
+  }
+  ```
+- Available event types: `mission_progress`, `mission_visit`, `mission_completed`, `mission_failed`, `mission_stopped`
+- On `mission_visit`: add entry to live log, update location status → VISITED
+- On `mission_completed`: change status to COMPLETED, show completion toast
+- On `mission_failed`: change status to FAILED, show error toast with reason
+- On `mission_stopped`: change status to STOPPED, show stopped notification
+
+### WebSocket Connection Logic
 - Establish on app mount (use Nuxt `onMounted` lifecycle)
 - Auto-reconnect on disconnect with exponential backoff (max 5 retries)
 - Clean up on component unmount (`onUnmounted`)
@@ -916,6 +997,7 @@ interface ScanResultFlat {
   tty_port: string
   latitude: number | null
   longitude: number | null
+  mission_location_id: number | null  // FK → mission_locations.id (null if not from mission)
   created_at: string
   operator_name: string | null
   mcc: string | null
@@ -942,6 +1024,136 @@ interface SettingResponse {
 interface ScanDeleteResponse {
   message: string
   id: number
+}
+
+// Mission Planner Types (see FE_IMPROVEMENT_SPEC.md §5 for full DTOs)
+interface MissionResponse {
+  id: number
+  name: string
+  description: string | null
+  status: 'IDLE' | 'PLANNING' | 'READY' | 'STARTING' | 'RUNNING' | 'PAUSED' | 'COMPLETED' | 'STOPPED' | 'FAILED'
+  radius_meters: number | null
+  tty_port: string | null
+  start_location_id: number | null
+  current_location_id: number | null
+  total_locations: number
+  visited_locations: number
+  progress_percent: float  // calculated as (visited_locations / total_locations) * 100
+  started_at: string | null
+  completed_at: string | null
+  stopped_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+interface MissionDetailResponse extends MissionResponse {
+  locations: MissionLocationResponse[]
+}
+
+interface PaginatedMissionResponse {
+  items: MissionResponse[]
+  total: number
+  page: int
+  page_size: int
+}
+
+interface MissionLocationResponse {
+  id: number
+  mission_id: number
+  cellular_tower_id: string
+  cellular_tower_name: string | null
+  latitude: float
+  longitude: float
+  upload_batch_id: string | null
+  sequence_order: number | null
+  status: 'PENDING' | 'IN_PROGRESS' | 'VISITED' | 'SKIPPED'
+  distance_from_previous_meters: float | null
+  bearing_from_previous_degrees: float | null
+  estimated_arrival_time: string | null
+  actual_visit_time: string | null
+  scan_session_id: number | null
+  visited_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+interface PaginatedMissionLocationResponse {
+  items: MissionLocationResponse[]
+  total: number
+  page: number
+  page_size: number
+}
+
+interface RouteResponse {
+  mission_id: number
+  mission_name: string
+  status: string
+  start_location_id: number | null
+  total_distance_meters: float
+  items: RouteItem[]
+}
+
+interface RouteItem {
+  location_id: number
+  sequence_order: number | null
+  cellular_tower_id: string
+  cellular_tower_name: string | null
+  latitude: float
+  longitude: float
+  status: string
+  distance_from_previous_meters: float | null
+  bearing_from_previous_degrees: float | null
+  estimated_arrival_time: string | null
+  actual_visit_time: string | null
+  scan_session_id: number | null
+  visited_at: string | null
+}
+
+interface SkipResponse {
+  message: string
+  location_id: number
+}
+
+interface MissionLogEntry {
+  timestamp: string
+  event_type: 'STARTING' | 'RUNNING' | 'PAUSED' | 'RESUMED' | 'VISITED' | 'SKIPPED' |
+              'STOPPED' | 'COMPLETED' | 'FAILED' | 'GPS_ERROR' | 'SCAN_ERROR' | 'INFO'
+  message: string
+}
+
+interface MissionControlResponse {
+  message: string
+  mission_id: number
+  status: string
+}
+
+interface UploadLocationResponse {
+  upload_batch_id: string
+  mission_id: number
+  total_rows: number
+  inserted: number
+  updated: number
+  skipped: number
+  errors: UploadRowError[]
+}
+
+interface UploadRowError {
+  row: number
+  error: string
+}
+
+interface DeleteLocationResponse {
+  message: string
+  id: number
+}
+
+interface BulkDeleteRequest {
+  upload_batch_id: string
+}
+
+interface BulkDeleteResponse {
+  message: string
+  deleted: number
 }
 ```
 
