@@ -78,7 +78,7 @@ def _validate_tty_port(cls, v):
 class MissionCreate(BaseModel):
     name: str
     description: Optional[str] = None
-    radius_meters: Optional[int] = Field(default=None, gt=10, lt=100)
+    radius_meters: Optional[int] = Field(default=None, ge=10, le=100)
     tty_port: Optional[str] = None
 
     @field_validator("name")
@@ -98,7 +98,7 @@ class MissionCreate(BaseModel):
 class MissionUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
-    radius_meters: Optional[int] = Field(default=None, gt=10, lt=100)
+    radius_meters: Optional[int] = Field(default=None, ge=10, le=100)
     tty_port: Optional[str] = None
     start_location_id: Optional[int] = None
 

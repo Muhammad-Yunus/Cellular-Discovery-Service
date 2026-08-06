@@ -285,9 +285,10 @@ class TestMissionEndpoints:
         response = client.post("/api/v1/missions", json={"name": "   "})
 
         assert response.status_code == 422
-        assert "Mission name is required" in response.json()["detail"][0]["msg"]
+        assert "Mission name is required" in response.json()["detail"]
 
     def test_u03_create_zero_radius(self, client):
         response = client.post("/api/v1/missions", json={"name": "M", "radius_meters": 0})
 
         assert response.status_code == 422
+        assert "radius_meters must be >= 10" in response.json()["detail"]

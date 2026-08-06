@@ -1,4 +1,5 @@
 from fastapi import HTTPException, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 import logging
 
@@ -39,4 +40,51 @@ async def generic_exception_handler(request: Request, exc: Exception) -> JSONRes
     return JSONResponse(
         status_code=500,
         content={"detail": "Internal server error"},
+    )
+
+
+def _flatten_validation_message(field: str, error_type: str, msg: str, input_value) -> str:
+    """Convert pydantic validation error into a flat human-readable message."""
+    short_field = field.split(".")[-1] if field else "field"
+    # Remove pydantic "Value error" prefix from custom validators
+    if error_type == "value_error" and msg.startswith("Value error, "):
+        msg = msg.replace("Value error, ", "", 1)
+    if error_type in ("greater_than", "greater_than_equal"):
+        op = ">=" if error_type == "greater_than_equal" else ">"
+        return f"{short_field} must be {op} {msg.split()[-1]}"
+    if error_type in ("less_than", "less_than_equal"):
+        op = "<=" if error_type == "less_than_equal" else "<"
+        return f"{short_field} must be {op} {msg.split()[-1]}"
+    if error_type == "missing":
+        return f"{short_field} is required"
+    # For custom validators, msg is already clean
+    if error_type == "value_error":
+        return msg
+    return f"{short_field}: {msg}"
+
+
+async def validation_exception_handler(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
+    """Flatten pydantic RequestValidationError into project-standard format.
+
+    Output shape (single string detail to match other handlers):
+        {"detail": "<message>"}
+
+    If multiple errors exist, join them with "; ".
+    """
+    errors = exc.errors()
+    messages: list[str] = []
+    for err in errors:
+        loc = ".".join(str(p) for p in err.get("loc", []))
+        err_type = err.get("type", "")
+        msg = err.get("msg", "")
+        input_value = err.get("input")
+        messages.append(_flatten_validation_message(loc, err_type, msg, input_value))
+
+    flat = "; ".join(messages) if messages else "Validation error"
+    logger.warning(f"Validation error on {request.url.path}: {flat}")
+    return JSONResponse(
+        status_code=422,
+        content={"detail": flat},
     )

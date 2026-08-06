@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 from contextlib import asynccontextmanager
 from app.config.settings import get_settings
 from app.db.session import engine
@@ -7,6 +8,7 @@ from app.core.exceptions import (
     AppException,
     app_exception_handler,
     generic_exception_handler,
+    validation_exception_handler,
 )
 from app.api.routers import scan, history, settings as settings_router, ws_gps, ws_scan, ws_mission, mission_locations, missions, mission_planning, mission_control, mission_scans
 from app.gps import test_management
@@ -61,6 +63,7 @@ elif app_settings.ORIGIN_WHITELIST:
 
 # Add exception handlers
 app.add_exception_handler(AppException, app_exception_handler)
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
 
 app.include_router(scan.router)
