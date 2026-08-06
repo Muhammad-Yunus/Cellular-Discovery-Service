@@ -30,6 +30,15 @@ class MissionService:
                 detail=f"Cannot {action} mission while it is {mission.status}",
             )
 
+    @staticmethod
+    def _ensure_deletable(mission) -> None:
+        allowed_statuses = {"IDLE", "STOPPED", "FAILED"}
+        if mission.status not in allowed_statuses:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Cannot delete mission while it is {mission.status}. Only IDLE, STOPPED, or FAILED missions can be deleted.",
+            )
+
     def _ensure_location_belongs(self, mission_id: int, location_id: int) -> None:
         if not self.location_repo.get_by_id(mission_id, location_id):
             raise HTTPException(
@@ -151,5 +160,5 @@ class MissionService:
         if not mission:
             raise HTTPException(status_code=404, detail="Mission not found")
 
-        self._ensure_inactive(mission, action="delete")
+        self._ensure_deletable(mission)
         return self.repo.delete(mission)
