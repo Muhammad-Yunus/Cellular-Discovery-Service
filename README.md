@@ -10,31 +10,42 @@
   <img src="https://img.shields.io/badge/status-active-brightgreen" alt="Status">
 </p>
 
-**REST API backend for USB Modem LTE Network Discovery Web Application** — orchestrates CLI-based LTE scans, stores scan history in PostgreSQL, provides realtime GPS updates via WebSocket. Runs on Raspberry Pi OS 64-bit.
+**REST API backend for USB Modem LTE Network Discovery Web Application** — orchestrates CLI-based LTE scans, mission planning with GPS navigation, stores scan history in PostgreSQL, and provides realtime updates via WebSocket. Runs on Raspberry Pi OS 64-bit.
 
 ---
 
 ## 🏗️ Architecture Diagram
 
 ```
-                  REST API (Web UI)
-                       │
-               FastAPI Controllers
-                       │
-                 Application Service Layer
-                       │
-         ┌─────────────┴───────────────┐
-         │                             │
-   CLI Adapter                   GPS Provider
-         │                             │
-    CLI Process               Mock / Serial GPS
-         │
-USB Modem LTE Discovery Engine (External CLI)
+                   REST API (Web UI)
+                        │
+                FastAPI Controllers (Routers)
+                        │
+                  Application Service Layer
+                        │
+        ┌───────────────┼───────────────┬────────────────┐
+        │               │               │                │
+   Scan Service     Mission        History       Settings
+        │               Service       Service       Service
+        │               │
+   CLI Adapter     Mission           Location
+        │            Planner        Repository
+   GPS Provider   Executor
+        │
+  ┌─────┼─────┬──────────┐
+  │     │     │          │
+Mock  Serial  CLI    WebSocket
+Provider Provider Provider Manager
+  │     │     │          │
+  └─────┴─────┴──────────┘
+        │
+   PostgreSQL (app schema)
 ```
 
 **Clean Architecture + KISS Principle** — Layers never violate dependency rules:
-- API → Service → Repository → Database
-- Services may also use CLI Adapter or GPS Provider
+- API (Routers) → Service → Repository → Database
+- Services may also use CLI Adapter, GPS Provider, or WebSocket Manager
+- Core subsystems: Mission Executor, Test Management, Exception handling
 
 ---
 
@@ -45,15 +56,22 @@ cellular-discovery-service/
 ├── backend/                     # Python backend application
 │   ├── app/                     # Source code
 │   │   ├── api/                 # FastAPI routers & dependencies
-│   │   ├── services/            # Business logic (ScanService, HistoryService)
+│   │   │   ├── routers/         # API route handlers (13 modules)
+│   │   │   └── dependencies/    # Shared dependencies
+│   │   ├── services/            # Business logic
 │   │   ├── repositories/        # Data access layer
 │   │   ├── cli/                 # CLI adapter (subprocess execution)
-│   │   ├── gps/                 # GPS providers (Mock/Serial)
+│   │   ├── gps/                 # GPS providers (Mock/Serial/CLI)
+│   │   ├── core/                # Core subsystems
+│   │   │   ├── mission_executor.py   # Live mission execution
+│   │   │   ├── websocket_manager.py  # WebSocket connections
+│   │   │   └── exceptions.py         # Custom exceptions
 │   │   ├── db/                  # SQLAlchemy ORM models
 │   │   ├── schemas/             # Pydantic request/response models
 │   │   ├── config/              # Environment configuration
+│   │   ├── utils/               # Utility functions
 │   │   └── main.py              # Entry point
-│   ├── tests/                   # Unit, integration, E2E tests (~110 tests)
+│   ├── tests/                   # Unit, integration, E2E tests (~120+ tests)
 │   ├── alembic/                 # Database migrations
 │   ├── scripts/                 # run.sh, install.sh, update.sh
 │   ├── requirements.txt         # Python dependencies
@@ -96,7 +114,7 @@ cp .env.example .env
 # Apply database migrations
 alembic upgrade head
 
-# Run development server
+# Run development server (default port 8000, dev uses 8001)
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 # Or use script
@@ -133,6 +151,8 @@ python setup.py bdist_wheel   # or `python -m wheel`
 ```bash
 source .venv/bin/activate
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+# OR (dev override to port 8001)
+uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
 # OR
 ./scripts/run.sh
 ```
@@ -204,19 +224,21 @@ sudo systemctl restart lte-scanner.service
 
 ```bash
 # Run all tests
-pytest tests/ -v
+pytest backend/tests/ -v
 
 # Run with coverage report
-pytest tests/ --cov=app --cov-report=mismatch
+pytest backend/tests/ --cov=app --cov-report=mismatch
 
 # Generate HTML coverage report
-pytest tests/ --cov=app --cov-report=html
+pytest backend/tests/ --cov=app --cov-report=html
 open htmlcov/index.html
 
 # Run specific test file
-pytest tests/test_cli.py -v
-pytest tests/test_services.py -v
-pytest tests/test_e2e.py -v
+pytest backend/tests/test_missions.py -v
+pytest backend/tests/test_services.py -v
+pytest backend/tests/test_e2e.py -v
+pytest backend/tests/test_websocket.py -v
+pytest backend/tests/test_executor.py -v
 
 # Linting (optional)
 pip install flake8 black
@@ -231,19 +253,78 @@ black --check app/
 
 ## 📋 API Endpoints
 
+### Health & Docs
 | Method | Path | Description |
 |--------|------|-------------|
-| `POST` | `/api/v1/scan` | Trigger LTE network scan |
-| `GET`  | `/api/v1/scans` | List scan history (with pagination) |
-| `GET`  | `/api/v1/scans/{id}` | Get scan detail |
-| `DELETE`| `/api/v1/scans/{id}` | Delete scan entry |
-| `GET`  | `/api/v1/settings` | List app settings |
-| `PUT`  | `/api/v1/settings` | Update app settings |
 | `GET`  | `/health` | Health check endpoint |
 | `GET`  | `/docs` | Interactive OpenAPI docs |
 | `GET`  | `/openapi.json` | OpenAPI spec JSON |
-| `WS`   | `/ws/gps` | Realtime GPS WebSocket |
-| `WS`   | `/ws/scan` | Scan event WebSocket |
+
+### Scan Management
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/v1/scan` | Trigger LTE network scan |
+| `GET`  | `/api/v1/scans` | List scan history (paginated, filterable, sortable) |
+| `GET`  | `/api/v1/scans/{result_id}` | Get scan detail |
+| `DELETE` | `/api/v1/scans/{result_id}` | Delete scan entry |
+| `GET`  | `/api/v1/scans/export` | Export scans (CSV/JSON) |
+
+### Mission Management
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/v1/missions` | Create mission |
+| `GET`  | `/api/v1/missions` | List missions (paginated, filterable, sortable) |
+| `GET`  | `/api/v1/missions/{id}` | Get mission detail |
+| `PATCH` | `/api/v1/missions/{id}` | Update mission |
+| `DELETE` | `/api/v1/missions/{id}` | Delete mission |
+
+### Mission Locations
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET`  | `/api/v1/missions/{id}/locations` | List mission locations |
+| `POST` | `/api/v1/missions/{id}/locations/upload` | Upload locations (CSV) |
+| `GET`  | `/api/v1/missions/{id}/locations/{loc_id}` | Get location detail |
+| `DELETE` | `/api/v1/missions/{id}/locations/{loc_id}` | Delete location |
+| `POST` | `/api/v1/missions/{id}/locations/bulk-delete` | Bulk delete locations |
+
+### Mission Execution
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/v1/missions/{id}/start` | Start mission |
+| `POST` | `/api/v1/missions/{id}/pause` | Pause mission |
+| `POST` | `/api/v1/missions/{id}/resume` | Resume mission |
+| `POST` | `/api/v1/missions/{id}/stop` | Stop mission |
+| `GET`  | `/api/v1/missions/{id}/status` | Get mission status |
+| `POST` | `/api/v1/missions/{id}/plan` | Plan mission route |
+| `GET`  | `/api/v1/missions/{id}/route` | Get planned route |
+| `POST` | `/api/v1/missions/{id}/route/skip` | Skip route location |
+| `POST` | `/api/v1/missions/{id}/route/reorder` | Reorder route |
+| `GET`  | `/api/v1/missions/{id}/scans` | List mission scans |
+| `GET`  | `/api/v1/missions/{id}/scans/export` | Export mission scans |
+| `GET`  | `/api/v1/missions/{id}/logs` | Get mission logs |
+
+### Settings
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET`  | `/api/v1/settings` | List app settings |
+| `PUT`  | `/api/v1/settings` | Update app settings |
+
+### WebSocket
+| Method | Path | Description |
+|--------|------|-------------|
+| `WS`   | `/ws/gps` | Realtime GPS updates |
+| `WS`   | `/ws/scan` | Scan event events |
+| `WS`   | `/ws/mission` | Mission lifecycle events |
+
+### Test Management (Development Only)
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET`  | `/test/missions` | List test missions |
+| `POST` | `/test/missions/cleanup` | Bulk cleanup test missions |
+| `DELETE` | `/test/missions/{id}` | Force delete test mission |
+| `POST` | `/test/missions/{id}/force-stop` | Force stop test mission |
+| `GET/PUT` | `/test/cli/mock/fail` | Mock CLI failure state |
+| `GET/PUT` | `/test/gps/mock/fail` | Mock GPS failure state |
 
 ---
 
@@ -259,7 +340,7 @@ DATABASE_USER=lte_scanner
 DATABASE_PASSWORD=engen1us
 DATABASE_SCHEMA=app
 
-GPS_PROVIDER=mock          # Valid: mock | serial
+GPS_PROVIDER=mock          # Valid: mock | serial | cli
 DEFAULT_TTY=/dev/ttyUSB0
 SCAN_TIMEOUT=30
 
@@ -282,6 +363,7 @@ All configuration is loaded dynamically at runtime from environment variables. *
 |----------|-------------|--------|
 | `MockGPSProvider` | Returns fixed Jakarta coordinates (-6.15, 106.90) | `GPS_PROVIDER=mock` |
 | `SerialGPSProvider` | Reads NMEA GGA sentences from serial port | `GPS_PROVIDER=serial`, set `DEFAULT_TTY` to `/dev/ttyUSB0` or `/dev/ttyACM0` |
+| `CLIGPSProvider` | Executes external GPS CLI binary and parses output | `GPS_PROVIDER=cli`, configure `command`, `device`, `baud`, `timeout` |
 
 The SerialGPSProvider parses `$GPGGA` sentences to extract latitude/longitude coordinates. Altitude, fix quality, and satellite count are supported but not stored.
 
@@ -301,13 +383,17 @@ The SerialGPSProvider parses `$GPGGA` sentences to extract latitude/longitude co
 
 - [x] GPS Provider Interface ✅
 - [x] WebSocket Realtime Updates ✅
-- [x] Unit Test Suite (110 tests) ✅
+- [x] Mission System (create, plan, execute) ✅
+- [x] Location Upload (CSV) ✅
+- [x] Route Planning & Navigation ✅
+- [x] Mission Scans & Logs ✅
+- [x] Test Management Endpoints ✅
 - [ ] JWT Authentication
 - [ ] Prometheus Metrics
-- [ ] CSV/JSON Export
+- [ ] CSV/JSON Export for missions
 - [ ] Multiple Modem Support
 - [ ] Scheduled/Automated Scans
-- [ ] Health Check Endpoint
+- [ ] Health Check Endpoint (in progress)
 
 ---
 
