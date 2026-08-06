@@ -29,10 +29,11 @@ def list_missions(
     page_size: int = Query(10, ge=1, le=100),
     status: str | None = None,
     search: str | None = None,
+    sort: str = Query("-created_at", description="Sort field with optional '-' prefix for DESC"),
     db: Session = Depends(get_db),
 ):
     service = MissionService(db)
-    return service.list(page, page_size, status, search)
+    return service.list(page, page_size, status, search, sort)
 
 
 @router.get("/{mission_id}", response_model=MissionDetailResponse)

@@ -4,6 +4,36 @@ from typing import Optional
 from app.db.models.mission import Mission
 
 
+# Map of sortable fields → SQLAlchemy column expression.
+# Accepted query params: created_at, name, description
+# Prefix "-" means DESC; otherwise ASC. Unknown fields fall back to created_at DESC.
+_SORTABLE_FIELDS = {
+    "created_at": Mission.created_at,
+    "name": Mission.name,
+    "description": Mission.description,
+}
+
+
+def _resolve_sort(sort: str):
+    """Resolve a `?sort=field` or `?sort=-field` value into a list of
+    SQLAlchemy ``order_by`` clauses.
+    """
+    if not sort:
+        sort = "-created_at"
+
+    desc_flag = sort.startswith("-")
+    field = sort[1:] if desc_flag else sort
+
+    column = _SORTABLE_FIELDS.get(field)
+    if column is None:
+        # Unknown field — fall back to created_at descending (stable, default).
+        column = Mission.created_at
+        desc_flag = True
+
+    direction = desc if desc_flag else asc
+    return [direction(column)]
+
+
 class MissionRepository:
     def __init__(self, db: Session):
         self.db = db
@@ -38,6 +68,7 @@ class MissionRepository:
         page_size: int,
         status: Optional[str] = None,
         search: Optional[str] = None,
+        sort: str = "-created_at",
     ) -> tuple[list[Mission], int]:
         query = self.db.query(Mission)
 
@@ -49,7 +80,7 @@ class MissionRepository:
 
         total = query.count()
         missions = (
-            query.order_by(desc(Mission.created_at))
+            query.order_by(*_resolve_sort(sort))
             .offset((page - 1) * page_size)
             .limit(page_size)
             .all()

@@ -78,6 +78,7 @@ class MissionService:
         page_size: int,
         status: str | None = None,
         search: str | None = None,
+        sort: str = "-created_at",
     ) -> MissionListResponse:
         if status is not None:
             valid_statuses = {s.value for s in MissionStatus}
@@ -87,7 +88,7 @@ class MissionService:
                     detail=f"Invalid mission status: {status}",
                 )
 
-        missions, total = self.repo.list(page, page_size, status, search)
+        missions, total = self.repo.list(page, page_size, status, search, sort)
 
         return MissionListResponse(
             items=[self._to_response(m) for m in missions],
