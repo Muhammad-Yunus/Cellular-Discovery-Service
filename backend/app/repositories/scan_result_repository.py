@@ -8,11 +8,16 @@ from app.db.models.mission_location import MissionLocation
 
 
 # Map of sortable fields → SQLAlchemy column expression.
-# Accepted query params: scan_time, operator_name, mcc, mnc, rat.
+# Accepted query params:
+#   - field names documented in API:
+#       scan_time, operator_name, mcc, mnc, rat
+#   - short aliases used by the frontend/curl:
+#       operator (→ operator_name)
 # Prefix "-" means DESC; otherwise ASC. Unknown fields fall back to scan_time DESC.
 _SORTABLE_FIELDS = {
     "scan_time": ScanSession.scan_time,
     "operator_name": ScanResult.operator_name,
+    "operator": ScanResult.operator_name,   # alias used by FE/curl tests
     "mcc": ScanResult.mcc,
     "mnc": ScanResult.mnc,
     "rat": ScanResult.rat,
@@ -141,8 +146,11 @@ class ScanResultRepository:
 
         total = query.count()
 
-        for clause in _resolve_sort(sort):
-            query = query.order_by(clause)
+        # FIX: pass the list of clauses to a single order_by() call.
+        # Calling query.order_by(clause) in a loop replaces the previous
+        # order_by instead of appending to it, so only the last clause
+        # (desc(id)) would have been applied.
+        query = query.order_by(*_resolve_sort(sort))
 
         offset = (page - 1) * page_size
         results = query.offset(offset).limit(page_size).all()
@@ -190,8 +198,8 @@ class ScanResultRepository:
 
         total = query.count()
 
-        for clause in _resolve_sort(sort):
-            query = query.order_by(clause)
+        # FIX: pass the list of clauses to a single order_by() call.
+        query = query.order_by(*_resolve_sort(sort))
 
         offset = (page - 1) * page_size
         results = query.offset(offset).limit(page_size).all()
