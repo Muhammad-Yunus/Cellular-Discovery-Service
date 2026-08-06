@@ -452,3 +452,31 @@ class TestLocationEndpoints:
         assert response.status_code == 409
         assert "Cannot modify locations while mission is running" in response.json()["detail"]
         assert db_session.query(MissionLocation).filter_by(mission_id=mission.id).count() == 0
+
+    def test_e16_download_template(self, client, db_session):
+        """GET /missions/{id}/locations/download_template returns CSV with 5 sample rows."""
+        mission = make_mission(db_session)
+
+        response = client.get(f"/api/v1/missions/{mission.id}/locations/download_template")
+
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "text/csv; charset=utf-8"
+        assert f"mission_{mission.id}" in response.headers["content-disposition"]
+
+        lines = response.text.strip().split("\n")
+        assert lines[0] == "cellular_tower_id,cellular_tower_name,latitude,longitude"
+        assert len(lines) == 6  # header + 5 rows
+
+        # All rows should be valid (between -90/90 lat and -180/180 lon)
+        for line in lines[1:]:
+            parts = line.split(",")
+            assert len(parts) == 4
+            lat, lon = float(parts[2]), float(parts[3])
+            assert -90 <= lat <= 90
+            assert -180 <= lon <= 180
+
+    def test_e17_download_template_nonexistent_mission(self, client):
+        """404 when mission does not exist."""
+        response = client.get("/api/v1/missions/99999/locations/download_template")
+        assert response.status_code == 404
+        assert response.json()["detail"] == "Mission not found"

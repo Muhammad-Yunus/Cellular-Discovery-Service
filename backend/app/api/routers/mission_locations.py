@@ -1,5 +1,7 @@
 import mimetypes
+from io import StringIO
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.services import LocationService
@@ -67,6 +69,51 @@ def upload_locations(
     file_content = _read_and_validate_csv(file)
     service = LocationService(db)
     return service.upload(mission_id, file_content)
+
+
+# ---------------------------------------------------------------------------
+# CSV template (5 sample Jabodetabek locations, 3-5 km apart)
+# ---------------------------------------------------------------------------
+_TEMPLATE_HEADER = (
+    "cellular_tower_id,cellular_tower_name,latitude,longitude"
+)
+_TEMPLATE_ROWS = [
+    ("TWR-TPL-001", "Lebak Bulus", -6.2908, 106.7780),
+    ("TWR-TPL-002", "Fatmawati",   -6.2644, 106.8017),
+    ("TWR-TPL-003", "Senopati",    -6.2249, 106.8070),
+    ("TWR-TPL-004", "Tanah Abang", -6.1854, 106.8128),
+    ("TWR-TPL-005", "Sawah Besar", -6.1585, 106.8173),
+]
+
+
+def _build_template_csv() -> str:
+    """Build a CSV template string with 5 sample rows."""
+    buf = StringIO()
+    buf.write(_TEMPLATE_HEADER + "\n")
+    for tower_id, name, lat, lon in _TEMPLATE_ROWS:
+        buf.write(f"{tower_id},{name},{lat},{lon}\n")
+    return buf.getvalue()
+
+
+@router.get("/{mission_id}/locations/download_template")
+def download_template(mission_id: int, db: Session = Depends(get_db)):
+    """Return a CSV template with 5 sample Jabodetabek locations.
+
+    The sample rows are spaced 3-5 km apart so users can immediately see
+    a realistic layout for a coverage test mission. The mission must exist
+    (so callers can't accidentally download a template for a bogus id),
+    but no rows are inserted.
+    """
+    service = LocationService(db)
+    # 404 cleanly if the mission doesn't exist
+    service._get_mission(mission_id)
+
+    csv_data = _build_template_csv()
+    response = Response(content=csv_data, media_type="text/csv")
+    response.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="mission_{mission_id}_locations_template.csv"'
+    return response
 
 
 @router.get("/{mission_id}/locations", response_model=LocationListResponse)
