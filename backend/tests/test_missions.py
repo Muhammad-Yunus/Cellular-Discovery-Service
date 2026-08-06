@@ -167,7 +167,7 @@ class TestMissionService:
 
     def test_u13_delete_allowed_statuses_cascades(self, db_session):
         service = MissionService(db_session)
-        for status in ("IDLE", "STOPPED", "COMPLETED"):
+        for status in ("IDLE", "STOPPED", "FAILED"):
             mission = make_mission(db_session, status=status)
             upload_locations(db_session, mission.id)
 
