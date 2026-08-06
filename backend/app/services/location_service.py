@@ -22,19 +22,29 @@ class LocationService:
 
     @staticmethod
     def parse_csv(raw: bytes) -> list[dict]:
-        text = raw.decode("utf-8")
+        try:
+            text = raw.decode("utf-8")
+        except UnicodeDecodeError as e:
+            raise ValueError(f"File must be valid UTF-8 text: {e}") from e
+
         if not text.strip():
             return []
 
         reader = csv.DictReader(StringIO(text))
 
-        if reader.fieldnames is None or not {
-            "cellular_tower_id",
-            "latitude",
-            "longitude",
-        }.issubset(reader.fieldnames):
+        if reader.fieldnames is None:
             raise ValueError(
-                "Invalid CSV header, expected cellular_tower_id,cellular_tower_name,latitude,longitude"
+                "Invalid CSV header, expected "
+                "cellular_tower_id,cellular_tower_name,latitude,longitude"
+            )
+
+        actual_fields = {f.strip() for f in reader.fieldnames}
+        required = {"cellular_tower_id", "latitude", "longitude"}
+        missing = required - actual_fields
+        if missing:
+            raise ValueError(
+                f"Invalid CSV header, missing required columns: "
+                f"{', '.join(sorted(missing))}"
             )
 
         rows = []
@@ -46,28 +56,28 @@ class LocationService:
             latitude = None
             lat_raw = (record.get("latitude") or "").strip()
             if lat_raw == "":
-                errors.append("Latitude is required")
+                errors.append("latitude is required")
             else:
                 try:
                     latitude = float(lat_raw)
                     if latitude < -90 or latitude > 90:
-                        errors.append(f"Latitude out of range: {lat_raw}")
+                        errors.append(f"latitude out of range (-90 to 90): {lat_raw}")
                         latitude = None
                 except ValueError:
-                    errors.append(f"Invalid latitude: {lat_raw}")
+                    errors.append(f"invalid latitude (must be a number): {lat_raw}")
 
             longitude = None
             lon_raw = (record.get("longitude") or "").strip()
             if lon_raw == "":
-                errors.append("Longitude is required")
+                errors.append("longitude is required")
             else:
                 try:
                     longitude = float(lon_raw)
                     if longitude < -180 or longitude > 180:
-                        errors.append(f"Longitude out of range: {lon_raw}")
+                        errors.append(f"longitude out of range (-180 to 180): {lon_raw}")
                         longitude = None
                 except ValueError:
-                    errors.append(f"Invalid longitude: {lon_raw}")
+                    errors.append(f"invalid longitude (must be a number): {lon_raw}")
 
             if not tower_id:
                 errors.append("cellular_tower_id is required")
@@ -122,21 +132,29 @@ class LocationService:
                 detail=f"CSV file exceeds maximum of {settings.MISSION_MAX_LOCATIONS} rows",
             )
 
-        if not valid_rows:
-            raise HTTPException(
-                status_code=422,
-                detail="CSV file is empty or has no valid rows",
-            )
-
-        batch_id = uuid.uuid4().hex
-        inserted, updated = self.repo.upsert_batch(mission.id, valid_rows, batch_id)
-        self._sync_total(mission)
-
         errors = [
             UploadRowError(row=row["row_number"], error=error)
             for row in rows
             for error in row["errors"]
         ]
+
+        if not valid_rows:
+            # No valid rows — nothing to insert. Return the standard response
+            # shape with inserted=0/updated=0, all rows counted as skipped,
+            # and per-row errors so the client can surface them inline.
+            return UploadLocationResponse(
+                upload_batch_id="",
+                mission_id=mission.id,
+                total_rows=total_rows,
+                inserted=0,
+                updated=0,
+                skipped=total_rows,
+                errors=errors,
+            )
+
+        batch_id = uuid.uuid4().hex
+        inserted, updated = self.repo.upsert_batch(mission.id, valid_rows, batch_id)
+        self._sync_total(mission)
 
         return UploadLocationResponse(
             upload_batch_id=batch_id,
@@ -144,7 +162,7 @@ class LocationService:
             total_rows=total_rows,
             inserted=inserted,
             updated=updated,
-            skipped=len(rows) - len(valid_rows),
+            skipped=total_rows - len(valid_rows),
             errors=errors,
         )
 

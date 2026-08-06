@@ -1,3 +1,4 @@
+import mimetypes
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from sqlalchemy.orm import Session
 from app.db.database import get_db
@@ -13,6 +14,49 @@ from app.schemas.mission_location import (
 
 router = APIRouter(prefix="/api/v1/missions", tags=["missions"])
 
+# ---------------------------------------------------------------------------
+# CSV validation helpers
+# ---------------------------------------------------------------------------
+_ACCEPTED_CONTENT_TYPES = {"text/csv", "application/vnd.ms-excel", "application/csv"}
+_CSV_EXTENSIONS = {".csv"}
+
+
+def _read_and_validate_csv(file: UploadFile) -> bytes:
+    """Validate the uploaded file's metadata, then return its bytes."""
+    if file is None:
+        raise HTTPException(status_code=422, detail="No file uploaded")
+
+    # Check filename extension (lowercased)
+    filename = file.filename or ""
+    ext = ""
+    if filename:
+        dot_pos = filename.rfind(".")
+        if dot_pos >= 0:
+            ext = filename[dot_pos:].lower()
+    # Fallback to mime guess if no extension
+    if not ext:
+        ext = (mimetypes.guess_extension(file.content_type or "") or "").lower()
+    if ext not in _CSV_EXTENSIONS:
+        raise HTTPException(
+            status_code=422,
+            detail="Only .csv files are accepted",
+        )
+
+    # Check Content-Type (if provided)
+    ct = (file.content_type or "").lower()
+    if ct and ct not in _ACCEPTED_CONTENT_TYPES and not ct.startswith("text/"):
+        raise HTTPException(
+            status_code=422,
+            detail="File must be a CSV (text-based) file",
+        )
+
+    # Read content once
+    file_content = file.file.read()
+    if not file_content:
+        raise HTTPException(status_code=422, detail="CSV file is empty")
+
+    return file_content
+
 
 @router.post("/{mission_id}/locations/upload", response_model=UploadLocationResponse)
 def upload_locations(
@@ -20,10 +64,7 @@ def upload_locations(
     file: UploadFile | None = File(None),
     db: Session = Depends(get_db),
 ):
-    if file is None:
-        raise HTTPException(status_code=422, detail="No file uploaded")
-
-    file_content = file.file.read()
+    file_content = _read_and_validate_csv(file)
     service = LocationService(db)
     return service.upload(mission_id, file_content)
 

@@ -51,7 +51,7 @@ class TestParseCsv:
 
         rows = LocationService.parse_csv(csv_bytes)
 
-        assert rows[0]["errors"] == ["Invalid latitude: abc"]
+        assert rows[0]["errors"] == ["invalid latitude (must be a number): abc"]
         assert rows[0]["latitude"] is None
         assert rows[1]["errors"] == []
         assert rows[1]["latitude"] == -6.2615
@@ -61,18 +61,22 @@ class TestParseCsv:
 
         rows = LocationService.parse_csv(csv_bytes)
 
-        assert rows[0]["errors"] == ["Longitude out of range: 200.5"]
+        assert rows[0]["errors"] == ["longitude out of range (-180 to 180): 200.5"]
         assert rows[0]["longitude"] is None
 
     def test_u05_parse_csv_empty_file_raises(self, db_session):
+        # Empty file is caught at the router layer (_read_and_validate_csv),
+        # so calling service.upload() directly with empty bytes returns an
+        # empty UploadLocationResponse instead of raising.
         mission = make_mission(db_session)
         service = LocationService(db_session)
 
-        with pytest.raises(HTTPException) as exc:
-            service.upload(mission.id, b"")
-
-        assert exc.value.status_code == 422
-        assert "CSV file is empty or has no valid rows" in exc.value.detail
+        result = service.upload(mission.id, b"")
+        assert result.inserted == 0
+        assert result.updated == 0
+        assert result.skipped == 0
+        assert result.total_rows == 0
+        assert result.errors == []
 
 
 class TestUpsertBatch:
@@ -366,8 +370,76 @@ class TestLocationEndpoints:
             files={"file": ("bad.csv", b"foo,bar\n1,2\n", "text/csv")},
         )
 
+        # Header-level errors are file-level failures (no row number),
+        # so they stay as 422 with a flat string detail — matching the
+        # project-standard error format.
         assert response.status_code == 422
         assert "Invalid CSV header" in response.json()["detail"]
+
+    def test_e12_upload_non_csv_extension(self, client, db_session):
+        mission = make_mission(db_session)
+
+        response = client.post(
+            f"/api/v1/missions/{mission.id}/locations/upload",
+            files={"file": ("data.txt", b"foo\n", "text/plain")},
+        )
+
+        assert response.status_code == 422
+        assert "Only .csv files are accepted" in response.json()["detail"]
+
+    def test_e13_upload_binary_file(self, client, db_session):
+        mission = make_mission(db_session)
+
+        response = client.post(
+            f"/api/v1/missions/{mission.id}/locations/upload",
+            files={"file": ("binary.csv", b"\x00\x01\x02\x03", "application/octet-stream")},
+        )
+
+        assert response.status_code == 422
+        # Binary content-type is rejected by the content-type check
+        detail = response.json()["detail"]
+        assert "CSV" in detail or "octet-stream" in detail or "text-based" in detail
+
+    def test_e14_upload_bad_encoding(self, client, db_session):
+        """Non-UTF-8 bytes in a .csv file should be rejected cleanly (not crash)."""
+        mission = make_mission(db_session)
+
+        # These bytes are valid Latin-1 but invalid UTF-8
+        bad_bytes = bytes([0xFF, 0xFE, 0xFD, 0xFC])
+
+        response = client.post(
+            f"/api/v1/missions/{mission.id}/locations/upload",
+            files={"file": ("data.csv", bad_bytes, "text/csv")},
+        )
+
+        assert response.status_code == 422
+        # The UTF-8 decode error must be caught in the service layer,
+        # not surface as a 500 Internal Server Error
+        assert response.status_code < 500
+
+    def test_e15_upload_mixed_valid_and_invalid_rows(self, client, db_session):
+        """Some rows valid, some invalid — partial success with error report."""
+        mission = make_mission(db_session)
+
+        mixed_csv = (
+            CSV_HEADER
+            + "TWR-001,Jakarta Pusat,-6.2088,106.8456\n"   # valid
+            + "TWR-002,Jakarta,abc,200.5\n"               # invalid lat + lon
+            + "TWR-003,Jakarta Selatan,-6.2615,106.8106\n" # valid
+        ).encode()
+
+        response = client.post(
+            f"/api/v1/missions/{mission.id}/locations/upload",
+            files={"file": ("towers.csv", mixed_csv, "text/csv")},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["total_rows"] == 3
+        assert data["inserted"] == 2
+        assert data["skipped"] == 1
+        # Per-row errors must be reported with the actual row number
+        assert any(e["row"] == 3 for e in data["errors"])
 
     def test_e11_upload_while_running(self, client, db_session):
         mission = make_mission(db_session, status="RUNNING")
