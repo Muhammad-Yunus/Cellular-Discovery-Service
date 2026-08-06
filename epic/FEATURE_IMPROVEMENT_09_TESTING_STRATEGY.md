@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Epic** | Mission Planner (Improvement_Epic/) |
+| **Epic** | Mission Planner (epic/) |
 | **Phase** | 9 of 10 |
 | **Dependencies** | Phases 01–08 (all features must exist) |
 | **Estimated LOC** | ~700 (test code) |

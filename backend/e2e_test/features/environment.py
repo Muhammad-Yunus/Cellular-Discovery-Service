@@ -58,6 +58,9 @@ TEST_NAME_PREFIXES = (
     "s47-",  # ADD: test mission pause invalid
     "s48-",  # ADD: test mission stop invalid
     "s49-",  # ADD: test mission logs invalid
+    "gps-ws-",  # ADD: test GPS WebSocket e2e scenarios
+    "gps-recovery-",  # ADD: test GPS transient fault recovery
+    "gps-concurrent-",  # ADD: test GPS concurrent WebSocket reads
 )
 
 

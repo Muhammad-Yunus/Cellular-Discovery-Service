@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Epic** | Mission Planner (Improvement_Epic/) |
+| **Epic** | Mission Planner (epic/) |
 | **Phase** | 8 of 10 |
 | **Dependencies** | [05_SCANNER_INTEGRATION](FEATURE_IMPROVEMENT_05_SCANNER_INTEGRATION.md), [06_BACKGROUND_EXECUTOR](FEATURE_IMPROVEMENT_06_BACKGROUND_EXECUTOR.md) |
 | **Estimated LOC** | ~220 |

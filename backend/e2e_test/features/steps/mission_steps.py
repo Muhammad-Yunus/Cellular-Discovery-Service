@@ -247,6 +247,7 @@ def mission_not_running(context, name):
 
 # ---------- S06 GPS Failure handling steps ----------
 
+@when('I simulate a GPS failure via test management')
 @given('I simulate a GPS failure via test management')
 def enable_gps_fault_injection(context):
     """Invoke the test-only GPS management endpoint to enable fault injection."""
@@ -273,6 +274,8 @@ def reset_gps_fault_injection(context):
     )
 
 
+@when('I restore normal GPS operation via test management')
+@given('I restore normal GPS operation via test management')
 @then('I restore normal GPS operation via test management')
 def disable_gps_fault_injection(context):
     """Invoke the test-only GPS management endpoint to disable fault injection."""
@@ -2337,3 +2340,272 @@ def assert_scan_items_sorted_scan_time_desc(context):
     assert times == sorted(times, reverse=True), (
         f"Scan list not sorted DESC by scan_time: {times}"
     )
+
+
+# ---------- GPS E2E: Provider Switching, WebSocket, Fault Tolerance ----------
+
+# ---- GPS-WS-01: Provider switching via settings ----
+
+@when('I retrieve the current GPS provider setting')
+def get_gps_provider_setting(context):
+    r = httpx.get(f"{BASE_URL}/api/v1/settings")
+    assert r.status_code == 200
+    settings = r.json()
+    provider = next((s["value"] for s in settings if s["key"] == "gps_provider"), None)
+    context.gps_provider_setting = provider
+
+
+@then('the GPS provider setting should be "{expected}"')
+def assert_gps_provider_setting(context, expected):
+    assert context.gps_provider_setting == expected, (
+        f"Expected GPS provider '{expected}', got '{context.gps_provider_setting}'"
+    )
+
+
+@when('I set GPS provider to "{provider}"')
+def set_gps_provider(context, provider):
+    r = httpx.put(
+        f"{BASE_URL}/api/v1/settings",
+        json=[{"key": "gps_provider", "value": provider}],
+        timeout=5,
+    )
+    assert r.status_code == 200, f"Failed to set GPS provider: {r.text}"
+    context.gps_provider_setting = provider
+
+
+@when('I update the GPS provider setting to "{provider}"')
+def update_gps_provider_setting(context, provider):
+    r = httpx.put(
+        f"{BASE_URL}/api/v1/settings",
+        json=[{"key": "gps_provider", "value": provider}],
+        timeout=5,
+    )
+    assert r.status_code == 200, f"Failed to update GPS provider: {r.text}"
+    context.gps_provider_setting = provider
+
+
+# ---- GPS-WS-02/05: WebSocket location broadcasts ----
+
+@when('I connect to the GPS WebSocket endpoint')
+def connect_gps_websocket(context):
+    import websocket
+    context.gps_ws = websocket.WebSocket()
+    try:
+        context.gps_ws.connect(
+            f"ws://{BASE_URL.replace('http://', '')}/ws/gps",
+            timeout=5,
+        )
+    except Exception as e:
+        raise AssertionError(f"Failed to connect to GPS WebSocket: {e}")
+
+
+@when('I connect to the GPS WebSocket and capture {count:d} updates')
+def connect_gps_websocket_capture(context, count):
+    connect_gps_websocket(context)
+    context.gps_ws_messages = []
+    deadline = time.time() + max(25, count * 12)
+    while len(context.gps_ws_messages) < count and time.time() < deadline:
+        try:
+            context.gps_ws.settimeout(2)
+            raw = context.gps_ws.recv()
+            context.gps_ws_messages.append(json.loads(raw))
+        except Exception:
+            continue
+
+
+@when('I connect a second WebSocket and capture {count:d} updates')
+def connect_second_gps_websocket(context, count):
+    import websocket
+    context.gps_ws2 = websocket.WebSocket()
+    context.gps_ws2.connect(
+        f"ws://{BASE_URL.replace('http://', '')}/ws/gps",
+        timeout=5,
+    )
+    context.gps_ws2_messages = []
+    deadline = time.time() + max(25, count * 12)
+    while len(context.gps_ws2_messages) < count and time.time() < deadline:
+        try:
+            context.gps_ws2.settimeout(2)
+            raw = context.gps_ws2.recv()
+            context.gps_ws2_messages.append(json.loads(raw))
+        except Exception:
+            continue
+
+
+@when('I wait for {count:d} location updates')
+def wait_gps_websocket_updates(context, count):
+    context.gps_ws_messages = []
+    deadline = time.time() + max(15, count * 12)
+    while len(context.gps_ws_messages) < count and time.time() < deadline:
+        try:
+            context.gps_ws.settimeout(2)
+            raw = context.gps_ws.recv()
+            context.gps_ws_messages.append(json.loads(raw))
+        except Exception:
+            continue
+
+
+@then('the WebSocket should receive {count:d} frames')
+def assert_websocket_frame_count(context, count):
+    received = getattr(context, "gps_ws_messages", [])
+    assert len(received) == count, (
+        f"Expected {count} WebSocket frames, got {len(received)}"
+    )
+
+
+@then('both WebSockets should receive {count:d} frames each')
+def assert_both_websocket_frame_counts(context, count):
+    ws1 = getattr(context, "gps_ws_messages", [])
+    ws2 = getattr(context, "gps_ws2_messages", [])
+    assert len(ws1) == count, f"WS1: expected {count}, got {len(ws1)}"
+    assert len(ws2) == count, f"WS2: expected {count}, got {len(ws2)}"
+
+
+@then('each frame should contain a valid latitude and longitude')
+def assert_websocket_frame_validity(context):
+    for frame in getattr(context, "gps_ws_messages", []):
+        data = frame.get("data", frame)
+        assert "latitude" in data, f"Missing latitude in frame: {frame}"
+        assert "longitude" in data, f"Missing longitude in frame: {frame}"
+
+
+@then('the latitude should be a finite number')
+def assert_latitude_finite(context):
+    import math
+    for frame in getattr(context, "gps_ws_messages", []):
+        data = frame.get("data", frame)
+        lat = data.get("latitude")
+        assert lat is not None, "latitude is None"
+        assert isinstance(lat, (int, float)), f"latitude is not numeric: {lat}"
+        assert math.isfinite(lat), f"latitude is not finite: {lat}"
+
+
+@then('the longitude should be a finite number')
+def assert_longitude_finite(context):
+    import math
+    for frame in getattr(context, "gps_ws_messages", []):
+        data = frame.get("data", frame)
+        lon = data.get("longitude")
+        assert lon is not None, "longitude is None"
+        assert isinstance(lon, (int, float)), f"longitude is not numeric: {lon}"
+        assert math.isfinite(lon), f"longitude is not finite: {lon}"
+
+
+@then('all frames should contain valid coordinates')
+def assert_all_frames_valid(context):
+    import math
+    for frame in getattr(context, "gps_ws_messages", []) + getattr(context, "gps_ws2_messages", []):
+        data = frame.get("data", frame)
+        lat = data.get("latitude")
+        lon = data.get("longitude")
+        assert lat is not None and math.isfinite(lat), f"Invalid latitude: {lat}"
+        assert lon is not None and math.isfinite(lon), f"Invalid longitude: {lon}"
+
+
+@when('I disconnect from the GPS WebSocket')
+def disconnect_gps_websocket(context):
+    try:
+        context.gps_ws.close()
+    except Exception:
+        pass
+    context.gps_ws = None
+
+
+@when('I disconnect both WebSockets')
+def disconnect_both_gps_websockets(context):
+    try:
+        context.gps_ws.close()
+    except Exception:
+        pass
+    try:
+        context.gps_ws2.close()
+    except Exception:
+        pass
+    context.gps_ws = None
+    context.gps_ws2 = None
+
+
+# ---- GPS-WS-03: Transient GPS fault recovery ----
+
+@when('I wait for it to enter RUNNING state')
+def wait_running_state(context):
+    deadline = time.time() + 10
+    while time.time() < deadline:
+        r = httpx.get(
+            f"{BASE_URL}/api/v1/missions/{context.mission_id}/status",
+            timeout=5,
+        )
+        if r.status_code == 200:
+            status = r.json().get("status")
+            if status == "RUNNING":
+                return
+        time.sleep(0.5)
+    raise AssertionError("Mission did not enter RUNNING state within 10s")
+
+
+@then('the mission "{name}" status remains RUNNING or transitions to PAUSED')
+def mission_running_or_paused(context, name):
+    _switch_to_mission(context, name)
+    r = httpx.get(
+        f"{BASE_URL}/api/v1/missions/{context.mission_id}/status",
+        timeout=5,
+    )
+    assert r.status_code == 200
+    actual = r.json().get("status")
+    assert actual in ("RUNNING", "PAUSED"), (
+        f"Expected RUNNING or PAUSED, got '{actual}'"
+    )
+
+
+@then('the mission "{name}" status is RUNNING or COMPLETED or STOPPED')
+def mission_running_completed_or_stopped(context, name):
+    _switch_to_mission(context, name)
+    r = httpx.get(
+        f"{BASE_URL}/api/v1/missions/{context.mission_id}/status",
+        timeout=5,
+    )
+    assert r.status_code == 200
+    actual = r.json().get("status")
+    assert actual in ("RUNNING", "COMPLETED", "STOPPED"), (
+        f"Expected RUNNING/COMPLETED/STOPPED, got '{actual}'"
+    )
+
+
+@then('the mission "{name}" status is RUNNING')
+def mission_status_is_running(context, name):
+    """Exact RUNNING status assertion for GPS fault recovery test."""
+    _switch_to_mission(context, name)
+    r = httpx.get(
+        f"{BASE_URL}/api/v1/missions/{context.mission_id}/status",
+        timeout=5,
+    )
+    assert r.status_code == 200
+    actual = r.json().get("status")
+    assert actual == "RUNNING", (
+        f"Expected RUNNING, got '{actual}'"
+    )
+
+
+# ---- GPS-WS-04: Invalid provider rejected ----
+
+@when('I attempt to set GPS provider to "{provider}"')
+def set_invalid_gps_provider(context, provider):
+    r = httpx.put(
+        f"{BASE_URL}/api/v1/settings",
+        json=[{"key": "gps_provider", "value": provider}],
+        timeout=5,
+    )
+    context.invalid_provider_status = r.status_code
+    try:
+        context.invalid_provider_body = r.json()
+    except Exception:
+        context.invalid_provider_body = {"raw": r.text}
+
+
+@then('the settings update returns status {code:d}')
+def assert_settings_update_code(context, code):
+    assert context.invalid_provider_status == code, (
+        f"Expected status {code}, got {context.invalid_provider_status}: "
+        f"{context.invalid_provider_body}"
+    )
+

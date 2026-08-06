@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Epic** | Mission Planner (Improvement_Epic/) |
+| **Epic** | Mission Planner (epic/) |
 | **Phase** | 10 of 10 |
 | **Dependencies** | Phases 01–09 (cross-reference / aggregation) |
 | **Estimated LOC** | ~300 |
@@ -58,8 +58,8 @@
 | `backend/.env` / `backend/.env.example` | New keys documented |
 | `backend/app/api/routers/mission_planning.py` | Allow `STOPPED`/`FAILED` in plan guard (Decision 1) |
 | `backend/app/core/mission_executor.py` | `startup()` restore `{STARTING, RUNNING, PAUSED}` (Decision 2) |
-| `Improvement_Epic/FEATURE_IMPROVEMENT_04_PLANNER_ALGORITHM.md` | §4.1 allowed-status update |
-| `Improvement_Epic/FEATURE_IMPROVEMENT_06_BACKGROUND_EXECUTOR.md` | §5.1 `startup()` update |
+| `epic/FEATURE_IMPROVEMENT_04_PLANNER_ALGORITHM.md` | §4.1 allowed-status update |
+| `epic/FEATURE_IMPROVEMENT_06_BACKGROUND_EXECUTOR.md` | §5.1 `startup()` update |
 
 ---
 

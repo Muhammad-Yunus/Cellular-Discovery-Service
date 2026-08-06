@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Epic** | Mission Planner (Improvement_Epic/) |
+| **Epic** | Mission Planner (epic/) |
 | **Phase** | 3 of 10 |
 | **Dependencies** | [02_LOCATION_MANAGEMENT](FEATURE_IMPROVEMENT_02_LOCATION_MANAGEMENT.md) |
 | **Estimated LOC** | ~450 |

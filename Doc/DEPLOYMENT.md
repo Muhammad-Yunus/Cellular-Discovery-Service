@@ -148,7 +148,7 @@ backend/
 ├── tests/                # Unit & integration tests
 ├── alembic/              # Database migrations
 ├── scripts/              # Utility scripts
-├── lte-scanner.service   # Systemd service unit
+# (lte-scanner.service lives at project root, not inside backend/)
 ├── requirements.txt      # Python dependencies
 ├── .env.example          # Environment template
 └── pyproject.toml       # Project metadata

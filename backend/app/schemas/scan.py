@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from typing import Optional
 from datetime import datetime
 
@@ -72,6 +72,15 @@ class SettingResponse(BaseModel):
 class SettingUpdateRequest(BaseModel):
     key: str
     value: str
+
+    @validator("value")
+    def validate_gps_provider_value(cls, v, values):
+        key = values.get("key", "")
+        if key == "gps_provider":
+            valid = ("mock", "serial", "cli")
+            if v not in valid:
+                raise ValueError(f"Invalid GPS provider '{v}'. Must be one of: {valid}")
+        return v
 
 
 class ScanDeleteResponse(BaseModel):

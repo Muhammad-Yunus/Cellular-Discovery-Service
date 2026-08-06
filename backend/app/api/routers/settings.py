@@ -20,9 +20,13 @@ def update_settings(
     updates: list[SettingUpdateRequest],
     db: Session = Depends(get_db),
 ):
+    from pydantic import ValidationError
+
     service = SettingsService(db=db)
 
     try:
         return service.update_settings(updates)
+    except ValidationError as e:
+        raise HTTPException(status_code=422, detail=e.errors())
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

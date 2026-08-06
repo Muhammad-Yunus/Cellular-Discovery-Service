@@ -4,7 +4,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Epic** | Mission Planner (Improvement_Epic/) |
+| **Epic** | Mission Planner (epic/) |
 | **Phase** | 7 of 10 |
 | **Dependencies** | [06_BACKGROUND_EXECUTOR](FEATURE_IMPROVEMENT_06_BACKGROUND_EXECUTOR.md) |
 | **Estimated LOC** | ~260 |

@@ -56,7 +56,6 @@ cellular-discovery-service/
 │   ├── tests/                   # Unit, integration, E2E tests (~110 tests)
 │   ├── alembic/                 # Database migrations
 │   ├── scripts/                 # run.sh, install.sh, update.sh
-│   ├── lte-scanner.service      # systemd service unit
 │   ├── requirements.txt         # Python dependencies
 │   ├── pyproject.toml           # Project metadata
 │   └── .env.example             # Environment template
@@ -67,6 +66,9 @@ cellular-discovery-service/
 │   ├── CONTRIBUTING.md          # Contribution guidelines
 │   └── README.md                # Docs folder summary
 ├── AGENT.md                     # Original project specification
+├── E2E_TEST_REPORT.md           # E2E test report
+├── UNIT_TEST_REPORT.md          # Unit test report
+├── lte-scanner.service          # systemd service unit
 ├── .git/                        # Git repository
 └── .editorconfig                # Coding style config
 ```
@@ -191,7 +193,7 @@ sudo journalctl -u lte-scanner.service -f
 Or copy the service file from this repo:
 
 ```bash
-sudo cp /home/pi/Cellular-Discovery-Service/backend/lte-scanner.service /etc/systemd/system/
+sudo cp /home/pi/Cellular-Discovery-Service/lte-scanner.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl restart lte-scanner.service
 ```
