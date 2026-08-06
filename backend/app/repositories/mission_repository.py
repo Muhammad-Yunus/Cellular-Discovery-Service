@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, asc
 from typing import Optional
+from datetime import datetime
 from app.db.models.mission import Mission
 
 
@@ -69,6 +70,8 @@ class MissionRepository:
         status: Optional[str] = None,
         search: Optional[str] = None,
         sort: str = "-created_at",
+        start_time: Optional[datetime] = None,
+        end_time: Optional[datetime] = None,
     ) -> tuple[list[Mission], int]:
         query = self.db.query(Mission)
 
@@ -77,6 +80,12 @@ class MissionRepository:
 
         if search:
             query = query.filter(Mission.name.ilike(f"%{search}%"))
+
+        if start_time:
+            query = query.filter(Mission.created_at >= start_time)
+
+        if end_time:
+            query = query.filter(Mission.created_at <= end_time)
 
         total = query.count()
         missions = (

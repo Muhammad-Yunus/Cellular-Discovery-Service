@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from datetime import datetime
 from app.config.settings import get_settings
 from app.repositories import MissionRepository, MissionLocationRepository
 from app.schemas.mission import (
@@ -79,6 +80,8 @@ class MissionService:
         status: str | None = None,
         search: str | None = None,
         sort: str = "-created_at",
+        start_time: datetime | None = None,
+        end_time: datetime | None = None,
     ) -> MissionListResponse:
         if status is not None:
             valid_statuses = {s.value for s in MissionStatus}
@@ -88,7 +91,18 @@ class MissionService:
                     detail=f"Invalid mission status: {status}",
                 )
 
-        missions, total = self.repo.list(page, page_size, status, search, sort)
+        if start_time and end_time:
+            if start_time.timestamp() > end_time.timestamp():
+                raise HTTPException(
+                    status_code=422,
+                    detail="start_time cannot be greater than end_time",
+                )
+
+        missions, total = self.repo.list(
+            page, page_size, status, search, sort,
+            start_time=start_time,
+            end_time=end_time,
+        )
 
         return MissionListResponse(
             items=[self._to_response(m) for m in missions],

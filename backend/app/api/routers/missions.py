@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from datetime import datetime
 from app.db.database import get_db
 from app.services import MissionService
 from app.schemas.mission import (
@@ -30,10 +31,19 @@ def list_missions(
     status: str | None = None,
     search: str | None = None,
     sort: str = Query("-created_at", description="Sort field with optional '-' prefix for DESC"),
+    start_time: datetime | None = None,
+    end_time: datetime | None = None,
     db: Session = Depends(get_db),
 ):
+    if start_time and end_time:
+        if start_time.timestamp() > end_time.timestamp():
+            raise HTTPException(
+                status_code=422,
+                detail="start_time cannot be greater than end_time",
+            )
+
     service = MissionService(db)
-    return service.list(page, page_size, status, search, sort)
+    return service.list(page, page_size, status, search, sort, start_time, end_time)
 
 
 @router.get("/{mission_id}", response_model=MissionDetailResponse)
