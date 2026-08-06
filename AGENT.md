@@ -900,3 +900,56 @@ A feature is complete only when
 - contains no duplicated logic
 - contains no hardcoded configuration
 - code reviewed
+
+
+---
+
+# Runtime Service Topology — REMEMBER THIS
+
+> **IMPORTANT:** There are **TWO** independent backend services running on this host. They are **different codebases** on **different ports** and **must BOTH be running** during frontend development.
+
+| Service Name                       | Backend Folder                                                                                              | Port  | Venv / Path                                        |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------- | ----- | -------------------------------------------------- |
+| `lte-scanner-production.service`   | `/home/pi/production-backend/Cellular-Discovery-Service`                                                    | 8000  | `.venv_prod/bin/uvicorn` (production frozen build) |
+| `lte-scanner.service`              | `/home/pi/Cellular-Discovery-Service`                                                                       | 8001  | `backend/.venv/bin/uvicorn` (active dev repo)      |
+
+**Key rules:**
+
+- Port 8000 belongs **exclusively** to `lte-scanner-production.service` deployed under `/home/pi/production-backend/Cellular-Discovery-Service` (formerly referenced as `/home/pi/production/service/Cellular-Discovery-Service`).
+- Port 8001 belongs **exclusively** to `lte-scanner.service` deployed under `/home/pi/Cellular-Discovery-Service` (the active repo the agent is working in).
+- The two services are **separate codebases** — they do not share venv, do not share `.env`, do not share process.
+- **Both services MUST be `active (running)` while frontend development is in progress** for compatibility with the remaining FE work.
+- If asked about "the service", check `ss -tlnp` to identify which port is listening before assuming.
+- DO NOT confuse `lte-scanner-production.service` (port 8000, production folder) with `lte-scanner.service` (port 8001, dev folder).
+
+**Verification commands:**
+
+```bash
+# Both services must show 'active (running)'
+systemctl status lte-scanner-production.service --no-pager
+systemctl status lte-scanner.service --no-pager
+
+# Both ports must show LISTEN
+ss -tlnp | grep -E "8000|8001"
+
+# Quick health probes
+curl -s http://localhost:8000/docs -o /dev/null -w "8000 docs: HTTP %{http_code}\n"
+curl -s http://localhost:8001/docs -o /dev/null -w "8001 docs: HTTP %{http_code}\n"
+```
+
+If only one is running, bring the other one up:
+
+```bash
+sudo systemctl enable lte-scanner.service
+sudo systemctl start  lte-scanner.service
+```
+
+(Ditto for `lte-scanner-production.service` when applicable.)
+
+**Frontend wiring (Nuxt):**
+
+```env
+NUXT_PUBLIC_API_BASE=http://localhost:8001     # dev FE → dev BE
+# During production FE tests: http://<host>:8000
+```
+
