@@ -33,3 +33,6 @@ Thumbs.db
 
 # Alembic (migrations are kept, but not generated cache)
 alembic/__pycache__/
+
+# OpenCode IDE (generated files)
+.opencode/
