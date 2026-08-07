@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.db.database import get_db
+from app.api.dependencies.providers import get_gps_provider
+from app.gps import GPSProvider
 from app.services import MissionPlannerService
 from app.schemas.route import ReorderRequest, RouteResponse, SkipRequest, SkipResponse
 
@@ -11,8 +13,9 @@ router = APIRouter(prefix="/api/v1/missions", tags=["missions"])
 def plan_mission(
     mission_id: int,
     db: Session = Depends(get_db),
+    gps_provider: GPSProvider = Depends(get_gps_provider),
 ):
-    return MissionPlannerService(db).plan(mission_id)
+    return MissionPlannerService(db, gps_provider=gps_provider).plan(mission_id)
 
 
 @router.get("/{mission_id}/route", response_model=RouteResponse)

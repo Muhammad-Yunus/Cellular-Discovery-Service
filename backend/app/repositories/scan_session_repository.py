@@ -62,3 +62,21 @@ class ScanSessionRepository:
         self.db.delete(session)
         self.db.commit()
         return True
+
+    def get_latest_with_gps(self) -> Optional[ScanSession]:
+        """Return the most recent scan session that has a non-null GPS fix.
+
+        Returns ``None`` if no scan has yet recorded latitude/longitude — for
+        example on a freshly-flashed device before the operator has run
+        ``/api/v1/scan`` at least once. Used by the mission planner to find a
+        starting position for the nearest-neighbour route.
+        """
+        return (
+            self.db.query(ScanSession)
+            .filter(
+                ScanSession.latitude.isnot(None),
+                ScanSession.longitude.isnot(None),
+            )
+            .order_by(desc(ScanSession.scan_time))
+            .first()
+        )

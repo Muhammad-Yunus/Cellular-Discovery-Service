@@ -1,10 +1,15 @@
+import logging
 from typing import Optional
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.db.models import MissionLocation
-from app.repositories import MissionLocationRepository, MissionRepository
+from app.gps import GPSProvider, GPSError
+from app.repositories import (
+    MissionLocationRepository,
+    MissionRepository,
+)
 from app.schemas.route import (
     ReorderItem,
     RouteItem,
@@ -13,10 +18,18 @@ from app.schemas.route import (
 )
 from app.utils.geo import bearing, haversine
 
+logger = logging.getLogger(__name__)
+
 ACTIVE_STATUSES = {"STARTING", "RUNNING", "PAUSED"}
 MAX_TWO_OPT_PASSES = 100
 
 Point = tuple[float, float, int]
+
+# Sentinel id used to mark the device-GPS "phantom" node. It can never clash
+# with a real MissionLocation.id (which is auto-incremented from 1) and lets
+# two_opt / nearest_neighbor treat the device position as just another
+# node in the distance matrix without persisting it.
+DEVICE_NODE_ID = -1
 
 
 def build_dist_matrix(points: list[Point]) -> list[list[float]]:
@@ -88,11 +101,88 @@ def two_opt(
     return order
 
 
+def plan_route_with_origin(
+    tower_points: list[Point],
+    origin: tuple[float, float],
+) -> list[Point]:
+    """Run nearest-neighbour + 2-opt with the device's current GPS as the
+    tour's starting point.
+
+    The device position is injected as a virtual node (id=DEVICE_NODE_ID)
+    at index 0 of the distance matrix. ``nearest_neighbor`` then picks the
+    closest tower as the first real visit, and ``two_opt`` is constrained
+    so that the device node can never move from position 0 — it acts as a
+    fixed origin. The returned list contains only the tower points, in the
+    optimal visit order starting from the one closest to ``origin``.
+
+    This solves the "linjer tower" problem: with 5 towers aligned north-to-
+    south and the device 2 km east of tower-3, a naive nearest-neighbour
+    that picks tower-3 first will still backtrack (3 -> 4 -> 5 -> 2 -> 1)
+    because it has no concept of the device being physically off the line.
+    Including the device as origin lets the solver choose either
+    (3 -> 4 -> 5) or (3 -> 2 -> 1) — whichever yields the shorter leg
+    from 3 to the next tower — instead of forcing 3 -> 4.
+    """
+    if not tower_points:
+        return []
+
+    device_point: Point = (origin[0], origin[1], DEVICE_NODE_ID)
+    points_with_device = [device_point, *tower_points]
+    order_with_device = _plan_tour(points_with_device, origin_idx=0)
+
+    # Drop the device phantom node, keep only real towers.
+    return [p for p in order_with_device if p[2] != DEVICE_NODE_ID]
+
+
+def _plan_tour(points: list[Point], origin_idx: int) -> list[Point]:
+    """Nearest-neighbour seeded at ``origin_idx`` + 2-opt with that
+    position locked. Works for both:
+      * GPS anchor  -> origin_idx=0 is the device phantom node.
+      * Manual pin  -> origin_idx=0 is the operator-chosen tower.
+
+    Either way, ``two_opt`` only swaps positions strictly after
+    ``origin_idx`` so the fixed root never moves.
+    """
+    if not points:
+        return []
+    matrix = build_dist_matrix(points)
+    index_by_id = {p[2]: i for i, p in enumerate(points)}
+    order = nearest_neighbor(points, origin_idx)
+
+    improved = True
+    passes = 0
+    while improved and passes < MAX_TWO_OPT_PASSES:
+        improved = False
+        n = len(order)
+        for i in range(origin_idx + 1, n - 1):
+            for j in range(i, n - 1):
+                prev = index_by_id[order[i - 1][2]]
+                start = index_by_id[order[i][2]]
+                end = index_by_id[order[j][2]]
+                nxt = index_by_id[order[j + 1][2]]
+                delta = (
+                    matrix[prev][end]
+                    + matrix[start][nxt]
+                    - matrix[prev][start]
+                    - matrix[end][nxt]
+                )
+                if delta < 0:
+                    order[i : j + 1] = reversed(order[i : j + 1])
+                    improved = True
+        passes += 1
+    return order
+
+
 class MissionPlannerService:
-    def __init__(self, db: Session):
+    def __init__(self, db: Session, gps_provider: Optional[GPSProvider] = None):
+        """``gps_provider`` is optional for backwards compatibility (e.g.
+        reorder / build_route / skip). When ``None``, methods that need GPS
+        will raise HTTP 503.
+        """
         self.db = db
         self.repo = MissionRepository(db)
         self.location_repo = MissionLocationRepository(db)
+        self.gps_provider = gps_provider
 
     def _get_mission_or_404(self, mission_id: int):
         mission = self.repo.get_by_id(mission_id)
@@ -182,6 +272,42 @@ class MissionPlannerService:
 
         self.db.commit()
 
+    def _get_device_gps_or_503(self) -> tuple[float, float]:
+        """Read GPS coordinates directly from the configured provider.
+
+        Raises HTTP 503 when no provider is wired or the device returns no
+        fix. We intentionally do NOT consult ``scan_sessions``: the latest
+        scan's GPS may be many minutes old by the time /plan is called, and
+        the operator's device may have moved in the meantime.
+        """
+        if self.gps_provider is None:
+            raise HTTPException(
+                status_code=503,
+                detail=(
+                    "GPS provider not configured. Cannot determine "
+                    "starting position for route optimisation."
+                ),
+            )
+
+        try:
+            location = self.gps_provider.get_location()
+        except GPSError as exc:
+            raise HTTPException(
+                status_code=503,
+                detail=f"GPS provider error: {exc}",
+            ) from exc
+
+        if location is None or not location.latitude or not location.longitude:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "GPS fix not available. Cannot optimise route from "
+                    "an unknown device position."
+                ),
+            )
+
+        return (location.latitude, location.longitude)
+
     def plan(self, mission_id: int) -> RouteResponse:
         mission = self._get_mission_or_404(mission_id)
         self._ensure_inactive(mission, action="plan")
@@ -192,25 +318,69 @@ class MissionPlannerService:
                 status_code=422, detail="Mission has no locations to plan"
             )
 
-        start_idx = 0
+        points = [(loc.latitude, loc.longitude, loc.id) for loc in locs]
+
+        # Two optimisation paths:
+        #
+        # A) Manual start_location_id set  ->  the operator pinned a fixed
+        #    tower. Respect it. We still use GPS-aware nearest-neighbour for
+        #    the *remainder* of the tour so the operator gets the best
+        #    possible route starting from their pinned tower.
+        #
+        # B) No manual override  ->  get a live GPS fix from the device,
+        #    inject it as the tour origin, and let nearest-neighbour pick
+        #    the best first tower and 2-opt polish the rest.
         if mission.start_location_id is not None:
+            start_idx: Optional[int] = None
             for i, loc in enumerate(locs):
                 if loc.id == mission.start_location_id:
                     start_idx = i
                     break
+            if start_idx is None:
+                raise HTTPException(
+                    status_code=422,
+                    detail=(
+                        f"start_location_id={mission.start_location_id} "
+                        "does not belong to this mission"
+                    ),
+                )
 
-        points = [(loc.latitude, loc.longitude, loc.id) for loc in locs]
-        dist_matrix = build_dist_matrix(points)
-        index_by_id = {p[2]: i for i, p in enumerate(points)}
-
-        order = nearest_neighbor(points, start_idx)
-        order = two_opt(order, dist_matrix, index_by_id)
+            pinned = points[start_idx]
+            others = [p for i, p in enumerate(points) if i != start_idx]
+            # NN seeded at the pinned tower (position 0) so the manual
+            # pin is respected. 2-opt is constrained to only swap within
+            # the remaining N-1 positions, so the pinned tower never
+            # leaves position 0.
+            order = _plan_tour([pinned, *others], origin_idx=0)
+            logger.info(
+                "plan(mid=%s): manual start tower id=%s, optimised route "
+                "for remaining towers (no GPS needed for fixed pin)",
+                mission_id,
+                pinned[2],
+            )
+        else:
+            device_lat, device_lon = self._get_device_gps_or_503()
+            device_origin = (device_lat, device_lon)
+            order = plan_route_with_origin(points, device_origin)
+            logger.info(
+                "plan(mid=%s): GPS-origin NN-2opt, device at (%.5f,%.5f), "
+                "first tower id=%s",
+                mission_id,
+                device_lat,
+                device_lon,
+                order[0][2] if order else None,
+            )
 
         ordered_ids = [p[2] for p in order]
         self.location_repo.update_sequence_batch(mission_id, ordered_ids)
         self._write_distances_and_bearings(mission_id, ordered_ids)
         self.repo.update(
-            mission, {"status": "READY", "total_locations": len(locs)}
+            mission,
+            {
+                "status": "READY",
+                "total_locations": len(locs),
+                "start_location_id": ordered_ids[0],
+            },
         )
 
         return self.build_route(mission_id)
