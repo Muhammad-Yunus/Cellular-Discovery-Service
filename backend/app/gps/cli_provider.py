@@ -17,16 +17,27 @@ class CLIGPSProvider:
         device: str = "/dev/ttyAMA0",
         baud: int = 9600,
         timeout: int = 10,
+        count: int = 5,
     ):
         self.command = command
         self.device = device
         self.baud = baud
         self.timeout = timeout
+        self.count = count
 
     def get_location(self) -> GPSLocation:
-        """Get GPS location by calling the CLI tool."""
-        cmd = [self.command, "-d", self.device, "-b", str(self.baud), "-j"]
-        logger.info(f"Calling GPS CLI: {' '.join(cmd)}")
+        """Get GPS location by calling the CLI tool.
+        
+        Uses jq pipeline to find first line with has_fix=true AND fix_quality>0.
+        GPS needs multiple reads to acquire fix, so we read up to `count` times.
+        """
+        cmd_base = [
+            self.command, "-d", self.device, "-b", str(self.baud),
+            "-w", "-j", "-c", str(self.count),
+        ]
+        # Pipe through jq to get compact single-line JSON with fix
+        cmd = " ".join(cmd_base) + " | jq -c 'select(.has_fix==true and .fix_quality>0)' | head -1"
+        logger.info(f"Calling GPS CLI: {cmd}")
 
         try:
             result = subprocess.run(
@@ -34,19 +45,21 @@ class CLIGPSProvider:
                 capture_output=True,
                 text=True,
                 timeout=self.timeout,
+                shell=True,
             )
 
             if result.returncode != 0:
                 logger.error(f"GPS CLI error: {result.stderr}")
                 raise GPSReadError(f"GPS CLI failed: {result.stderr}")
 
-            data = json.loads(result.stdout)
-            logger.debug(f"GPS CLI output: {data}")
-
-            if not data.get("has_fix", False):
+            output = result.stdout.strip()
+            if not output:
                 raise GPSReadError(
-                    f"No GPS fix. Fix quality: {data.get('fix_quality', 0)}"
+                    "No GPS fix found. GPS may need more time to acquire fix."
                 )
+            
+            data = json.loads(output)
+            logger.debug(f"GPS CLI output: {data}")
 
             lat = data.get("latitude")
             lon = data.get("longitude")

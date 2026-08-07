@@ -16,6 +16,13 @@ class Settings(BaseSettings):
 
     GPS_PROVIDER: str = "cli"
     DEFAULT_TTY: str = "/dev/ttyAMA0"
+
+    # GPS CLI tool parameters
+    GPS_CLI_DEVICE: str = "/dev/ttyAMA0"
+    GPS_CLI_BAUD: int = 9600
+    GPS_CLI_TIMEOUT: int = 60
+    GPS_CLI_COUNT: int = 10
+
     SCAN_TIMEOUT: int = 30
 
     MISSION_MAX_LOCATIONS: int = Field(default=10_000, gt=0, description="Maximum number of locations allowed per mission upload")
