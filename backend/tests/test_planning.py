@@ -4,6 +4,7 @@ from fastapi import HTTPException
 from app.db.models import Mission, MissionLocation
 from app.schemas.route import ReorderItem
 from app.services import LocationService, MissionPlannerService
+from tests.conftest import FakeGPS
 
 CSV_HEADER = "cellular_tower_id,cellular_tower_name,latitude,longitude\n"
 CSV_5 = (
@@ -42,13 +43,13 @@ class TestPlan:
         mission = make_mission(db_session)
 
         with pytest.raises(HTTPException) as exc:
-            MissionPlannerService(db_session).plan(mission.id)
+            MissionPlannerService(db_session, gps_provider=FakeGPS()).plan(mission.id)
 
         assert exc.value.status_code == 422
         assert exc.value.detail == "Mission has no locations to plan"
 
     def test_u08_plan_single_location(self, db_session):
-        service = MissionPlannerService(db_session)
+        service = MissionPlannerService(db_session, gps_provider=FakeGPS())
         mission = make_mission(db_session)
         LocationService(db_session).upload(
             mission.id, (CSV_HEADER + "T1,A,-6.2,106.8\n").encode()
@@ -66,7 +67,7 @@ class TestPlan:
         assert mission.total_locations == 1
 
     def test_u09_plan_writes_fields(self, db_session):
-        service = MissionPlannerService(db_session)
+        service = MissionPlannerService(db_session, gps_provider=FakeGPS())
         mission = make_mission(db_session)
         upload(db_session, mission.id)
 
@@ -79,7 +80,7 @@ class TestPlan:
         assert route.items[0].distance_from_previous_meters is None
 
     def test_u10_plan_on_running(self, db_session):
-        service = MissionPlannerService(db_session)
+        service = MissionPlannerService(db_session, gps_provider=FakeGPS())
         mission = make_mission(db_session, status="RUNNING")
 
         with pytest.raises(HTTPException) as exc:
@@ -89,7 +90,7 @@ class TestPlan:
         assert exc.value.detail == "Cannot plan while mission is RUNNING"
 
     def test_u16_build_route_total_distance(self, db_session):
-        service = MissionPlannerService(db_session)
+        service = MissionPlannerService(db_session, gps_provider=FakeGPS())
         mission = make_mission(db_session)
         upload(db_session, mission.id)
         service.plan(mission.id)
@@ -106,7 +107,7 @@ class TestPlan:
 
 class TestReorder:
     def _plan_mission(self, db_session):
-        service = MissionPlannerService(db_session)
+        service = MissionPlannerService(db_session, gps_provider=FakeGPS())
         mission = make_mission(db_session)
         upload(db_session, mission.id)
         service.plan(mission.id)
@@ -194,7 +195,7 @@ class TestReorder:
 
 class TestSkip:
     def test_u15_skip_location(self, db_session):
-        service = MissionPlannerService(db_session)
+        service = MissionPlannerService(db_session, gps_provider=FakeGPS())
         mission = make_mission(db_session)
         upload(db_session, mission.id)
         service.plan(mission.id)
@@ -217,7 +218,7 @@ class TestSkip:
         assert [loc.sequence_order for loc in remaining] == [1, 2, 3, 4]
 
     def test_u15_skip_recomputes_distances(self, db_session):
-        service = MissionPlannerService(db_session)
+        service = MissionPlannerService(db_session, gps_provider=FakeGPS())
         mission = make_mission(db_session)
         upload(db_session, mission.id)
         service.plan(mission.id)

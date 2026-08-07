@@ -55,12 +55,16 @@ def db_session():
 def client(db_session):
     from fastapi.testclient import TestClient
     import app.core.mission_executor as mission_executor_module
+    from app.api.dependencies.providers import get_gps_provider
 
     def override_get_db():
         try:
             yield db_session
         finally:
             pass
+
+    fake_gps = FakeGPS()
+    app.dependency_overrides[get_gps_provider] = lambda: fake_gps
 
     original_session_local = mission_executor_module.SessionLocal
     mission_executor_module.SessionLocal = TestingSessionLocal
@@ -136,6 +140,7 @@ def fast_settings(monkeypatch):
 def api(db_session, monkeypatch):
     import app.core.mission_executor as me
     from fastapi.testclient import TestClient
+    from app.api.dependencies.providers import get_gps_provider
 
     original_session_local = me.SessionLocal
     me.SessionLocal = TestingSessionLocal
@@ -146,6 +151,9 @@ def api(db_session, monkeypatch):
             yield db
         finally:
             db.close()
+
+    fake_gps = FakeGPS()
+    app.dependency_overrides[get_gps_provider] = lambda: fake_gps
 
     app.dependency_overrides[get_db] = override_get_db
 
@@ -177,7 +185,7 @@ def make_planned(db, csv=CSV_1, radius=50, status="IDLE", name="Exec Mission"):
     db.commit()
     db.refresh(mission)
     LocationService(db).upload(mission.id, csv.encode())
-    MissionPlannerService(db).plan(mission.id)
+    MissionPlannerService(db, gps_provider=FakeGPS()).plan(mission.id)
     db.commit()
     db.refresh(mission)
     db.commit()
