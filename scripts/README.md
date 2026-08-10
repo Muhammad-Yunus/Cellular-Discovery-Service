@@ -28,6 +28,18 @@ Script ini mendeteksi posisi GPS real dari device (`/dev/ttyAMA0`), kemudian:
 | **STEP 7** | Monitor progress setiap 5 detik |
 | **STEP 8** | Teardown: stop misi dan revert GPS ke CLI provider |
 
+### GPS Retry Logic
+
+Saat startup, script akan mencoba membaca GPS real dengan **retry logic**:
+- Maksimal **5x percobaan** dengan **interval 3 detik** antar retry
+- Jika semua attempt gagal, fallback ke koordinat `MOCK_GPS_START_LAT/LON` di `.env`
+- Output setiap attempt akan ditampilkan:
+  ```
+  [HH:MM:SS]   Attempt 1/5...
+  [HH:MM:SS]   ⚠️ Attempt 1 gagal: Tidak ada GPS fix
+  [HH:MM:SS]   Menunggu 3s sebelum retry...
+  ```
+
 ## Cara Penggunaan
 
 ### Persyaratan
