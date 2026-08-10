@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from app.api.dependencies.providers import get_mission_executor
 from app.core.mission_executor import MissionExecutor
 
@@ -48,6 +48,16 @@ def mission_status(
 @router.get("/{mission_id}/logs")
 def mission_logs(
     mission_id: int,
+    page: int = Query(1, ge=1, description="Page number (1-indexed)"),
+    page_size: int = Query(10, ge=1, le=100, description="Items per page (default: 10, max: 100)"),
     executor: MissionExecutor = Depends(get_mission_executor),
 ):
-    return executor.get_logs(mission_id)
+    """
+    Get paginated logs for a mission, sorted by timestamp DESC.
+    
+    Args:
+        mission_id: ID of the mission
+        page: Page number (default: 1)
+        page_size: Items per page (default: 10)
+    """
+    return executor.get_logs(mission_id, page=page, page_size=page_size)

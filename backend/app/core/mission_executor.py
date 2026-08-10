@@ -548,7 +548,18 @@ class MissionExecutor:
         finally:
             db.close()
 
-    def get_logs(self, mission_id: int) -> list[dict]:
+    def get_logs(self, mission_id: int, page: int = 1, page_size: int = 10) -> dict:
+        """
+        Get paginated logs for a mission.
+
+        Args:
+            mission_id: ID of the mission
+            page: Page number (1-indexed, default: 1)
+            page_size: Items per page (default: 10, max: 100)
+
+        Returns:
+            Dictionary with 'items', 'total', 'page', 'page_size', 'total_pages'
+        """
         db = self._session_factory()
         try:
             mission = MissionRepository(db).get_by_id(mission_id)
@@ -556,4 +567,29 @@ class MissionExecutor:
                 raise HTTPException(404, "Mission not found")
         finally:
             db.close()
-        return list(self.logs.get(mission_id, []))
+
+        # Get raw logs
+        raw_logs = list(self.logs.get(mission_id, []))
+
+        # Sort by timestamp DESC (newest first)
+        raw_logs.sort(key=lambda x: x["timestamp"], reverse=True)
+
+        total = len(raw_logs)
+
+        # Calculate pagination
+        page_size = min(page_size, 100)  # Cap at 100
+        total_pages = max(1, (total + page_size - 1) // page_size)
+        page = max(1, min(page, total_pages))  # Clamp page
+
+        # Slice for current page
+        start = (page - 1) * page_size
+        end = start + page_size
+        paginated_logs = raw_logs[start:end]
+
+        return {
+            "items": paginated_logs,
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": total_pages,
+        }
