@@ -13,6 +13,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func, text
 from app.db.base import Base
 from app.db.models.mission_location import MissionLocation
+from app.db.models.mission_log import MissionLog
 
 
 class Mission(Base):
@@ -70,4 +71,10 @@ class Mission(Base):
         foreign_keys="[MissionLocation.mission_id]",
         cascade="all, delete-orphan",
         order_by=lambda: (MissionLocation.sequence_order, MissionLocation.id),
+    )
+    logs = relationship(
+        "MissionLog",
+        back_populates="mission",
+        cascade="all, delete-orphan",
+        order_by="MissionLog.timestamp",
     )

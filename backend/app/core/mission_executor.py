@@ -10,10 +10,10 @@ from fastapi import HTTPException
 from app.api.routers.ws_mission import broadcast_mission_event
 from app.cli import CLIAdapter
 from app.config.settings import get_settings
-from app.db.models import Mission
+from app.db.models import Mission, MissionLog
 from app.db.session import SessionLocal
 from app.gps import GPSProvider, GPSError, create_gps_provider
-from app.repositories import MissionLocationRepository, MissionRepository
+from app.repositories import MissionLocationRepository, MissionRepository, MissionLogRepository
 from app.services import ScanService
 from app.utils.geo import haversine
 
@@ -56,13 +56,29 @@ class MissionExecutor:
         )
 
     def _log(self, mission_id: int, event_type: str, message: str) -> None:
+        timestamp = datetime.now(timezone.utc)
+        # In-memory cache for fast access (bounded by MISSION_LOG_SIZE)
         self.logs[mission_id].append(
             {
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": timestamp.isoformat(),
                 "event_type": event_type,
                 "message": message,
             }
         )
+        # Persist to database so logs survive server restarts
+        try:
+            db = self._session_factory()
+            try:
+                MissionLogRepository(db).create(
+                    mission_id=mission_id,
+                    timestamp=timestamp,
+                    event_type=event_type,
+                    message=message,
+                )
+            finally:
+                db.close()
+        except Exception:
+            logger.exception("Failed to persist mission log to database")
 
     async def _emit(self, event_type: str, mission_id: int, **data) -> None:
         try:
@@ -550,7 +566,8 @@ class MissionExecutor:
 
     def get_logs(self, mission_id: int, page: int = 1, page_size: int = 10) -> dict:
         """
-        Get paginated logs for a mission.
+        Get paginated logs for a mission, sourced from the database so logs
+        survive server restarts.
 
         Args:
             mission_id: ID of the mission
@@ -565,31 +582,41 @@ class MissionExecutor:
             mission = MissionRepository(db).get_by_id(mission_id)
             if not mission:
                 raise HTTPException(404, "Mission not found")
+
+            log_repo = MissionLogRepository(db)
+            total = log_repo.count_by_mission_id(mission_id)
+
+            # Calculate pagination
+            page_size = min(page_size, 100)  # Cap at 100
+            total_pages = max(1, (total + page_size - 1) // page_size)
+            page = max(1, min(page, total_pages))  # Clamp page
+
+            # Fetch the requested page (DESC by timestamp)
+            offset = (page - 1) * page_size
+            db_logs = (
+                db.query(MissionLog)
+                .filter(MissionLog.mission_id == mission_id)
+                .order_by(MissionLog.timestamp.desc())
+                .offset(offset)
+                .limit(page_size)
+                .all()
+            )
+
+            items = [
+                {
+                    "timestamp": log.timestamp.isoformat(),
+                    "event_type": log.event_type,
+                    "message": log.message,
+                }
+                for log in db_logs
+            ]
+
+            return {
+                "items": items,
+                "total": total,
+                "page": page,
+                "page_size": page_size,
+                "total_pages": total_pages,
+            }
         finally:
             db.close()
-
-        # Get raw logs
-        raw_logs = list(self.logs.get(mission_id, []))
-
-        # Sort by timestamp DESC (newest first)
-        raw_logs.sort(key=lambda x: x["timestamp"], reverse=True)
-
-        total = len(raw_logs)
-
-        # Calculate pagination
-        page_size = min(page_size, 100)  # Cap at 100
-        total_pages = max(1, (total + page_size - 1) // page_size)
-        page = max(1, min(page, total_pages))  # Clamp page
-
-        # Slice for current page
-        start = (page - 1) * page_size
-        end = start + page_size
-        paginated_logs = raw_logs[start:end]
-
-        return {
-            "items": paginated_logs,
-            "total": total,
-            "page": page,
-            "page_size": page_size,
-            "total_pages": total_pages,
-        }

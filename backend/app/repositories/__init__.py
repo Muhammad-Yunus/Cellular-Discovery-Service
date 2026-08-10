@@ -3,6 +3,7 @@ from app.repositories.scan_result_repository import ScanResultRepository
 from app.repositories.setting_repository import SettingRepository
 from app.repositories.mission_location_repository import MissionLocationRepository
 from app.repositories.mission_repository import MissionRepository
+from app.repositories.mission_log_repository import MissionLogRepository
 
 __all__ = [
     "ScanSessionRepository",
@@ -10,4 +11,5 @@ __all__ = [
     "SettingRepository",
     "MissionLocationRepository",
     "MissionRepository",
+    "MissionLogRepository",
 ]
