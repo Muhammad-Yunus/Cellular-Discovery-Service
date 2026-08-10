@@ -432,6 +432,31 @@ def set_gps_provider(provider_type: str, speed_ms: float = 50.0):
             new_lines.append(line)
 
     env_path.write_text("\n".join(new_lines) + "\n")
+
+
+def update_mock_start_lat_lon(lat: float, lon: float):
+    """
+    Update MOCK_GPS_START_LAT dan MOCK_GPS_START_LON di .env.
+
+    Args:
+        lat: Latitude device (derajat)
+        lon: Longitude device (derajat)
+    """
+    log(f"Update MOCK_GPS_START_LAT/LON ke ({lat}, {lon})")
+
+    env_path = Path(ENV_FILE)
+    lines = env_path.read_text().splitlines()
+
+    new_lines = []
+    for line in lines:
+        if line.startswith("MOCK_GPS_START_LAT="):
+            new_lines.append(f"MOCK_GPS_START_LAT={lat}")
+        elif line.startswith("MOCK_GPS_START_LON="):
+            new_lines.append(f"MOCK_GPS_START_LON={lon}")
+        else:
+            new_lines.append(line)
+
+    env_path.write_text("\n".join(new_lines) + "\n")
     log(f"Konfigurasi GPS diupdate di {ENV_FILE}")
 
 
@@ -529,6 +554,25 @@ def run_mission(start_lat: float, start_lon: float, name: str = "AUTO-MISSION",
         for i, loc in enumerate(locations):
             dist = haversine_m(start_lat, start_lon, loc["latitude"], loc["longitude"])
             log(f"  Tower {i+1}: {loc['cellular_tower_name']} di ({loc['latitude']}, {loc['longitude']}) - {dist:.0f}m dari start")
+
+        # =========================================================================
+        # STEP 1.5: Validasi jarak device ke tower terdekat
+        # =========================================================================
+        MIN_DIST_TO_TOWER = 3000  # meter
+        distances = [haversine_m(start_lat, start_lon, loc["latitude"], loc["longitude"]) for loc in locations]
+        min_dist_to_nearest = min(distances) if distances else float('inf')
+        if min_dist_to_nearest > MIN_DIST_TO_TOWER:
+            log(f"ERROR: Tower terdekat terlalu jauh ({min_dist_to_nearest:.0f}m > {MIN_DIST_TO_TOWER}m)")
+            log(f"       Start position: ({start_lat}, {start_lon})")
+            log(f"       Tower terdekat: ({locations[0]['latitude']:.6f}, {locations[0]['longitude']:.6f})")
+            log(f"       Abort mission!")
+            sys.exit(1)
+        log(f"  OK: Tower terdekat pada jarak {min_dist_to_nearest:.0f}m")
+
+        # =========================================================================
+        # STEP 1.6: Update MOCK_GPS_START_LAT/LON ke posisi device real
+        # =========================================================================
+        update_mock_start_lat_lon(start_lat, start_lon)
 
         # =========================================================================
         # STEP 2: Buat mission baru
