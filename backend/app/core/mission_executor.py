@@ -68,18 +68,19 @@ class MissionExecutor:
         # Log sampling for INFO logs: skip if last INFO was <5s ago
         # AND distance hasn't changed by ≥2m (avoid spam from polling loop)
         if event_type == "INFO":
+            # Try to extract distance from message ("Target TWR-XXX at X.Xm")
+            dist_match = None
+            try:
+                msg_tokens = message.split(" at ")
+                if len(msg_tokens) > 1:
+                    dist_str = msg_tokens[-1].rstrip("m").strip()
+                    dist_match = float(dist_str)
+            except (ValueError, IndexError):
+                dist_match = None
+
             last_ts = self._last_info_log.get(mission_id)
             if last_ts is not None:
                 elapsed = (timestamp - last_ts).total_seconds()
-                # Try to extract distance from message ("Target TWR-XXX at X.Xm")
-                dist_match = None
-                try:
-                    msg_tokens = message.split(" at ")
-                    if len(msg_tokens) > 1:
-                        dist_str = msg_tokens[-1].rstrip("m").strip()
-                        dist_match = float(dist_str)
-                except (ValueError, IndexError):
-                    dist_match = None
                 dist_changed = dist_match is not None and abs(
                     dist_match - self._last_info_distance.get(mission_id, -1.0)
                 ) >= self._info_distance_threshold_m
