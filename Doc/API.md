@@ -215,6 +215,68 @@ Delete a scan session permanently.
 
 ## Mission Service
 
+### GET /missions/{mission_id}/scans
+
+List all scan results for a mission with pagination and filtering.
+
+**Query Parameters:**
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `page` | int | 1 | Page number (>= 1) |
+| `page_size` | int | 10 | Items per page (1-100) |
+| `search` | string | null | Search by tty_port, operator_name, mcc, mnc |
+| `sort` | string | -scan_time | Sort field: `scan_time`, `operator_name`, `operator`, `mcc`, `mnc`, `rat`, `cellular_tower_id`, `cellular_tower_name` (prefix `-` for DESC) |
+| `rat` | string | null | Filter by RAT: GSM, LTE, UMTS, or ALL |
+| `start_time` | datetime | null | ISO 8601 datetime filter (inclusive start) |
+| `end_time` | datetime | null | ISO 8601 datetime filter (inclusive end) |
+
+**Response (200 OK):**
+```json
+{
+  "items": [
+    {
+      "id": 413,
+      "scan_session_id": 1395,
+      "scan_time": "2026-08-10T12:59:32.661833+07:00",
+      "tty_port": "/dev/ttyAMA0",
+      "latitude": -6.177359541766261,
+      "longitude": 106.82887655217871,
+      "mission_location_id": 6118,
+      "cellular_tower_id": "TWR-003",
+      "cellular_tower_name": "Tower-3",
+      "created_at": "2026-08-10T12:59:32.661833+07:00",
+      "operator_name": "Indosat",
+      "mcc": "510",
+      "mnc": "01",
+      "rat": "UMTS",
+      "status": "AVAILABLE"
+    }
+  ],
+  "total": 150,
+  "page": 1,
+  "page_size": 10,
+  "total_pages": 15
+}
+```
+
+**Example:**
+```bash
+# Default (sort by scan_time DESC)
+curl http://localhost:8000/api/v1/missions/2156/scans
+
+# Sort by cellular_tower_id ascending
+curl "http://localhost:8000/api/v1/missions/2156/scans?sort=cellular_tower_id"
+
+# Sort by cellular_tower_id descending
+curl "http://localhost:8000/api/v1/missions/2156/scans?sort=-cellular_tower_id"
+
+# Sort by cellular_tower_name
+curl "http://localhost:8000/api/v1/missions/2156/scans?sort=cellular_tower_name"
+
+# Custom pagination
+curl "http://localhost:8000/api/v1/missions/2156/scans?page=1&page_size=5"
+```
+
 ### GET /missions/{mission_id}/logs
 
 Get paginated logs for a mission, sorted by timestamp DESC.
