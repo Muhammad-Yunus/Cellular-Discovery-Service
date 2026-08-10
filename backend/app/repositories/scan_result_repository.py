@@ -13,6 +13,8 @@ from app.db.models.mission_location import MissionLocation
 #       scan_time, operator_name, mcc, mnc, rat
 #   - short aliases used by the frontend/curl:
 #       operator (→ operator_name)
+#   - mission location fields:
+#       cellular_tower_id, cellular_tower_name
 # Prefix "-" means DESC; otherwise ASC. Unknown fields fall back to scan_time DESC.
 _SORTABLE_FIELDS = {
     "scan_time": ScanSession.scan_time,
@@ -21,6 +23,8 @@ _SORTABLE_FIELDS = {
     "mcc": ScanResult.mcc,
     "mnc": ScanResult.mnc,
     "rat": ScanResult.rat,
+    "cellular_tower_id": MissionLocation.cellular_tower_id,
+    "cellular_tower_name": MissionLocation.cellular_tower_name,
 }
 
 
