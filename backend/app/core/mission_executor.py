@@ -188,10 +188,23 @@ class MissionExecutor:
             db.close()
 
     async def _read_gps(self):
-        try:
-            return await asyncio.to_thread(self.gps_provider.get_location)
-        except GPSError:
-            return None
+        """Read GPS location with retry logic (5 attempts, 3s interval)."""
+        max_retries = 5
+        retry_interval = 3  # seconds
+
+        for attempt in range(1, max_retries + 1):
+            try:
+                return await asyncio.to_thread(self.gps_provider.get_location)
+            except GPSError as e:
+                if attempt < max_retries:
+                    logger.warning(
+                        f"GPS read failed (attempt {attempt}/{max_retries}): {e}. "
+                        f"Retrying in {retry_interval}s..."
+                    )
+                    await asyncio.sleep(retry_interval)
+                else:
+                    logger.error(f"GPS read failed after {max_retries} attempts: {e}")
+        return None
 
     async def _gps_ok(self, timeout: float):
         try:

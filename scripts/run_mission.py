@@ -406,14 +406,15 @@ def monitor_mission(mission_id: int, interval: int = MONITOR_INTERVAL,
 # FUNGSI KONFIGURASI GPS
 # ============================================================================
 
-def set_gps_provider(provider_type: str):
+def set_gps_provider(provider_type: str, speed_ms: float = 50.0):
     """
     Mengupdate konfigurasi GPS provider di file .env.
 
     Args:
         provider_type: Tipe provider ("cli", "mock", "moving_mock", "serial")
+        speed_ms: Mock GPS cruise speed in m/s (only for moving_mock)
     """
-    log(f"Mengatur GPS provider ke: {provider_type}")
+    log(f"Mengatur GPS provider ke: {provider_type} (speed={speed_ms} m/s)")
 
     env_path = Path(ENV_FILE)
     lines = env_path.read_text().splitlines()
@@ -422,8 +423,11 @@ def set_gps_provider(provider_type: str):
     for line in lines:
         if line.startswith("GPS_PROVIDER="):
             new_lines.append(f"GPS_PROVIDER={provider_type}")
-        elif line.startswith("MOCK_GPS_SPEED_MS=") and provider_type == "moving_mock":
-            new_lines.append("MOCK_GPS_SPEED_MS=50")  # Default 50 m/s
+        elif line.startswith("MOCK_GPS_SPEED_MS="):
+            if provider_type == "moving_mock":
+                new_lines.append(f"MOCK_GPS_SPEED_MS={speed_ms}")
+            else:
+                new_lines.append(line)  # Keep existing value when switching away
         else:
             new_lines.append(line)
 
@@ -499,7 +503,8 @@ def restart_backend():
 # ============================================================================
 
 def run_mission(start_lat: float, start_lon: float, name: str = "AUTO-MISSION",
-                count: int = 5, min_dist: int = 200, max_dist: int = 400):
+                count: int = 5, min_dist: int = 200, max_dist: int = 400,
+                speed_ms: float = 50.0):
     """
     Workflow utama untuk menjalankan mission otonom.
 
@@ -509,6 +514,7 @@ def run_mission(start_lat: float, start_lon: float, name: str = "AUTO-MISSION",
         count: Jumlah tower
         min_dist: Jarak minimum tower (meter)
         max_dist: Jarak maksimum tower (meter)
+        speed_ms: Mock GPS cruise speed (m/s)
 
     Returns:
         Mission ID jika berhasil, None jika gagal
@@ -549,7 +555,7 @@ def run_mission(start_lat: float, start_lon: float, name: str = "AUTO-MISSION",
         waypoints_str = build_waypoints_string(locations)
 
         # Set provider ke moving_mock
-        set_gps_provider("moving_mock")
+        set_gps_provider("moving_mock", speed_ms=speed_ms)
 
         # Update waypoints di .env
         update_waypoints_in_env(waypoints_str)
@@ -599,6 +605,7 @@ def main():
     parser.add_argument("--count", type=int, default=5, help="Jumlah tower (default: 5)")
     parser.add_argument("--min-dist", type=int, default=200, help="Jarak minimum tower meter (default: 200)")
     parser.add_argument("--max-dist", type=int, default=400, help="Jarak maksimum tower meter (default: 400)")
+    parser.add_argument("--speed", type=float, default=50.0, help="Mock GPS cruise speed m/s (default: 50)")
     args = parser.parse_args()
 
     log("="*60)
@@ -620,7 +627,8 @@ def main():
         name=args.name,
         count=args.count,
         min_dist=args.min_dist,
-        max_dist=args.max_dist
+        max_dist=args.max_dist,
+        speed_ms=args.speed
     )
 
     log("="*60)
