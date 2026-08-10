@@ -301,7 +301,12 @@ black --check app/
 | `POST` | `/api/v1/missions/{id}/route/reorder` | Reorder route |
 | `GET`  | `/api/v1/missions/{id}/scans` | List mission scans |
 | `GET`  | `/api/v1/missions/{id}/scans/export` | Export mission scans |
-| `GET`  | `/api/v1/missions/{id}/logs` | Get mission logs |
+| `GET`  | `/api/v1/missions/{id}/logs` | Get paginated mission logs (default 10/page, sorted by timestamp DESC) |
+
+### Device
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET`  | `/api/v1/device/location` | Get current device GPS location (independent, no mission required) |
 
 ### Settings
 | Method | Path | Description |
@@ -387,6 +392,8 @@ The SerialGPSProvider parses `$GPGGA` sentences to extract latitude/longitude co
 - [x] Location Upload (CSV) ✅
 - [x] Route Planning & Navigation ✅
 - [x] Mission Scans & Logs ✅
+- [x] Mission Logs Pagination ✅
+- [x] Device Location Endpoint (independent) ✅
 - [x] Test Management Endpoints ✅
 - [ ] JWT Authentication
 - [ ] Prometheus Metrics

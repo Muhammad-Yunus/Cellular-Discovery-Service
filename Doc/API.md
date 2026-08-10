@@ -10,12 +10,15 @@
 
 - [Authentication](#authentication)
 - [Scan Service](#scan-service)
+- [Device Service](#device-service)
 - [History Service](#history-service)
   - [GET /scans](#get-scans)
   - [GET /scans/export](#get-scansexport)
   - [GET /scans/{id}](#get-scanssid)
   - [DELETE /scans/{id}](#deletescanssid)
 - [Settings Service](#settings-service)
+- [Mission Service](#mission-service)
+  - [GET /missions/{mission_id}/logs](#get-missionsmission_idlogs)
 - [WebSocket Service](#websocket-service)
 - [Error Handling](#error-handling)
 
@@ -78,6 +81,51 @@ Content-Type: application/json
 **Error Responses:**
 - `400 Bad Request` – Invalid TTY path
 - `500 Internal Server Error` – CLI execution failed or timeout
+
+---
+
+## Device Service
+
+### GET /device/location
+
+Get current device GPS location independently (not tied to any mission).
+
+**Query Parameters:** None (request directly)
+
+**Response (200 OK):**
+```json
+{
+  "latitude": -6.150601,
+  "longitude": 106.896878,
+  "altitude": null,
+  "accuracy": null,
+  "speed": 0.18,
+  "status": "IDLE",
+  "datetime": "2026-08-10T13:29:53.529629",
+  "provider": "cli"
+}
+```
+
+**Response Fields:**
+| Field | Type | Description |
+|-------|------|-------------|
+| `latitude` | float | Current latitude coordinate |
+| `longitude` | float | Current longitude coordinate |
+| `altitude` | float\|null | Altitude in meters (if available) |
+| `accuracy` | float\|null | GPS accuracy in meters (if available) |
+| `speed` | float | Speed in m/s, calculated from position change |
+| `status` | string | Device status: `MOVING` (speed > 0.5 m/s), `IDLE` (speed <= 0.5 m/s), `UNKNOWN` (error) |
+| `datetime` | datetime | Timestamp when location was read (UTC+7) |
+| `provider` | string | GPS provider used: `cli`, `mock`, `serial`, `moving_mock` |
+
+**Error Responses:**
+- `503 Service Unavailable` – GPS read error (provider unavailable)
+- `500 Internal Server Error` – Unexpected error
+
+**Example:**
+```bash
+curl http://localhost:8000/api/v1/device/location
+```
 
 ---
 
@@ -161,6 +209,77 @@ Delete a scan session permanently.
 **Response (404 Not Found):**
 ```json
 {"detail": "Scan not found"}
+```
+
+---
+
+## Mission Service
+
+### GET /missions/{mission_id}/logs
+
+Get paginated logs for a mission, sorted by timestamp DESC.
+
+**Path Parameter:**
+- `mission_id` (int) – ID of the mission
+
+**Query Parameters:**
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `page` | int | 1 | Page number (>= 1) |
+| `page_size` | int | 10 | Items per page (1-100) |
+
+**Response (200 OK):**
+```json
+{
+  "items": [
+    {
+      "timestamp": "2026-08-10T12:59:32.730548+07:00",
+      "event_type": "COMPLETED",
+      "message": "Mission completed successfully"
+    },
+    {
+      "timestamp": "2026-08-10T12:59:30.123456+07:00",
+      "event_type": "ARRIVED",
+      "message": "Arrived at location 5/5"
+    }
+  ],
+  "total": 25,
+  "page": 1,
+  "page_size": 10,
+  "total_pages": 3
+}
+```
+
+**Response Fields:**
+| Field | Type | Description |
+|-------|------|-------------|
+| `items` | array | List of log entries (sorted by timestamp DESC) |
+| `total` | int | Total number of logs for this mission |
+| `page` | int | Current page number |
+| `page_size` | int | Items per page |
+| `total_pages` | int | Total number of pages |
+
+**Log Entry Fields:**
+| Field | Type | Description |
+|-------|------|-------------|
+| `timestamp` | string | ISO format timestamp (UTC) |
+| `event_type` | string | Event type: `STARTED`, `GPS_FIX`, `SCANNING`, `ARRIVED`, `SKIPPED`, `FAILED`, `COMPLETED`, `STOPPED`, `PAUSED`, `RESUMED`, etc. |
+| `message` | string | Descriptive message of the event |
+
+**Error Responses:**
+- `404 Not Found` – Mission not found
+- `500 Internal Server Error` – Server error
+
+**Example:**
+```bash
+# Default pagination (10 items per page)
+curl http://localhost:8000/api/v1/missions/2156/logs
+
+# Custom pagination
+curl "http://localhost:8000/api/v1/missions/2156/logs?page=1&page_size=5"
+
+# Second page
+curl "http://localhost:8000/api/v1/missions/2156/logs?page=2"
 ```
 
 ---
