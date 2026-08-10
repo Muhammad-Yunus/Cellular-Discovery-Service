@@ -94,11 +94,18 @@ def get_real_gps_location() -> tuple[float, float]:
     """
     Mendapatkan lokasi GPS real dari device /dev/ttyAMA0 menggunakan CLI tool.
 
+    Retry up to 5 times dengan interval 3 detik jika GPS fix gagal.
+    Jika semua retry gagal, fallback ke MOCK_GPS_START_LAT/LON di .env.
+
     Returns:
         Tuple (latitude, longitude) dari GPS.
-        Jika gagal, fallback ke koordinat dari MOCK_GPS_START_LAT/LON di .env.
+        Jika gagal semua retry, fallback ke koordinat dari .env.
     """
+    MAX_RETRIES = 5
+    RETRY_INTERVAL = 3  # detik
+
     log("Mendeteksi lokasi GPS real...")
+    log(f"Retry maksimal: {MAX_RETRIES}x dengan interval {RETRY_INTERVAL}s")
 
     # Command untuk membaca GPS data
     # -d: device path, -b: baud rate, -w: wait for fix, -j: JSON output, -c: count
@@ -108,31 +115,38 @@ def get_real_gps_location() -> tuple[float, float]:
         f"-w -j -c {GPS_COUNT} | jq -c 'select(.has_fix==true and (.satellites_used // 0) > 0)' | tail -1"
     )
 
-    try:
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=30)
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            log(f"  Attempt {attempt}/{MAX_RETRIES}...")
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=30)
 
-        if result.returncode != 0 or not result.stdout.strip():
-            raise ValueError(f"Tidak ada GPS fix: {result.stderr}")
+            if result.returncode != 0 or not result.stdout.strip():
+                raise ValueError(f"Tidak ada GPS fix: {result.stderr}")
 
-        data = json.loads(result.stdout.strip())
-        lat = data.get("latitude")
-        lon = data.get("longitude")
+            data = json.loads(result.stdout.strip())
+            lat = data.get("latitude")
+            lon = data.get("longitude")
 
-        if lat is None or lon is None:
-            raise ValueError(f"Data GPS tidak valid: {data}")
+            if lat is None or lon is None:
+                raise ValueError(f"Data GPS tidak valid: {data}")
 
-        sats = data.get('satellites_used', '?')
-        log(f"GPS berhasil: {lat:.6f}, {lon:.6f} (satelit={sats})")
-        return float(lat), float(lon)
+            sats = data.get('satellites_used', '?')
+            log(f"  ✅ GPS berhasil: {lat:.6f}, {lon:.6f} (satelit={sats})")
+            return float(lat), float(lon)
 
-    except Exception as e:
-        log(f"ERROR mendapatkan GPS: {e}")
-        log("Fallback ke MOCK_GPS_START_LAT/LON dari .env")
+        except Exception as e:
+            log(f"  ⚠️ Attempt {attempt} gagal: {e}")
+            if attempt < MAX_RETRIES:
+                log(f"  Menunggu {RETRY_INTERVAL}s sebelum retry...")
+                time.sleep(RETRY_INTERVAL)
+            else:
+                log(f"  ❌ Semua {MAX_RETRIES} attempt gagal, fallback ke .env")
 
-        # Fallback ke koordinat default dari environment
-        lat = os.environ.get("MOCK_GPS_START_LAT", "-6.175")
-        lon = os.environ.get("MOCK_GPS_START_LON", "106.827")
-        return float(lat), float(lon)
+    # Fallback ke koordinat dari environment
+    lat = os.environ.get("MOCK_GPS_START_LAT", "-6.175")
+    lon = os.environ.get("MOCK_GPS_START_LON", "106.827")
+    log(f"  Fallback ke MOCK_GPS_START_LAT/LON: ({lat}, {lon})")
+    return float(lat), float(lon)
 
 
 def haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
