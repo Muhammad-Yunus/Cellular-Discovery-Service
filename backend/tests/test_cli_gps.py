@@ -14,13 +14,17 @@ class TestCLIGPSProvider:
             baud=9600,
             timeout=10,
         )
+        # Clear any cached GPS errors from previous tests
+        from app.gps import cli_provider
+        cli_provider._gps_cli_last_error_at = 0.0
+        cli_provider._gps_cli_last_error_msg = ""
 
     def test_init_defaults(self):
         provider = CLIGPSProvider()
         assert provider.command == "/home/pi/GPS/build/gps"
         assert provider.device == "/dev/ttyAMA0"
         assert provider.baud == 9600
-        assert provider.timeout == 10
+        assert provider.timeout == 30
 
     @patch("app.gps.cli_provider.subprocess.run")
     def test_get_location_with_fix(self, mock_run):
@@ -44,13 +48,14 @@ class TestCLIGPSProvider:
 
     @patch("app.gps.cli_provider.subprocess.run")
     def test_get_location_no_fix(self, mock_run):
+        # Empty output means no GPS fix found (jq filter returns nothing)
         mock_run.return_value = MagicMock(
             returncode=0,
-            stdout='{"has_fix": false, "fix_quality": 0, "satellites_used": 0}',
+            stdout="",
             stderr="",
         )
 
-        with pytest.raises(GPSReadError, match="No GPS fix"):
+        with pytest.raises(GPSReadError, match="No GPS fix found"):
             self.provider.get_location()
 
     @patch("app.gps.cli_provider.subprocess.run")
@@ -91,7 +96,7 @@ class TestCLIGPSProvider:
             stderr="",
         )
 
-        with pytest.raises(GPSReadError, match="Invalid GPS JSON output"):
+        with pytest.raises(GPSReadError, match="Invalid GPS JSON"):
             self.provider.get_location()
 
     @patch("app.gps.cli_provider.subprocess.run")
