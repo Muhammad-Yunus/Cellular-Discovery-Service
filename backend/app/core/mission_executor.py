@@ -11,6 +11,7 @@ from app.api.routers.ws_mission import broadcast_mission_event
 from app.cli import CLIAdapter
 from app.config.settings import get_settings
 from app.db.models import Mission, MissionLog
+from app.schemas.mission_log import MissionLogsResponse
 from app.db.session import SessionLocal
 from app.gps import GPSProvider, GPSError, create_gps_provider
 from app.repositories import MissionLocationRepository, MissionRepository, MissionLogRepository
@@ -589,7 +590,16 @@ class MissionExecutor:
             # Calculate pagination
             page_size = min(page_size, 100)  # Cap at 100
             total_pages = max(1, (total + page_size - 1) // page_size)
-            page = max(1, min(page, total_pages))  # Clamp page
+
+            # Return empty if page exceeds total
+            if page > total_pages:
+                return MissionLogsResponse(
+                    items=[],
+                    total=total,
+                    page=page,
+                    page_size=page_size,
+                    total_pages=total_pages
+                )
 
             # Fetch the requested page (DESC by timestamp)
             offset = (page - 1) * page_size
