@@ -10,7 +10,7 @@ from app.core.exceptions import (
     generic_exception_handler,
     validation_exception_handler,
 )
-from app.api.routers import scan, history, settings as settings_router, ws_gps, ws_scan, ws_mission, mission_locations, missions, mission_planning, mission_control, mission_scans
+from app.api.routers import scan, history, settings as settings_router, ws_gps, ws_scan, ws_mission, mission_locations, missions, mission_planning, mission_control, mission_scans, device
 from app.gps import test_management
 import logging
 from fastapi.middleware.cors import CORSMiddleware
@@ -77,6 +77,7 @@ app.include_router(missions.router)
 app.include_router(mission_planning.router)
 app.include_router(mission_control.router)
 app.include_router(mission_scans.router)
+app.include_router(device.router)
 
 # Test-only management endpoints — check env var at runtime so the import
 # succeeds even if the server was already running before the env var was set.
