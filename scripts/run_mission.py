@@ -472,30 +472,27 @@ def update_waypoints_in_env(waypoints_str: str):
 def restart_backend():
     """
     Merestart backend service untuk apply perubahan konfigurasi .env.
+    Menggunakan systemd untuk restart yang bersih.
     """
-    log("Merestart backend...")
+    log("Merestart backend via systemd...")
 
-    # Hentikan process uvicorn yang sedang berjalan
-    subprocess.run(["pkill", "-f", "uvicorn app.main"], capture_output=True)
+    # Stop service via systemd
+    subprocess.run(["sudo", "systemctl", "stop", "lte-scanner"], capture_output=True, check=True)
     time.sleep(2)
 
-    # Start backend baru di background
-    subprocess.Popen(
-        ["bash", "-c", f"cd {BACKEND_DIR} && source .venv/bin/activate && nohup .venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8001 > /tmp/backend.log 2>&1 &"],
-        stdout=open("/dev/null", "w"),
-        stderr=subprocess.STDOUT,
-    )
-    time.sleep(3)
+    # Start service via systemd
+    subprocess.run(["sudo", "systemctl", "start", "lte-scanner"], capture_output=True, check=True)
+    time.sleep(5)  # Tunggu backend stabil
 
     # Verifikasi restart berhasil
     try:
-        resp = requests.get(f"{API_BASE}/health")
+        resp = requests.get(f"{API_BASE}/health", timeout=5)
         if resp.status_code == 200:
             log("Backend berhasil direstart")
         else:
             log("PERINGATAN: Backend mungkin tidak restart dengan benar")
-    except:
-        log("PERINGATAN: Tidak bisa verifikasi restart backend")
+    except Exception as e:
+        log(f"PERINGATAN: Tidak bisa verifikasi restart backend: {e}")
 
 
 # ============================================================================
