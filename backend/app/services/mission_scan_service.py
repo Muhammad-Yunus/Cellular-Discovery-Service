@@ -95,6 +95,8 @@ class MissionScanService:
                     latitude=session.latitude,
                     longitude=session.longitude,
                     mission_location_id=mission_loc_id,
+                    cellular_tower_id=tower_id,
+                    cellular_tower_name=tower_name,
                     created_at=session.created_at,
                     operator_name=r.operator_name,
                     mcc=r.mcc,

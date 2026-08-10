@@ -11,6 +11,8 @@ class ScanResultFlatResponse(BaseModel):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     mission_location_id: Optional[int] = None
+    cellular_tower_id: Optional[str] = None
+    cellular_tower_name: Optional[str] = None
     created_at: datetime
     operator_name: Optional[str] = None
     mcc: Optional[str] = None
