@@ -18,13 +18,13 @@ Workflow:
 
 Cara Penggunaan:
   # Dengan GPS real dari device:
-  python3 run_mission.py --name TEST-001
+  python3 simulate_mission.py --name TEST-001
 
   # Dengan koordinat override (untuk testing tanpa GPS):
-  python3 run_mission.py --name TEST-002 --lat -6.175 --lon 106.827
+  python3 simulate_mission.py --name TEST-002 --lat -6.175 --lon 106.827
 
   # Custom parameter:
-  python3 run_mission.py --name TEST-003 --count 10 --min-dist 100 --max-dist 500
+  python3 simulate_mission.py --name TEST-003 --count 10 --min-dist 100 --max-dist 500
 
 ================================================================================
 """
@@ -606,8 +606,19 @@ def run_mission(start_lat: float, start_lon: float, name: str = "AUTO-MISSION",
         # =========================================================================
         # STEP 5: Setup Mock GPS dan restart backend
         # =========================================================================
-        # Build string waypoints dari lokasi tower
-        waypoints_str = build_waypoints_string(locations)
+        # Build string waypoints dari route hasil planning (diurutkan sequence_order)
+        # NOT dari locations asal karena route sudah dioptimasi oleh planner
+        plan_result = plan_mission(mission_id)
+        route_items = plan_result.get('items', [])
+        
+        # Sort berdasarkan sequence_order (pastikan urutannya benar)
+        route_items_sorted = sorted(route_items, key=lambda x: x.get('sequence_order', 0))
+        waypoints_str = build_waypoints_string(route_items_sorted)
+        
+        # Log route yang akan dipakai
+        log(f"Waypoints dari route plan ({len(route_items_sorted)} tower):")
+        for item in route_items_sorted:
+            log(f"  #{item['sequence_order']}: {item['cellular_tower_id']} ({item['latitude']}, {item['longitude']})")
 
         # Set provider ke moving_mock
         set_gps_provider("moving_mock", speed_ms=speed_ms)

@@ -28,6 +28,8 @@ router = APIRouter(prefix="/api/v1/device", tags=["device"])
 # Global cache untuk tracking kecepatan
 _last_location: GPSLocation | None = None
 _last_timestamp: datetime | None = None
+_last_provider_type: str | None = None
+_cached_provider = None
 
 
 def _calculate_speed(
@@ -107,15 +109,19 @@ def get_device_location():
         - datetime: Timestamp pembacaan
         - provider: Nama GPS provider yang aktif
     """
-    global _last_location, _last_timestamp
+    global _last_location, _last_timestamp, _last_provider_type, _cached_provider
     
     try:
         # Ambil konfigurasi dari settings
         settings = get_settings()
         provider_type = settings.GPS_PROVIDER
         
-        # Buat instance GPS provider
-        provider = create_gps_provider(provider_type)
+        # Singleton pattern: reuse provider instance untuk moving_mock
+        # agar koordinat tetap bergerak (tidak reset ke start)
+        if provider_type != _last_provider_type or _cached_provider is None:
+            _cached_provider = create_gps_provider(provider_type)
+            _last_provider_type = provider_type
+        provider = _cached_provider
         
         # Baca lokasi GPS
         location = provider.get_location()

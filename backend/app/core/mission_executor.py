@@ -52,8 +52,15 @@ class MissionExecutor:
         # for distance-based threshold (only log if distance changed significantly)
         self._last_info_log: dict[int, datetime] = {}
         self._last_info_distance: dict[int, float] = {}
-        self._info_log_interval_sec: float = 5.0
-        self._info_distance_threshold_m: float = 2.0
+        self._last_info_target: dict[int, str] = {}
+        # Thresholds to balance visibility vs log spam:
+        # - Time: 30s minimum between INFO logs for same target
+        # - Distance: 150m change to show meaningful progress
+        # - Target change: always log when target tower changes
+        # - Proximity: only log when distance < 200m (filter far-away journey logs)
+        self._info_log_interval_sec: float = 30.0
+        self._info_distance_threshold_m: float = 150.0
+        self._info_log_proximity_m: float = 100.0  # Only log when target is within this distance
 
     def _make_scan_service(self, db):
         settings = get_settings()
@@ -65,30 +72,61 @@ class MissionExecutor:
 
     def _log(self, mission_id: int, event_type: str, message: str) -> None:
         timestamp = datetime.now(timezone.utc)
-        # Log sampling for INFO logs: skip if last INFO was <5s ago
-        # AND distance hasn't changed by ≥2m (avoid spam from polling loop)
+        # Log sampling for INFO logs: skip spam from fast polling loop
+        # Log only when: target changes, ≥10s elapsed, or distance changes ≥20m (or 20%)
         if event_type == "INFO":
-            # Try to extract distance from message ("Target TWR-XXX at X.Xm")
+            # Skip noise logs that aren't about target proximity (e.g. "No tty_port override")
+            noise_keywords = ["tty_port", "DEFAULT_TTY", "No tty", "failing"]
+            if any(kw in message for kw in noise_keywords):
+                return
+
+            # Try to extract target + distance from message ("Target TWR-XXX at X.Xm")
+            target_id = None
             dist_match = None
             try:
                 msg_tokens = message.split(" at ")
-                if len(msg_tokens) > 1:
+                if len(msg_tokens) == 2:
+                    target_part = msg_tokens[0].replace("Target", "").strip()
+                    target_id = target_part
                     dist_str = msg_tokens[-1].rstrip("m").strip()
                     dist_match = float(dist_str)
             except (ValueError, IndexError):
-                dist_match = None
+                pass
 
             last_ts = self._last_info_log.get(mission_id)
+            last_dist = self._last_info_distance.get(mission_id, -1.0)
+            last_target = self._last_info_target.get(mission_id)
+
             if last_ts is not None:
                 elapsed = (timestamp - last_ts).total_seconds()
-                dist_changed = dist_match is not None and abs(
-                    dist_match - self._last_info_distance.get(mission_id, -1.0)
-                ) >= self._info_distance_threshold_m
-                if elapsed < self._info_log_interval_sec and not dist_changed:
-                    return  # Skip - within sampling window and no significant change
+                target_changed = target_id is not None and target_id != last_target
+
+                # Compute distance delta (absolute meters)
+                if dist_match is not None:
+                    abs_delta = abs(dist_match - last_dist)
+                    dist_changed = abs_delta >= self._info_distance_threshold_m
+                else:
+                    dist_changed = False
+
+                # Skip if: same target AND within time window AND not yet close enough
+                # (don't spam logs during long journey, only log when approaching tower)
+                if (
+                    elapsed < self._info_log_interval_sec
+                    and not target_changed
+                ):
+                    # Also check if we're within proximity of the target
+                    if dist_match is not None and dist_match > self._info_log_proximity_m:
+                        return  # Skip - too far from target
+                    # If within proximity, also check distance change threshold
+                    if dist_match is not None and last_dist > 0:
+                        abs_delta = abs(dist_match - last_dist)
+                        if abs_delta < self._info_distance_threshold_m:
+                            return  # Skip - not enough distance change near target
             self._last_info_log[mission_id] = timestamp
             if dist_match is not None:
                 self._last_info_distance[mission_id] = dist_match
+            if target_id is not None:
+                self._last_info_target[mission_id] = target_id
         # In-memory cache for fast access (bounded by MISSION_LOG_SIZE)
         self.logs[mission_id].append(
             {

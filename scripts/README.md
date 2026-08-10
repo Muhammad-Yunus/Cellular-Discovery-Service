@@ -42,32 +42,53 @@ Saat startup, script akan mencoba membaca GPS real dengan **retry logic**:
 
 ## Cara Penggunaan
 
-### Persyaratan
+### Menggunakan Shell Script (Recommended)
+
+Shell script menyediakan cara termudah untuk menjalankan mission dengan auto-activate venv:
+
+```bash
+cd /home/pi/Cellular-Discovery-Service
+
+# Mission dengan 4 tower, jarak 500-1000m, speed 40m/s
+./simulate_mission.sh --count 4 --min-dist 500 --max-dist 1000 --speed 40.0 --name "TEST-001"
+
+# Mission dengan GPS real (default parameters)
+./simulate_mission.sh --name "GPS-REAL-TEST"
+
+# Mission dengan koordinat override
+./simulate_mission.sh --count 5 --lat -6.1506 --lon 106.8967 --speed 50.0 --name "OVERRIDE-TEST"
+```
+
+### Menggunakan Python Script Langsung
+
+#### Persyaratan
 
 - Backend service berjalan di `http://localhost:8001`
 - GPS hardware terhubung ke `/dev/ttyAMA0` (serial)
 - Python 3.13+ dengan dependencies terinstall
 - Akses sudo untuk restart service systemd
 
-### Mode 1: GPS Real (Default)
+#### Mode 1: GPS Real (Default)
 
 ```bash
-cd /home/pi/Cellular-Discovery-Service/scripts
-python3 run_mission.py --name TEST-001
+cd /home/pi/Cellular-Discovery-Service
+source backend/.venv/bin/activate
+export PYTHONPATH=backend
+python3 scripts/simulate_mission.py --name TEST-001
 ```
 
 Script akan otomatis mendeteksi GPS real dari `/dev/ttyAMA0`.
 
-### Mode 2: Koordinat Override (Tanpa GPS)
+#### Mode 2: Koordinat Override (Tanpa GPS)
 
 ```bash
-python3 run_mission.py --name TEST-002 --lat -6.175 --lon 106.827
+python3 scripts/simulate_mission.py --name TEST-002 --lat -6.175 --lon 106.827
 ```
 
-### Mode 3: Custom Parameters
+#### Mode 3: Custom Parameters
 
 ```bash
-python3 run_mission.py --name TEST-003 --count 10 --min-dist 100 --max-dist 500 --speed 30
+python3 scripts/simulate_mission.py --name TEST-003 --count 10 --min-dist 100 --max-dist 500 --speed 30
 ```
 
 ### Parameter Lengkap
@@ -95,8 +116,9 @@ File konfigurasi utama: `/home/pi/Cellular-Discovery-Service/backend/.env`
 | `MOCK_GPS_START_LON` | Longitude awal mock GPS |
 | `MOCK_GPS_WAYPOINTS` | Rute waypoints (format: `lat,lon:lat,lon:...`) |
 | `MOCK_GPS_SPEED_MS` | Kecepatan巡航 mock GPS (m/s) |
-| `MOCK_GPS_LOITER_RADIUS_M` | Radius loiter di setiap waypoint |
-| `MOCK_GPS_LOITER_LAPS` | Jumlah lap loiter |
+| `MOCK_GPS_LOITER_RADIUS_M` | Radius loiter di setiap waypoint (default: 5m) |
+| `MOCK_GPS_LOITER_LAPS` | Jumlah lap loiter (default: 1) |
+| `MOCK_GPS_LOITER_DURATION_S` | Durasi loiter per waypoint dalam detik (default: 3s) |
 
 ### Arah Kompas untuk Tower
 
@@ -134,10 +156,65 @@ sudo systemctl status lte-scanner
 sudo chmod 666 /dev/ttyAMA0
 
 # Atau gunakan koordinat override
-python3 run_mission.py --lat -6.175 --lon 106.827
+python3 scripts/simulate_mission.py --lat -6.175 --lon 106.827
+# Atau menggunakan shell script
+./simulate_mission.sh --lat -6.175 --lon 106.827
 ```
 
-### 2. Tower Terlalu Jauh (> 3km)
+### 3. Logging Terlalu Banyak (Log Spam)
+
+**Gejala:**
+- API `/logs` mengembalikan ribuan log untuk mission singkat
+- Informasi repetitif: "Target TWR-XXX at X.Xm" berulang tiap beberapa detik
+- Log noise seperti "No tty_port override" memenuhi database
+
+**Penyebab:**
+- Polling loop berjalan setiap 2 detik (MISSION_POLL_INTERVAL=2s)
+- Threshold logging terlalu longgar (2m jarak, 5s interval)
+- Setiap polling cycle menghasilkan INFO log baru
+- Tidak ada filter untuk log noise
+
+**Solusi (Sudah Diperbaiki):**
+```python
+# Di backend/app/core/mission_executor.py
+
+# 1. Filter noise: skip log yang bukan target proximity
+noise_keywords = ["tty_port", "DEFAULT_TTY", "No tty", "failing"]
+if any(kw in message for kw in noise_keywords):
+    return
+
+# 2. Proximity filter: hanya log saat <100m dari target
+self._info_log_proximity_m = 100.0
+
+# 3. Time filter: minimum 30s antara log
+self._info_log_interval_sec = 30.0
+
+# 4. Distance filter: hanya log jika ≥150m perubahan
+self._info_distance_threshold_m = 150.0
+```
+
+**Hasil:**
+- Mission 2 tower (25 detik) hanya ~5-6 log, bukan 1300+
+- Log bersih: tanpa noise "No tty_port override"
+- Log tetap informatif: perubahan signifikan tetap tercatat
+- Event penting (VISITED, COMPLETED) tetap terekam normal
+
+**Verifikasi:**
+```bash
+# Cek total log untuk mission
+curl -s "http://localhost:8001/api/v1/missions/{ID}/logs" | jq '{total, total_pages}'
+
+# Cek distribusi event type
+curl -s "http://localhost:8001/api/v1/missions/{ID}/logs" | jq -r '.items[] | .event_type' | sort | uniq -c
+
+# Contoh output:
+#       1 COMPLETED
+#       2 VISITED
+#       4 INFO
+#       1 STARTING
+```
+
+### 4. Tower Terlalu Jauh (> 3km)
 
 **Gejala:**
 ```
@@ -161,10 +238,12 @@ grep MOCK_GPS_START backend/.env
 sudo systemctl restart lte-scanner
 
 # Jalankan ulang dengan GPS real
-python3 run_mission.py --name TEST-FIX
+python3 scripts/simulate_mission.py --name TEST-FIX
+# Atau menggunakan shell script
+./simulate_mission.sh --name TEST-FIX
 ```
 
-### 3. Mock GPS Tidak Bergerak
+### 5. Mock GPS Tidak Bergerak
 
 **Gejala:**
 - Mission berjalan tapi posisi device tidak berubah
@@ -189,7 +268,7 @@ sudo systemctl restart lte-scanner
 curl -s http://localhost:8001/api/v1/device/location | jq '.'
 ```
 
-### 4. Backend Tidak Bisa Direstart (Port Occupied)
+### 6. Backend Tidak Bisa Direstart (Port Occupied)
 
 **Gejala:**
 ```
@@ -213,7 +292,7 @@ sudo systemctl restart lte-scanner
 curl -s http://localhost:8001/health
 ```
 
-### 5. Mission Gagal di Tengah Jalan (SCAN_ERROR)
+### 7. Mission Gagal di Tengah Jalan (SCAN_ERROR)
 
 **Gejala:**
 ```
@@ -237,7 +316,7 @@ curl -s http://localhost:8001/api/v1/device/location | jq '.'
 journalctl -u lte-scanner -f | grep "Device location"
 ```
 
-### 6. GPS CLI Command Gagal
+### 8. GPS CLI Command Gagal
 
 **Gejala:**
 ```
@@ -317,9 +396,11 @@ for i in range(10):
 ## Struktur File
 
 ```
-scripts/
-├── run_mission.py          # Main script untuk autonomous mission
-└── README.md              # Dokumentasi ini
+Cellular-Discovery-Service/
+└── scripts/
+    ├── simulate_mission.sh   # Shell script wrapper (auto-activate venv)
+    ├── simulate_mission.py   # Main script untuk autonomous mission
+    └── README.md             # Dokumentasi ini
 ```
 
 ## Dependensi
@@ -336,6 +417,51 @@ External tools:
 
 System services:
 - `lte-scanner.service` - Backend FastAPI service (systemd)
+
+## Recent Updates (2024-08-10)
+
+### GPS Location Fields Fix
+- Fixed `GPSLocation` schema to use `Optional[float]` for `altitude` dan `accuracy`
+- Mock GPS providers sekarang selalu menyertakan field ini (dengan nilai `None`)
+- API response menampilkan struktur yang lengkap tanpa error terkait null
+
+### MovingMockGPSProvider Enhancement
+- Ditambahkan mode circular loiter di setiap waypoint
+- Drone sekarang mengorbit di sekitar lokasi target untuk simulasi yang lebih realistis
+- Konfigurasi via:
+  - `MOCK_GPS_LOITER_DURATION_S` (default: 3 detik)
+  - `MOCK_GPS_LOITER_RADIUS_M` (default: 5 meter)
+
+### Log Sampling Implementation
+- Berhasil mengurangi log spam dari 1300+ menjadi ~5-6 log per mission
+- Filter pintar: skip noise logs (tty_port, DEFAULT_TTY, "No tty")
+- Proximity-based logging: hanya log saat <100m dari target
+- Time-based filtering: minimum 30s antara log
+- Distance-based filtering: hanya log saat perubahan ≥150m
+
+**Sebelum:**
+```
+Mission 2 tower (25s) �� 1300+ logs
+```
+
+**Sesudah:**
+```
+Mission 2 tower (25s) → 6 logs (1 STARTING, 4 INFO, 2 VISITED, 1 COMPLETED)
+```
+
+### Contoh Output Mission (LOG-V7-FINAL, ID=2177)
+```
+2026-08-10T22:41:44 | STARTING | Mission 2177 starting
+2026-08-10T22:41:44 | INFO     | Target TWR-002 at 223.7m
+2026-08-10T22:41:48 | INFO     | Target TWR-002 at 73.6m
+2026-08-10T22:41:50 | VISITED  | TWR-002 scanned, session 1429 linked
+2026-08-10T22:41:50 | INFO     | Target TWR-001 at 585.4m
+2026-08-10T22:42:03 | INFO     | Target TWR-001 at 100.0m
+2026-08-10T22:42:06 | VISITED  | TWR-001 scanned, session 1430 linked
+2026-08-10T22:42:06 | COMPLETED| All locations visited
+```
+
+Log tetap informatif namun tidak memenuhi database dengan spam yang tidak perlu.
 
 ## Catatan Penting
 
