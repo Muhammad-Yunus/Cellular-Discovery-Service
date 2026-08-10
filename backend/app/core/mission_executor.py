@@ -47,6 +47,13 @@ class MissionExecutor:
         self._shutdown = False
         self._scan_factory = scan_service_factory or self._make_scan_service
         self._session_factory = session_factory or SessionLocal
+        # Log sampling: throttle INFO logs to avoid spam (per mission)
+        # Each mission keeps track of the last INFO log timestamp + last distance
+        # for distance-based threshold (only log if distance changed significantly)
+        self._last_info_log: dict[int, datetime] = {}
+        self._last_info_distance: dict[int, float] = {}
+        self._info_log_interval_sec: float = 5.0
+        self._info_distance_threshold_m: float = 2.0
 
     def _make_scan_service(self, db):
         settings = get_settings()
@@ -58,6 +65,29 @@ class MissionExecutor:
 
     def _log(self, mission_id: int, event_type: str, message: str) -> None:
         timestamp = datetime.now(timezone.utc)
+        # Log sampling for INFO logs: skip if last INFO was <5s ago
+        # AND distance hasn't changed by ≥2m (avoid spam from polling loop)
+        if event_type == "INFO":
+            last_ts = self._last_info_log.get(mission_id)
+            if last_ts is not None:
+                elapsed = (timestamp - last_ts).total_seconds()
+                # Try to extract distance from message ("Target TWR-XXX at X.Xm")
+                dist_match = None
+                try:
+                    msg_tokens = message.split(" at ")
+                    if len(msg_tokens) > 1:
+                        dist_str = msg_tokens[-1].rstrip("m").strip()
+                        dist_match = float(dist_str)
+                except (ValueError, IndexError):
+                    dist_match = None
+                dist_changed = dist_match is not None and abs(
+                    dist_match - self._last_info_distance.get(mission_id, -1.0)
+                ) >= self._info_distance_threshold_m
+                if elapsed < self._info_log_interval_sec and not dist_changed:
+                    return  # Skip - within sampling window and no significant change
+            self._last_info_log[mission_id] = timestamp
+            if dist_match is not None:
+                self._last_info_distance[mission_id] = dist_match
         # In-memory cache for fast access (bounded by MISSION_LOG_SIZE)
         self.logs[mission_id].append(
             {

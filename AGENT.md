@@ -953,3 +953,46 @@ NUXT_PUBLIC_API_BASE=http://localhost:8001     # dev FE → dev BE
 # During production FE tests: http://<host>:8000
 ```
 
+---
+
+# Pagination Fix (2026-08-10)
+
+## Fixed: Mission Logs Pagination
+
+**Issue:** Page > total_pages returned last page's data instead of empty results.
+
+**Root Cause:** 
+1. Missing import: `MissionLogsResponse` from wrong path
+2. `page = max(1, min(page, total_pages))` clamped page before checking
+
+**Fix in** `app/core/mission_executor.py`:
+```python
+# ✅ CORRECT - Check BEFORE clamping
+if page > total_pages:
+    return MissionLogsResponse(
+        items=[],
+        total=total,
+        page=page,
+        page_size=page_size,
+        total_pages=total_pages
+    )
+# Removed: page = max(1, min(page, total_pages))  # WRONG - clamps page
+```
+
+**Import fix:**
+```python
+from app.schemas.mission_log import MissionLogsResponse  # ✅ CORRECT
+# NOT: from app.db.models.mission_log import MissionLogsResponse  # WRONG
+```
+
+**Tested (Mission 2158 - 1,357 logs):**
+| Page | Result |
+|------|--------|
+| 137 | ✅ Empty (correct) |
+| 999 | ✅ Empty (correct) |
+| 136 | ✅ 7 items (last page) |
+| 1 | ✅ 10 items (first page) |
+
+**Commits:**
+- `e4ed77e` - fix(pagination): return empty results for page > total_pages
+
