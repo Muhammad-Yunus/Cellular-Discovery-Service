@@ -26,7 +26,7 @@ class TestCLIGPSProvider:
     def test_get_location_with_fix(self, mock_run):
         mock_run.return_value = MagicMock(
             returncode=0,
-            stdout='{"has_fix": true, "latitude": -6.15, "longitude": 106.90, "fix_quality": 3}',
+            stdout='{"has_fix": true, "latitude": -6.15, "longitude": 106.90, "altitude_m": 50.0}',
             stderr="",
         )
 
@@ -34,6 +34,7 @@ class TestCLIGPSProvider:
 
         assert location.latitude == -6.15
         assert location.longitude == 106.90
+        assert location.altitude == 50.0
         mock_run.assert_called_once()
         args = mock_run.call_args[0][0]
         assert "/home/pi/GPS/build/gps" in args
@@ -103,7 +104,7 @@ class TestCLIGPSProvider:
 
     @patch.object(CLIGPSProvider, "get_location")
     def test_is_available_true(self, mock_get):
-        mock_get.return_value = MagicMock(latitude=-6.15, longitude=106.90)
+        mock_get.return_value = MagicMock(latitude=-6.15, longitude=106.90, altitude=50.0)
         assert self.provider.is_available() is True
 
     @patch.object(CLIGPSProvider, "get_location")

@@ -117,6 +117,7 @@ class CLIGPSProvider:
 
             lat = data.get("latitude")
             lon = data.get("longitude")
+            alt = data.get("altitude_m")  # GPS CLI field name
 
             if lat is None or lon is None:
                 msg = "GPS data missing latitude or longitude"
@@ -124,7 +125,11 @@ class CLIGPSProvider:
                 raise GPSReadError(msg)
 
             _clear_gps_error()
-            return GPSLocation(latitude=lat, longitude=lon)
+            return GPSLocation(
+                latitude=lat,
+                longitude=lon,
+                altitude=alt if alt and alt > 0 else None,
+            )
 
         except subprocess.TimeoutExpired:
             msg = f"GPS CLI timeout after {self.timeout}s"
