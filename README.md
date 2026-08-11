@@ -82,7 +82,8 @@ cellular-discovery-service/
 │   ├── DEPLOYMENT.md            # Deployment guide
 │   ├── ARCHITECTURE.md          # Architecture overview
 │   ├── CONTRIBUTING.md          # Contribution guidelines
-│   └── README.md                # Docs folder summary
+│   ├── README.md                # Docs folder summary
+│   └── SCHEMA.md                # Database schema & migration history
 ├── AGENT.md                     # Original project specification
 ├── E2E_TEST_REPORT.md           # E2E test report
 ├── UNIT_TEST_REPORT.md          # Unit test report

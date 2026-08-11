@@ -137,18 +137,29 @@ Dependency Rule: Only Service layer depends on GPS Provider
 ### 6. Data Layer (Database)
 
 **ORM Models (SQLAlchemy):**
-- `ScanSession` - Store scan metadata (TTY, time, location)
-- `ScanResult` - Store individual network cells (Operator, MCC/MNC, RAT)
-- `Setting` - Key-value persistent settings
+- `Mission` - Mission lifecycle management (IDLE → RUNNING → COMPLETED)
+- `MissionLocation` - Waypoints and navigation points in a mission
+- `MissionLog` - Audit trail of mission events (STARTED, GPS_FIX, SCANNING, ARRIVED, COMPLETED, etc.)
+- `ScanSession` - Scan execution metadata (TTY port, time, location)
+- `ScanResult` - Individual network cell data (Operator, MCC/MNC, RAT)
+- `Setting` - Key-value persistent application settings
 
 **Migration System:**
 - Alembic manages all schema changes
 - Every model change requires an Alembic migration
 - Never use raw SQL or `Base.metadata.create_all()`
+- All tables created in `app` schema (not public)
+
+**Migration History:**
+| Revision | Date | Description |
+|----------|------|-------------|
+| `c7db929421f6` | 2026-07-27 | Initial tables (scan_sessions, settings, scan_results) |
+| `6f2b2fd5c9fe` | 2026-07-31 | Mission tables (missions, mission_locations) |
+| `9306296c5560` | 2026-08-11 | Add mission_logs table |
+
+For complete schema documentation, see [`Doc/SCHEMA.md`](SCHEMA.md).
 
 **Connection:** SQLAlchemy 2.x with async-friendly session management
-
-**Schema:** All tables created in `app` schema (not public)
 
 ---
 
