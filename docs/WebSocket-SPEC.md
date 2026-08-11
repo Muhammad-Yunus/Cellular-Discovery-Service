@@ -176,9 +176,10 @@ ws.onmessage = (event) => {
   "data": {
     "latitude": -6.150681,
     "longitude": 106.896891,
-    "altitude_m": 44.9,
-    "accuracy_m": 5.2,
-    "speed_ms": 0.0,
+    "altitude": 44.9,
+    "accuracy": 5.2,
+    "course_deg": 135.0,
+    "speed": 0.0,
     "status": "IDLE",
     "datetime": "2024-01-01T10:00:00Z",
     "provider": "cli"
@@ -193,9 +194,10 @@ ws.onmessage = (event) => {
   "data": {
     "latitude": 0.0,
     "longitude": 0.0,
-    "altitude_m": null,
-    "accuracy_m": null,
-    "speed_ms": 0.0,
+    "altitude": null,
+    "accuracy": null,
+    "course_deg": null,
+    "speed": 0.0,
     "status": "UNKNOWN",
     "datetime": "2024-01-01T10:00:00Z",
     "provider": "cli",
