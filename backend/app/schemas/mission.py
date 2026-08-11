@@ -79,7 +79,7 @@ class MissionCreate(BaseModel):
     name: str
     description: Optional[str] = None
     radius_meters: Optional[int] = Field(default=None, ge=10, le=100)
-    tty_port: Optional[str] = None
+    tty_port: str  # Required: must be a valid, existing /dev/ttyUSB* port
 
     @field_validator("name")
     @classmethod

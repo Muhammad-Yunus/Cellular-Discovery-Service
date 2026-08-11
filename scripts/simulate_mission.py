@@ -149,6 +149,65 @@ def get_real_gps_location() -> tuple[float, float]:
     return float(lat), float(lon)
 
 
+def detect_tty_port() -> str:
+    """
+    Mendeteksi port USB modem pertama yang terhubung.
+    Menggunakan lsusb untuk mencari Huawei modem, lalu memetakannya ke /dev/ttyUSB*.
+
+    Returns:
+        Path port (misal /dev/ttyUSB0)
+    """
+    import glob
+    import subprocess
+    try:
+        # Cari Huawei modem via lsusb
+        result = subprocess.run(
+            ["lsusb"], capture_output=True, text=True, timeout=10
+        )
+        huafei_bus = None
+        for line in result.stdout.splitlines():
+            if "Huawei" in line or "12d1" in line:
+                parts = line.strip().split()
+                # Format: Bus 001 Device 005: ID 12d1:1001 Huawei Technologies
+                if len(parts) >= 5:
+                    huafei_bus = parts[1]
+                    break
+        if not huafei_bus:
+            raise FileNotFoundError("Huawei modem tidak ditemukan di lsusb")
+
+        # Cocokan dengan /dev/ttyUSB* menggunakan udevadm
+        for tty_dev in sorted(glob.glob("/dev/ttyUSB*")):
+            dev_name = tty_dev.replace("/dev/", "")
+            try:
+                udev_info = subprocess.run(
+                    ["udevadm", "info", "-n", dev_name],
+                    capture_output=True, text=True, timeout=5
+                )
+                if udev_info.returncode != 0:
+                    continue
+                # Cek apakah dev ini milik Huawei modem yang sama
+                bus_match = False
+                for line in udev_info.stdout.splitlines():
+                    if line.startswith("E: BUSNUM="):
+                        if line.split("=", 1)[1] == huafei_bus:
+                            bus_match = True
+                            break
+                if bus_match:
+                    log(f"  Modem ditemukan: {tty_dev}")
+                    return tty_dev
+            except (subprocess.TimeoutExpired, subprocess.CalledProcessError):
+                continue
+
+        raise FileNotFoundError(f"Tidak ada /dev/ttyUSB* yang cocok dengan modem Huawei")
+    except Exception as e:
+        # Fallback: ambil ttyUSB0 pertama yang ada
+        tty_devices = sorted(glob.glob("/dev/ttyUSB*"))
+        if tty_devices:
+            log(f"  ⚠️ Deteksi modem gagal ({e}), fallback ke {tty_devices[0]}")
+            return tty_devices[0]
+        raise RuntimeError(f"Tidak ada /dev/ttyUSB* tersedia: {e}")
+
+
 def haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """
     Menghitung jarak antara dua titik koordinat menggunakan Haversine formula.
@@ -238,23 +297,26 @@ def generate_tower_locations(start_lat: float, start_lon: float, count: int,
 # FUNGSI API - INTERAKSI DENGAN BACKEND
 # ============================================================================
 
-def create_mission(name: str, description: str = "") -> int:
+def create_mission(name: str, description: str = "", tty_port: str = None) -> int:
     """
     Membuat mission baru via API.
 
     Args:
         name: Nama mission
         description: Deskripsi mission
+        tty_port: Port USB modem (misal /dev/ttyUSB0)
 
     Returns:
         Mission ID yang dibuat
     """
-    log(f"Membuat mission: {name}")
-    resp = requests.post(f"{API_BASE}/api/v1/missions", json={
+    log(f"Membuat mission: {name} (tty_port={tty_port})")
+    payload = {
         "name": name,
         "description": description,
         "radius_meters": 20,  # Radius geofence 20 meter
-    })
+        "tty_port": tty_port,
+    }
+    resp = requests.post(f"{API_BASE}/api/v1/missions", json=payload)
     resp.raise_for_status()
     data = resp.json()
     mission_id = data["id"]
@@ -557,6 +619,10 @@ def run_mission(start_lat: float, start_lon: float, name: str = "AUTO-MISSION",
     """
     mission_id = None
 
+    # Deteksi modem port sebelum membuat mission
+    tty_port = detect_tty_port()
+    log(f"Modem port: {tty_port}")
+
     try:
         # =========================================================================
         # STEP 1: Generate lokasi tower
@@ -589,9 +655,16 @@ def run_mission(start_lat: float, start_lon: float, name: str = "AUTO-MISSION",
         update_mock_start_lat_lon(start_lat, start_lon)
 
         # =========================================================================
+        # STEP 1.7: Set GPS ke mock agar plan API bisa baca lokasi tanpa hardware
+        # =========================================================================
+        set_gps_provider("mock", speed_ms=speed_ms)
+        restart_backend()
+        time.sleep(2)
+
+        # =========================================================================
         # STEP 2: Buat mission baru
         # =========================================================================
-        mission_id = create_mission(name, f"Auto-generated mission dengan {count} tower")
+        mission_id = create_mission(name, f"Auto-generated mission dengan {count} tower", tty_port=tty_port)
 
         # =========================================================================
         # STEP 3: Upload lokasi ke backend
@@ -601,26 +674,19 @@ def run_mission(start_lat: float, start_lon: float, name: str = "AUTO-MISSION",
         # =========================================================================
         # STEP 4: Plan route untuk optimasi urutan kunjungan
         # =========================================================================
-        plan_mission(mission_id)
-
-        # =========================================================================
-        # STEP 5: Setup Mock GPS dan restart backend
-        # =========================================================================
-        # Build string waypoints dari route hasil planning (diurutkan sequence_order)
-        # NOT dari locations asal karena route sudah dioptimasi oleh planner
         plan_result = plan_mission(mission_id)
         route_items = plan_result.get('items', [])
-        
+
         # Sort berdasarkan sequence_order (pastikan urutannya benar)
         route_items_sorted = sorted(route_items, key=lambda x: x.get('sequence_order', 0))
         waypoints_str = build_waypoints_string(route_items_sorted)
-        
+
         # Log route yang akan dipakai
         log(f"Waypoints dari route plan ({len(route_items_sorted)} tower):")
         for item in route_items_sorted:
             log(f"  #{item['sequence_order']}: {item['cellular_tower_id']} ({item['latitude']}, {item['longitude']})")
 
-        # Set provider ke moving_mock
+        # Set provider ke moving_mock untuk mission execution
         set_gps_provider("moving_mock", speed_ms=speed_ms)
 
         # Update waypoints di .env

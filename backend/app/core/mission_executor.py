@@ -76,7 +76,7 @@ class MissionExecutor:
         # Log only when: target changes, ≥10s elapsed, or distance changes ≥20m (or 20%)
         if event_type == "INFO":
             # Skip noise logs that aren't about target proximity (e.g. "No tty_port override")
-            noise_keywords = ["tty_port", "DEFAULT_TTY", "No tty", "failing"]
+            noise_keywords = ["tty_port", "DEFAULT_GPS_TTY", "No tty", "failing"]
             if any(kw in message for kw in noise_keywords):
                 return
 
@@ -325,20 +325,14 @@ class MissionExecutor:
         db = self._session_factory()
         try:
             mission = MissionRepository(db).get_by_id(mission_id)
-            port = mission.tty_port or get_settings().DEFAULT_TTY
-            tty_override = mission.tty_port is not None
+            if not mission.tty_port:
+                raise ValueError(
+                    f"Mission {mission_id} has no tty_port configured. "
+                    f"Please set a valid USB modem port (e.g., /dev/ttyUSB0) in the mission settings."
+                )
+            port = mission.tty_port
         finally:
             db.close()
-
-        if not tty_override:
-            logger.warning(
-                f"Mission {mission_id} falling back to DEFAULT_TTY={get_settings().DEFAULT_TTY}"
-            )
-            self._log(
-                mission_id,
-                "INFO",
-                f"No tty_port override, using DEFAULT_TTY={get_settings().DEFAULT_TTY}",
-            )
 
         try:
             scan = await asyncio.to_thread(

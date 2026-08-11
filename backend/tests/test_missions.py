@@ -181,7 +181,7 @@ class TestMissionEndpoints:
     def test_e01_create_then_list(self, client, db_session):
         create = client.post(
             "/api/v1/missions",
-            json={"name": "Smoke Mission", "description": "test", "radius_meters": 20},
+            json={"name": "Smoke Mission", "description": "test", "radius_meters": 20, "tty_port": "/dev/ttyUSB0"},
         )
 
         assert create.status_code == 201

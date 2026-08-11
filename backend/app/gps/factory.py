@@ -1,4 +1,3 @@
-import os
 from app.gps.provider import GPSProvider
 from app.gps.mock_provider import MockGPSProvider
 from app.gps.serial_provider import SerialGPSProvider
@@ -43,11 +42,11 @@ def create_gps_provider(provider_type: str, **kwargs) -> GPSProvider:
         return SerialGPSProvider(**kwargs)
     elif provider_type == "cli":
         # Allow env overrides for production tuning
-        command = kwargs.pop("command", "/home/pi/GPS/build/gps")
-        device = kwargs.pop("device", os.environ.get("GPS_CLI_DEVICE", "/dev/ttyAMA0"))
-        baud = int(kwargs.pop("baud", os.environ.get("GPS_CLI_BAUD", "9600")))
-        timeout = int(kwargs.pop("timeout", os.environ.get("GPS_CLI_TIMEOUT", "30")))
-        count = int(kwargs.pop("count", os.environ.get("GPS_CLI_COUNT", "5")))
+        command = kwargs.pop("command", settings.CLI_COMMAND)
+        device = kwargs.pop("device", settings.DEFAULT_GPS_TTY)
+        baud = int(kwargs.pop("baud", settings.GPS_CLI_BAUD))
+        timeout = int(kwargs.pop("timeout", settings.GPS_CLI_TIMEOUT))
+        count = int(kwargs.pop("count", settings.GPS_CLI_COUNT))
         return CLIGPSProvider(
             command=command,
             device=device,

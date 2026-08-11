@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     DATABASE_SCHEMA: str = "app"
 
     GPS_PROVIDER: str = "cli"
-    DEFAULT_TTY: str = "/dev/ttyAMA0"
+    DEFAULT_GPS_TTY: str = "/dev/ttyAMA0"
 
     # Moving Mock GPS parameters
     MOCK_GPS_START_LAT: float = -6.150677
@@ -26,7 +26,6 @@ class Settings(BaseSettings):
     MOCK_GPS_LOITER_LAPS: int = 3
 
     # GPS CLI tool parameters
-    GPS_CLI_DEVICE: str = "/dev/ttyAMA0"
     GPS_CLI_BAUD: int = 9600
     GPS_CLI_TIMEOUT: int = 60
     GPS_CLI_COUNT: int = 10
