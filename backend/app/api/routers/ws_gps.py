@@ -11,13 +11,22 @@ router = APIRouter(tags=["websocket"])
 
 GPS_CHANNEL = "gps"
 
+# Module-level singleton cache to prevent provider recreation on each WS connect
+_cached_provider = None
+_last_provider_type = None
+
 
 @router.websocket("/ws/gps")
 async def gps_websocket(websocket: WebSocket):
     await manager.connect(websocket, GPS_CHANNEL)
 
+    global _cached_provider, _last_provider_type
     settings = get_settings()
-    gps_provider = create_gps_provider(provider_type=settings.GPS_PROVIDER)
+    provider_type = settings.GPS_PROVIDER
+    if provider_type != _last_provider_type or _cached_provider is None:
+        _cached_provider = create_gps_provider(provider_type=provider_type)
+        _last_provider_type = provider_type
+    gps_provider = _cached_provider
 
     try:
         while True:
@@ -33,11 +42,12 @@ async def gps_websocket(websocket: WebSocket):
                     "data": {
                         "latitude": location.latitude,
                         "longitude": location.longitude,
+                        "provider": provider_type,
                     },
                 },
             )
 
-            await asyncio.sleep(10)
+            await asyncio.sleep(3)
     except WebSocketDisconnect:
         manager.disconnect(websocket, GPS_CHANNEL)
     except Exception as e:
