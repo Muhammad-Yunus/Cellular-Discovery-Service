@@ -152,60 +152,63 @@ def get_real_gps_location() -> tuple[float, float]:
 def detect_tty_port() -> str:
     """
     Mendeteksi port USB modem pertama yang terhubung.
-    Menggunakan lsusb untuk mencari Huawei modem, lalu memetakannya ke /dev/ttyUSB*.
+    Menggunakan udevadm untuk mencocokkan ID_VENDOR_ID dan ID_MODEL_ID
+    dari modem Huawei.
 
     Returns:
         Path port (misal /dev/ttyUSB0)
+
+    Raises:
+        FileNotFoundError: Jika modem Huawei tidak ditemukan
     """
     import glob
     import subprocess
+
+    # Cari ID vendor Huawei (12d1) dan ID model dari lsusb
     try:
-        # Cari Huawei modem via lsusb
         result = subprocess.run(
             ["lsusb"], capture_output=True, text=True, timeout=10
         )
-        huafei_bus = None
+        huawei_vendor_id = "12d1"
+        huawei_model_id = None
         for line in result.stdout.splitlines():
-            if "Huawei" in line or "12d1" in line:
-                parts = line.strip().split()
-                # Format: Bus 001 Device 005: ID 12d1:1001 Huawei Technologies
-                if len(parts) >= 5:
-                    huafei_bus = parts[1]
-                    break
-        if not huafei_bus:
-            raise FileNotFoundError("Huawei modem tidak ditemukan di lsusb")
-
-        # Cocokan dengan /dev/ttyUSB* menggunakan udevadm
-        for tty_dev in sorted(glob.glob("/dev/ttyUSB*")):
-            dev_name = tty_dev.replace("/dev/", "")
-            try:
-                udev_info = subprocess.run(
-                    ["udevadm", "info", "-n", dev_name],
-                    capture_output=True, text=True, timeout=5
-                )
-                if udev_info.returncode != 0:
-                    continue
-                # Cek apakah dev ini milik Huawei modem yang sama
-                bus_match = False
-                for line in udev_info.stdout.splitlines():
-                    if line.startswith("E: BUSNUM="):
-                        if line.split("=", 1)[1] == huafei_bus:
-                            bus_match = True
-                            break
-                if bus_match:
-                    log(f"  Modem ditemukan: {tty_dev}")
-                    return tty_dev
-            except (subprocess.TimeoutExpired, subprocess.CalledProcessError):
-                continue
-
-        raise FileNotFoundError(f"Tidak ada /dev/ttyUSB* yang cocok dengan modem Huawei")
+            if "Huawei" in line and "12d1" in line:
+                # Format: ID 12d1:1001 Huawei Technologies
+                for part in line.split():
+                    if part.startswith("12d1:"):
+                        huawei_model_id = part.split(":")[1]
+                        break
+                break
+        if not huawei_model_id:
+            raise FileNotFoundError(
+                f"Modem Huawei dengan vendor ID {huawei_vendor_id} tidak ditemukan di lsusb"
+            )
+        log(f"  Mencari modem Huawei ID {huawei_vendor_id}:{huawei_model_id}...")
     except Exception as e:
-        # Fallback: ambil ttyUSB0 pertama yang ada
-        tty_devices = sorted(glob.glob("/dev/ttyUSB*"))
-        if tty_devices:
-            log(f"  ⚠️ Deteksi modem gagal ({e}), fallback ke {tty_devices[0]}")
-            return tty_devices[0]
-        raise RuntimeError(f"Tidak ada /dev/ttyUSB* tersedia: {e}")
+        raise FileNotFoundError(f"Gagal mendeteksi modem Huawei: {e}")
+
+    # Cari ttyUSB* yang cocok dengan vendor/model ID via udevadm
+    for tty_dev in sorted(glob.glob("/dev/ttyUSB*")):
+        dev_name = tty_dev.replace("/dev/", "")
+        try:
+            udev_info = subprocess.run(
+                ["udevadm", "info", "-n", dev_name],
+                capture_output=True, text=True, timeout=5
+            )
+            if udev_info.returncode != 0:
+                continue
+            env_output = udev_info.stdout
+            if f"ID_VENDOR_ID={huawei_vendor_id}" in env_output and \
+               f"ID_MODEL_ID={huawei_model_id}" in env_output:
+                log(f"  Modem ditemukan: {tty_dev}")
+                return tty_dev
+        except (subprocess.TimeoutExpired, subprocess.CalledProcessError):
+            continue
+
+    raise FileNotFoundError(
+        f"Tidak ada /dev/ttyUSB* yang cocok dengan modem Huawei "
+        f"ID {huawei_vendor_id}:{huawei_model_id}"
+    )
 
 
 def haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
