@@ -143,16 +143,15 @@ class MissionScanService:
         output = StringIO()
         writer = csv.writer(output)
         writer.writerow([
-            "id", "session_id", "scan_time", "tty_port", "latitude", "longitude",
+            "session_id", "scan_time", "tty_port", "latitude", "longitude",
             "created_at", "operator_name", "mcc", "mnc", "rat", "status",
-            "mission_location_id", "cellular_tower_id", "cellular_tower_name",
+            "cellular_tower_id", "cellular_tower_name",
         ])
 
         for r in results:
             session = r.session
             mission_loc = session.mission_location if session else None
             writer.writerow([
-                r.id,
                 session.id if session else "",
                 session.scan_time.isoformat() if session.scan_time else "",
                 session.tty_port if session else "",
@@ -164,7 +163,6 @@ class MissionScanService:
                 r.mnc or "",
                 r.rat or "",
                 r.status or "",
-                mission_loc.id if mission_loc else "",
                 mission_loc.cellular_tower_id if mission_loc else "",
                 mission_loc.cellular_tower_name if mission_loc else "",
             ])
