@@ -14,6 +14,11 @@ class DeviceLocationResponse(BaseModel):
     longitude: float
     altitude: Optional[float] = None
     accuracy: Optional[float] = None
+    course_deg: Optional[float] = None
+    """
+    Arah heading dalam derajat (0-360) dari utara sejati.
+    None jika tidak tersedia dari GPS.
+    """
     speed: float
     """
     Kecepatan device dalam m/s.

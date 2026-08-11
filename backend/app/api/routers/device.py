@@ -157,6 +157,7 @@ def get_device_location():
             longitude=location.longitude,
             altitude=location.altitude,
             accuracy=location.accuracy,
+            course_deg=location.course_deg,
             speed=round(speed, 2),
             status=status,
             datetime=_last_timestamp,
