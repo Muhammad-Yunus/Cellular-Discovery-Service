@@ -66,7 +66,7 @@ class MissionExecutor:
         settings = get_settings()
         return ScanService(
             db=db,
-            cli_adapter=CLIAdapter(command=settings.CLI_COMMAND),
+            cli_adapter=CLIAdapter(command=settings.LTE_DISCOVERY_COMMAND),
             gps_provider=self.gps_provider,
         )
 

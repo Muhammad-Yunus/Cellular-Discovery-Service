@@ -29,6 +29,7 @@ class Settings(BaseSettings):
     GPS_CLI_BAUD: int = 9600
     GPS_CLI_TIMEOUT: int = 60
     GPS_CLI_COUNT: int = 10
+    GPS_CLI_COMMAND: str = "/home/pi/GPS/build/gps"
 
     SCAN_TIMEOUT: int = 30
 
@@ -40,7 +41,7 @@ class Settings(BaseSettings):
     MISSION_START_GPS_TIMEOUT: int = Field(default=5, gt=0, description="Maximum time to wait for GPS availability at mission start")
     MISSION_LOG_SIZE: int = Field(default=200, gt=0, description="Maximum number of log entries stored per mission")
 
-    CLI_COMMAND: str = "lte-discovery"
+    LTE_DISCOVERY_COMMAND: str = "lte-discovery"
 
     LOG_LEVEL: str = "INFO"
 

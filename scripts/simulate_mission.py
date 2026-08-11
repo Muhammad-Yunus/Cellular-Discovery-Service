@@ -67,7 +67,7 @@ TOWER_COUNT = 5           # Jumlah tower yang akan di-generate
 
 # Konfigurasi monitoring
 MONITOR_INTERVAL = 5      # Interval pengecekan status (detik)
-MAX_MISSION_DURATION = 300  # Timeout maksimum mission (detik)
+MAX_MISSION_DURATION = 600  # Timeout maksimum mission (detik)
 
 # Arah kompas untuk penempatan tower (derajat)
 # 0° = Utara, 90° = Timur, 180° = Selatan, 270° = Barat

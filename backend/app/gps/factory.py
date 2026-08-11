@@ -42,7 +42,7 @@ def create_gps_provider(provider_type: str, **kwargs) -> GPSProvider:
         return SerialGPSProvider(**kwargs)
     elif provider_type == "cli":
         # Allow env overrides for production tuning
-        command = kwargs.pop("command", settings.CLI_COMMAND)
+        command = kwargs.pop("command", settings.GPS_CLI_COMMAND)
         device = kwargs.pop("device", settings.DEFAULT_GPS_TTY)
         baud = int(kwargs.pop("baud", settings.GPS_CLI_BAUD))
         timeout = int(kwargs.pop("timeout", settings.GPS_CLI_TIMEOUT))
