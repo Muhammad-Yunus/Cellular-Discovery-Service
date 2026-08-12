@@ -1,0 +1,4639 @@
+{
+  "config": {
+    "start": {
+      "latitude": -6.150521,
+      "longitude": 106.896972
+    },
+    "waypoints": [
+      {
+        "index": 0,
+        "latitude": -6.148722,
+        "longitude": 106.896972
+      },
+      {
+        "index": 1,
+        "latitude": -6.149862,
+        "longitude": 106.899011
+      }
+    ],
+    "loiter_radius_m": 50.0,
+    "cruise_speed_ms": 10.0,
+    "loiter_laps": 3,
+    "total_loop_duration_s": 283.06,
+    "sample_interval_s": 0.5
+  },
+  "segments_summary": [
+    {
+      "type": "approach_tower_0",
+      "start": 0.0,
+      "end": 20.003967303355466,
+      "duration": 20.003967303355466
+    },
+    {
+      "type": "loiter",
+      "start": 20.003967303355466,
+      "end": 114.25174691104925,
+      "duration": 94.24777960769379
+    },
+    {
+      "type": "exit_tower_0",
+      "start": 114.25174691104925,
+      "end": 121.75174691105205,
+      "duration": 7.500000000002798
+    },
+    {
+      "type": "approach_tower_1",
+      "start": 121.75174691105205,
+      "end": 152.00453066584228,
+      "duration": 30.252783754790222
+    },
+    {
+      "type": "loiter",
+      "start": 152.00453066584228,
+      "end": 246.25231027353607,
+      "duration": 94.24777960769379
+    },
+    {
+      "type": "exit_tower_1",
+      "start": 246.25231027353607,
+      "end": 253.75231027356142,
+      "duration": 7.500000000025365
+    },
+    {
+      "type": "return_to_start",
+      "start": 253.75231027356142,
+      "end": 283.0601050752733,
+      "duration": 29.30779480171189
+    }
+  ],
+  "path_turning_points": [
+    {
+      "index": 0,
+      "latitude": -6.150521,
+      "longitude": 106.896972
+    },
+    {
+      "index": 1,
+      "latitude": -6.148722,
+      "longitude": 106.896972
+    },
+    {
+      "index": 2,
+      "latitude": -6.14804751,
+      "longitude": 106.896972
+    },
+    {
+      "index": 3,
+      "latitude": -6.149862,
+      "longitude": 106.899011
+    },
+    {
+      "index": 4,
+      "latitude": -6.1501926,
+      "longitude": 106.89960231
+    },
+    {
+      "index": 5,
+      "latitude": -6.150521,
+      "longitude": 106.896972
+    }
+  ],
+  "trajectory": [
+    {
+      "time_s": 0.0,
+      "phase": "approach_tower_0",
+      "latitude": -6.150521,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 0.5,
+      "phase": "approach_tower_0",
+      "latitude": -6.15047603,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 1.0,
+      "phase": "approach_tower_0",
+      "latitude": -6.15043107,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 1.5,
+      "phase": "approach_tower_0",
+      "latitude": -6.1503861,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 2.0,
+      "phase": "approach_tower_0",
+      "latitude": -6.15034114,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 2.5,
+      "phase": "approach_tower_0",
+      "latitude": -6.15029617,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 3.0,
+      "phase": "approach_tower_0",
+      "latitude": -6.1502512,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 3.5,
+      "phase": "approach_tower_0",
+      "latitude": -6.15020624,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 4.0,
+      "phase": "approach_tower_0",
+      "latitude": -6.15016127,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 4.5,
+      "phase": "approach_tower_0",
+      "latitude": -6.15011631,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 5.0,
+      "phase": "approach_tower_0",
+      "latitude": -6.15007134,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 5.5,
+      "phase": "approach_tower_0",
+      "latitude": -6.15002637,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 6.0,
+      "phase": "approach_tower_0",
+      "latitude": -6.14998141,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 6.5,
+      "phase": "approach_tower_0",
+      "latitude": -6.14993644,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 7.0,
+      "phase": "approach_tower_0",
+      "latitude": -6.14989147,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 7.5,
+      "phase": "approach_tower_0",
+      "latitude": -6.14984651,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 8.0,
+      "phase": "approach_tower_0",
+      "latitude": -6.14980154,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 8.5,
+      "phase": "approach_tower_0",
+      "latitude": -6.14975658,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 9.0,
+      "phase": "approach_tower_0",
+      "latitude": -6.14971161,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 9.5,
+      "phase": "approach_tower_0",
+      "latitude": -6.14966664,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 10.0,
+      "phase": "approach_tower_0",
+      "latitude": -6.14962168,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 10.5,
+      "phase": "approach_tower_0",
+      "latitude": -6.14957671,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 11.0,
+      "phase": "approach_tower_0",
+      "latitude": -6.14953175,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 11.5,
+      "phase": "approach_tower_0",
+      "latitude": -6.14948678,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 12.0,
+      "phase": "approach_tower_0",
+      "latitude": -6.14944181,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 12.5,
+      "phase": "approach_tower_0",
+      "latitude": -6.14939685,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 13.0,
+      "phase": "approach_tower_0",
+      "latitude": -6.14935188,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 13.5,
+      "phase": "approach_tower_0",
+      "latitude": -6.14930692,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 14.0,
+      "phase": "approach_tower_0",
+      "latitude": -6.14926195,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 14.5,
+      "phase": "approach_tower_0",
+      "latitude": -6.14921698,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 15.0,
+      "phase": "approach_tower_0",
+      "latitude": -6.14917202,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 15.5,
+      "phase": "approach_tower_0",
+      "latitude": -6.14912705,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 16.0,
+      "phase": "approach_tower_0",
+      "latitude": -6.14908209,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 16.5,
+      "phase": "approach_tower_0",
+      "latitude": -6.14903712,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 17.0,
+      "phase": "approach_tower_0",
+      "latitude": -6.14899215,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 17.5,
+      "phase": "approach_tower_0",
+      "latitude": -6.14894719,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 18.0,
+      "phase": "approach_tower_0",
+      "latitude": -6.14890222,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 18.5,
+      "phase": "approach_tower_0",
+      "latitude": -6.14885726,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 19.0,
+      "phase": "approach_tower_0",
+      "latitude": -6.14881229,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 19.5,
+      "phase": "approach_tower_0",
+      "latitude": -6.14876732,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 20.0,
+      "phase": "approach_tower_0",
+      "latitude": -6.14872236,
+      "longitude": 106.896972,
+      "course_deg": 0.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 20.5,
+      "phase": "loiter",
+      "latitude": -6.14827505,
+      "longitude": 106.89701674,
+      "course_deg": 95.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 21.0,
+      "phase": "loiter",
+      "latitude": -6.14828173,
+      "longitude": 106.8970614,
+      "course_deg": 101.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 21.5,
+      "phase": "loiter",
+      "latitude": -6.1482928,
+      "longitude": 106.89710516,
+      "course_deg": 107.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 22.0,
+      "phase": "loiter",
+      "latitude": -6.14830816,
+      "longitude": 106.89714759,
+      "course_deg": 112.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 22.5,
+      "phase": "loiter",
+      "latitude": -6.14832766,
+      "longitude": 106.89718827,
+      "course_deg": 118.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 23.0,
+      "phase": "loiter",
+      "latitude": -6.14835109,
+      "longitude": 106.89722678,
+      "course_deg": 124.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 23.5,
+      "phase": "loiter",
+      "latitude": -6.14837824,
+      "longitude": 106.89726275,
+      "course_deg": 130.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 24.0,
+      "phase": "loiter",
+      "latitude": -6.14840881,
+      "longitude": 106.89729582,
+      "course_deg": 135.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 24.5,
+      "phase": "loiter",
+      "latitude": -6.14844252,
+      "longitude": 106.89732565,
+      "course_deg": 141.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 25.0,
+      "phase": "loiter",
+      "latitude": -6.14847902,
+      "longitude": 106.89735194,
+      "course_deg": 147.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 25.5,
+      "phase": "loiter",
+      "latitude": -6.14851795,
+      "longitude": 106.89737444,
+      "course_deg": 153.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 26.0,
+      "phase": "loiter",
+      "latitude": -6.14855891,
+      "longitude": 106.89739292,
+      "course_deg": 158.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 26.5,
+      "phase": "loiter",
+      "latitude": -6.14860151,
+      "longitude": 106.8974072,
+      "course_deg": 164.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 27.0,
+      "phase": "loiter",
+      "latitude": -6.14864531,
+      "longitude": 106.89741712,
+      "course_deg": 170.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 27.5,
+      "phase": "loiter",
+      "latitude": -6.14868987,
+      "longitude": 106.8974226,
+      "course_deg": 175.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 28.0,
+      "phase": "loiter",
+      "latitude": -6.14873476,
+      "longitude": 106.89742357,
+      "course_deg": 181.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 28.5,
+      "phase": "loiter",
+      "latitude": -6.14877952,
+      "longitude": 106.89742004,
+      "course_deg": 187.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 29.0,
+      "phase": "loiter",
+      "latitude": -6.1488237,
+      "longitude": 106.89741202,
+      "course_deg": 193.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 29.5,
+      "phase": "loiter",
+      "latitude": -6.14886687,
+      "longitude": 106.89739961,
+      "course_deg": 198.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 30.0,
+      "phase": "loiter",
+      "latitude": -6.14890859,
+      "longitude": 106.89738293,
+      "course_deg": 204.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 30.5,
+      "phase": "loiter",
+      "latitude": -6.14894845,
+      "longitude": 106.89736214,
+      "course_deg": 210.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 31.0,
+      "phase": "loiter",
+      "latitude": -6.14898604,
+      "longitude": 106.89733745,
+      "course_deg": 216.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 31.5,
+      "phase": "loiter",
+      "latitude": -6.149021,
+      "longitude": 106.89730911,
+      "course_deg": 221.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 32.0,
+      "phase": "loiter",
+      "latitude": -6.14905296,
+      "longitude": 106.89727741,
+      "course_deg": 227.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 32.5,
+      "phase": "loiter",
+      "latitude": -6.14908162,
+      "longitude": 106.89724265,
+      "course_deg": 233.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 33.0,
+      "phase": "loiter",
+      "latitude": -6.14910669,
+      "longitude": 106.89720519,
+      "course_deg": 238.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 33.5,
+      "phase": "loiter",
+      "latitude": -6.14912792,
+      "longitude": 106.89716539,
+      "course_deg": 244.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 34.0,
+      "phase": "loiter",
+      "latitude": -6.14914508,
+      "longitude": 106.89712367,
+      "course_deg": 250.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 34.5,
+      "phase": "loiter",
+      "latitude": -6.14915803,
+      "longitude": 106.89708043,
+      "course_deg": 256.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 35.0,
+      "phase": "loiter",
+      "latitude": -6.14916661,
+      "longitude": 106.89703611,
+      "course_deg": 261.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 35.5,
+      "phase": "loiter",
+      "latitude": -6.14917075,
+      "longitude": 106.89699114,
+      "course_deg": 267.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 36.0,
+      "phase": "loiter",
+      "latitude": -6.14917041,
+      "longitude": 106.89694599,
+      "course_deg": 273.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 36.5,
+      "phase": "loiter",
+      "latitude": -6.14916559,
+      "longitude": 106.89690109,
+      "course_deg": 279.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 37.0,
+      "phase": "loiter",
+      "latitude": -6.14915633,
+      "longitude": 106.8968569,
+      "course_deg": 284.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 37.5,
+      "phase": "loiter",
+      "latitude": -6.14914274,
+      "longitude": 106.89681387,
+      "course_deg": 290.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 38.0,
+      "phase": "loiter",
+      "latitude": -6.14912494,
+      "longitude": 106.89677241,
+      "course_deg": 296.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 38.5,
+      "phase": "loiter",
+      "latitude": -6.14910312,
+      "longitude": 106.89673295,
+      "course_deg": 301.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 39.0,
+      "phase": "loiter",
+      "latitude": -6.14907749,
+      "longitude": 106.89669587,
+      "course_deg": 307.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 39.5,
+      "phase": "loiter",
+      "latitude": -6.1490483,
+      "longitude": 106.89666156,
+      "course_deg": 313.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 40.0,
+      "phase": "loiter",
+      "latitude": -6.14901586,
+      "longitude": 106.89663035,
+      "course_deg": 319.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 40.5,
+      "phase": "loiter",
+      "latitude": -6.14898048,
+      "longitude": 106.89660255,
+      "course_deg": 324.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 41.0,
+      "phase": "loiter",
+      "latitude": -6.14894251,
+      "longitude": 106.89657844,
+      "course_deg": 330.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 41.5,
+      "phase": "loiter",
+      "latitude": -6.14890235,
+      "longitude": 106.89655826,
+      "course_deg": 336.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 42.0,
+      "phase": "loiter",
+      "latitude": -6.14886038,
+      "longitude": 106.89654222,
+      "course_deg": 342.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 42.5,
+      "phase": "loiter",
+      "latitude": -6.14881703,
+      "longitude": 106.89653047,
+      "course_deg": 347.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 43.0,
+      "phase": "loiter",
+      "latitude": -6.14877273,
+      "longitude": 106.89652314,
+      "course_deg": 353.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 43.5,
+      "phase": "loiter",
+      "latitude": -6.14872792,
+      "longitude": 106.89652028,
+      "course_deg": 359.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 44.0,
+      "phase": "loiter",
+      "latitude": -6.14868305,
+      "longitude": 106.89652195,
+      "course_deg": 5.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 44.5,
+      "phase": "loiter",
+      "latitude": -6.14863858,
+      "longitude": 106.89652811,
+      "course_deg": 10.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 45.0,
+      "phase": "loiter",
+      "latitude": -6.14859493,
+      "longitude": 106.8965387,
+      "course_deg": 16.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 45.5,
+      "phase": "loiter",
+      "latitude": -6.14855256,
+      "longitude": 106.89655362,
+      "course_deg": 22.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 46.0,
+      "phase": "loiter",
+      "latitude": -6.14851188,
+      "longitude": 106.89657273,
+      "course_deg": 27.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 46.5,
+      "phase": "loiter",
+      "latitude": -6.1484733,
+      "longitude": 106.89659582,
+      "course_deg": 33.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 47.0,
+      "phase": "loiter",
+      "latitude": -6.1484372,
+      "longitude": 106.89662267,
+      "course_deg": 39.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 47.5,
+      "phase": "loiter",
+      "latitude": -6.14840395,
+      "longitude": 106.89665302,
+      "course_deg": 45.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 48.0,
+      "phase": "loiter",
+      "latitude": -6.14837388,
+      "longitude": 106.89668654,
+      "course_deg": 50.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 48.5,
+      "phase": "loiter",
+      "latitude": -6.14834728,
+      "longitude": 106.89672293,
+      "course_deg": 56.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 49.0,
+      "phase": "loiter",
+      "latitude": -6.14832443,
+      "longitude": 106.8967618,
+      "course_deg": 62.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 49.5,
+      "phase": "loiter",
+      "latitude": -6.14830555,
+      "longitude": 106.89680277,
+      "course_deg": 68.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 50.0,
+      "phase": "loiter",
+      "latitude": -6.14829083,
+      "longitude": 106.89684543,
+      "course_deg": 73.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 50.5,
+      "phase": "loiter",
+      "latitude": -6.14828042,
+      "longitude": 106.89688935,
+      "course_deg": 79.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 51.0,
+      "phase": "loiter",
+      "latitude": -6.14827443,
+      "longitude": 106.89693411,
+      "course_deg": 85.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 51.5,
+      "phase": "loiter",
+      "latitude": -6.1482729,
+      "longitude": 106.89697924,
+      "course_deg": 90.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 52.0,
+      "phase": "loiter",
+      "latitude": -6.14827586,
+      "longitude": 106.8970243,
+      "course_deg": 96.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 52.5,
+      "phase": "loiter",
+      "latitude": -6.14828328,
+      "longitude": 106.89706883,
+      "course_deg": 102.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 53.0,
+      "phase": "loiter",
+      "latitude": -6.14829509,
+      "longitude": 106.8971124,
+      "course_deg": 108.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 53.5,
+      "phase": "loiter",
+      "latitude": -6.14831116,
+      "longitude": 106.89715456,
+      "course_deg": 113.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 54.0,
+      "phase": "loiter",
+      "latitude": -6.14833133,
+      "longitude": 106.89719491,
+      "course_deg": 119.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 54.5,
+      "phase": "loiter",
+      "latitude": -6.14835541,
+      "longitude": 106.89723302,
+      "course_deg": 125.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 55.0,
+      "phase": "loiter",
+      "latitude": -6.14838315,
+      "longitude": 106.89726853,
+      "course_deg": 131.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 55.5,
+      "phase": "loiter",
+      "latitude": -6.14841427,
+      "longitude": 106.89730107,
+      "course_deg": 136.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 56.0,
+      "phase": "loiter",
+      "latitude": -6.14844847,
+      "longitude": 106.89733032,
+      "course_deg": 142.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 56.5,
+      "phase": "loiter",
+      "latitude": -6.14848541,
+      "longitude": 106.897356,
+      "course_deg": 148.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 57.0,
+      "phase": "loiter",
+      "latitude": -6.1485247,
+      "longitude": 106.89737784,
+      "course_deg": 153.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 57.5,
+      "phase": "loiter",
+      "latitude": -6.14856597,
+      "longitude": 106.89739562,
+      "course_deg": 159.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 58.0,
+      "phase": "loiter",
+      "latitude": -6.1486088,
+      "longitude": 106.89740917,
+      "course_deg": 165.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 58.5,
+      "phase": "loiter",
+      "latitude": -6.14865276,
+      "longitude": 106.89741835,
+      "course_deg": 171.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 59.0,
+      "phase": "loiter",
+      "latitude": -6.14869741,
+      "longitude": 106.89742308,
+      "course_deg": 176.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 59.5,
+      "phase": "loiter",
+      "latitude": -6.14874231,
+      "longitude": 106.89742329,
+      "course_deg": 182.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 60.0,
+      "phase": "loiter",
+      "latitude": -6.148787,
+      "longitude": 106.897419,
+      "course_deg": 188.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 60.5,
+      "phase": "loiter",
+      "latitude": -6.14883104,
+      "longitude": 106.89741024,
+      "course_deg": 194.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 61.0,
+      "phase": "loiter",
+      "latitude": -6.148874,
+      "longitude": 106.8973971,
+      "course_deg": 199.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 61.5,
+      "phase": "loiter",
+      "latitude": -6.14891543,
+      "longitude": 106.89737971,
+      "course_deg": 205.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 62.0,
+      "phase": "loiter",
+      "latitude": -6.14895494,
+      "longitude": 106.89735825,
+      "course_deg": 211.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 62.5,
+      "phase": "loiter",
+      "latitude": -6.14899211,
+      "longitude": 106.89733294,
+      "course_deg": 217.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 63.0,
+      "phase": "loiter",
+      "latitude": -6.14902659,
+      "longitude": 106.89730401,
+      "course_deg": 222.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 63.5,
+      "phase": "loiter",
+      "latitude": -6.14905802,
+      "longitude": 106.89727177,
+      "course_deg": 228.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 64.0,
+      "phase": "loiter",
+      "latitude": -6.1490861,
+      "longitude": 106.89723653,
+      "course_deg": 234.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 64.5,
+      "phase": "loiter",
+      "latitude": -6.14911054,
+      "longitude": 106.89719865,
+      "course_deg": 239.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 65.0,
+      "phase": "loiter",
+      "latitude": -6.14913109,
+      "longitude": 106.8971585,
+      "course_deg": 245.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 65.5,
+      "phase": "loiter",
+      "latitude": -6.14914756,
+      "longitude": 106.89711649,
+      "course_deg": 251.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 66.0,
+      "phase": "loiter",
+      "latitude": -6.14915978,
+      "longitude": 106.89707304,
+      "course_deg": 257.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 66.5,
+      "phase": "loiter",
+      "latitude": -6.14916762,
+      "longitude": 106.89702858,
+      "course_deg": 262.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 67.0,
+      "phase": "loiter",
+      "latitude": -6.14917101,
+      "longitude": 106.89698355,
+      "course_deg": 268.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 67.5,
+      "phase": "loiter",
+      "latitude": -6.14916991,
+      "longitude": 106.89693841,
+      "course_deg": 274.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 68.0,
+      "phase": "loiter",
+      "latitude": -6.14916434,
+      "longitude": 106.8968936,
+      "course_deg": 280.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 68.5,
+      "phase": "loiter",
+      "latitude": -6.14915435,
+      "longitude": 106.89684958,
+      "course_deg": 285.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 69.0,
+      "phase": "loiter",
+      "latitude": -6.14914004,
+      "longitude": 106.89680677,
+      "course_deg": 291.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 69.5,
+      "phase": "loiter",
+      "latitude": -6.14912155,
+      "longitude": 106.89676562,
+      "course_deg": 297.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 70.0,
+      "phase": "loiter",
+      "latitude": -6.14909907,
+      "longitude": 106.89672654,
+      "course_deg": 302.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 70.5,
+      "phase": "loiter",
+      "latitude": -6.14907282,
+      "longitude": 106.8966899,
+      "course_deg": 308.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 71.0,
+      "phase": "loiter",
+      "latitude": -6.14904307,
+      "longitude": 106.89665608,
+      "course_deg": 314.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 71.5,
+      "phase": "loiter",
+      "latitude": -6.1490101,
+      "longitude": 106.89662542,
+      "course_deg": 320.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 72.0,
+      "phase": "loiter",
+      "latitude": -6.14897426,
+      "longitude": 106.89659823,
+      "course_deg": 325.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 72.5,
+      "phase": "loiter",
+      "latitude": -6.1489359,
+      "longitude": 106.89657476,
+      "course_deg": 331.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 73.0,
+      "phase": "loiter",
+      "latitude": -6.14889541,
+      "longitude": 106.89655527,
+      "course_deg": 337.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 73.5,
+      "phase": "loiter",
+      "latitude": -6.14885318,
+      "longitude": 106.89653994,
+      "course_deg": 343.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 74.0,
+      "phase": "loiter",
+      "latitude": -6.14880963,
+      "longitude": 106.89652893,
+      "course_deg": 348.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 74.5,
+      "phase": "loiter",
+      "latitude": -6.14876522,
+      "longitude": 106.89652234,
+      "course_deg": 354.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 75.0,
+      "phase": "loiter",
+      "latitude": -6.14872037,
+      "longitude": 106.89652025,
+      "course_deg": 0.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 75.5,
+      "phase": "loiter",
+      "latitude": -6.14867554,
+      "longitude": 106.89652267,
+      "course_deg": 5.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 76.0,
+      "phase": "loiter",
+      "latitude": -6.14863117,
+      "longitude": 106.89652958,
+      "course_deg": 11.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 76.5,
+      "phase": "loiter",
+      "latitude": -6.14858771,
+      "longitude": 106.89654091,
+      "course_deg": 17.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 77.0,
+      "phase": "loiter",
+      "latitude": -6.14854559,
+      "longitude": 106.89655655,
+      "course_deg": 23.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 77.5,
+      "phase": "loiter",
+      "latitude": -6.14850523,
+      "longitude": 106.89657634,
+      "course_deg": 28.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 78.0,
+      "phase": "loiter",
+      "latitude": -6.14846704,
+      "longitude": 106.89660008,
+      "course_deg": 34.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 78.5,
+      "phase": "loiter",
+      "latitude": -6.1484314,
+      "longitude": 106.89662754,
+      "course_deg": 40.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 79.0,
+      "phase": "loiter",
+      "latitude": -6.14839866,
+      "longitude": 106.89665844,
+      "course_deg": 46.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 79.5,
+      "phase": "loiter",
+      "latitude": -6.14836915,
+      "longitude": 106.89669247,
+      "course_deg": 51.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 80.0,
+      "phase": "loiter",
+      "latitude": -6.14834317,
+      "longitude": 106.8967293,
+      "course_deg": 57.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 80.5,
+      "phase": "loiter",
+      "latitude": -6.14832097,
+      "longitude": 106.89676855,
+      "course_deg": 63.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 81.0,
+      "phase": "loiter",
+      "latitude": -6.14830278,
+      "longitude": 106.89680983,
+      "course_deg": 69.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 81.5,
+      "phase": "loiter",
+      "latitude": -6.14828878,
+      "longitude": 106.89685274,
+      "course_deg": 74.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 82.0,
+      "phase": "loiter",
+      "latitude": -6.14827911,
+      "longitude": 106.89689683,
+      "course_deg": 80.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 82.5,
+      "phase": "loiter",
+      "latitude": -6.14827386,
+      "longitude": 106.89694168,
+      "course_deg": 86.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 83.0,
+      "phase": "loiter",
+      "latitude": -6.14827309,
+      "longitude": 106.89698683,
+      "course_deg": 91.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 83.5,
+      "phase": "loiter",
+      "latitude": -6.1482768,
+      "longitude": 106.89703183,
+      "course_deg": 97.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 84.0,
+      "phase": "loiter",
+      "latitude": -6.14828496,
+      "longitude": 106.89707624,
+      "course_deg": 103.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 84.5,
+      "phase": "loiter",
+      "latitude": -6.14829749,
+      "longitude": 106.8971196,
+      "course_deg": 109.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 85.0,
+      "phase": "loiter",
+      "latitude": -6.14831427,
+      "longitude": 106.89716149,
+      "course_deg": 114.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 85.5,
+      "phase": "loiter",
+      "latitude": -6.14833511,
+      "longitude": 106.89720148,
+      "course_deg": 120.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 86.0,
+      "phase": "loiter",
+      "latitude": -6.14835982,
+      "longitude": 106.89723918,
+      "course_deg": 126.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 86.5,
+      "phase": "loiter",
+      "latitude": -6.14838815,
+      "longitude": 106.89727421,
+      "course_deg": 132.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 87.0,
+      "phase": "loiter",
+      "latitude": -6.14841982,
+      "longitude": 106.89730623,
+      "course_deg": 137.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 87.5,
+      "phase": "loiter",
+      "latitude": -6.1484545,
+      "longitude": 106.8973349,
+      "course_deg": 143.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 88.0,
+      "phase": "loiter",
+      "latitude": -6.14849186,
+      "longitude": 106.89735995,
+      "course_deg": 149.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 88.5,
+      "phase": "loiter",
+      "latitude": -6.14853152,
+      "longitude": 106.89738112,
+      "course_deg": 154.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 89.0,
+      "phase": "loiter",
+      "latitude": -6.14857308,
+      "longitude": 106.8973982,
+      "course_deg": 160.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 89.5,
+      "phase": "loiter",
+      "latitude": -6.14861612,
+      "longitude": 106.89741102,
+      "course_deg": 166.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 90.0,
+      "phase": "loiter",
+      "latitude": -6.14866023,
+      "longitude": 106.89741946,
+      "course_deg": 172.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 90.5,
+      "phase": "loiter",
+      "latitude": -6.14870495,
+      "longitude": 106.89742343,
+      "course_deg": 177.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 91.0,
+      "phase": "loiter",
+      "latitude": -6.14874985,
+      "longitude": 106.89742289,
+      "course_deg": 183.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 91.5,
+      "phase": "loiter",
+      "latitude": -6.14879446,
+      "longitude": 106.89741784,
+      "course_deg": 189.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 92.0,
+      "phase": "loiter",
+      "latitude": -6.14883835,
+      "longitude": 106.89740833,
+      "course_deg": 195.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 92.5,
+      "phase": "loiter",
+      "latitude": -6.14888108,
+      "longitude": 106.89739447,
+      "course_deg": 200.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 93.0,
+      "phase": "loiter",
+      "latitude": -6.14892222,
+      "longitude": 106.89737639,
+      "course_deg": 206.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 93.5,
+      "phase": "loiter",
+      "latitude": -6.14896136,
+      "longitude": 106.89735426,
+      "course_deg": 212.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 94.0,
+      "phase": "loiter",
+      "latitude": -6.14899811,
+      "longitude": 106.89732832,
+      "course_deg": 217.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 94.5,
+      "phase": "loiter",
+      "latitude": -6.1490321,
+      "longitude": 106.89729881,
+      "course_deg": 223.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 95.0,
+      "phase": "loiter",
+      "latitude": -6.14906299,
+      "longitude": 106.89726604,
+      "course_deg": 229.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 95.5,
+      "phase": "loiter",
+      "latitude": -6.14909047,
+      "longitude": 106.89723033,
+      "course_deg": 235.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 96.0,
+      "phase": "loiter",
+      "latitude": -6.14911427,
+      "longitude": 106.89719205,
+      "course_deg": 240.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 96.5,
+      "phase": "loiter",
+      "latitude": -6.14913415,
+      "longitude": 106.89715156,
+      "course_deg": 246.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 97.0,
+      "phase": "loiter",
+      "latitude": -6.14914992,
+      "longitude": 106.89710928,
+      "course_deg": 252.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 97.5,
+      "phase": "loiter",
+      "latitude": -6.1491614,
+      "longitude": 106.89706562,
+      "course_deg": 258.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 98.0,
+      "phase": "loiter",
+      "latitude": -6.1491685,
+      "longitude": 106.89702103,
+      "course_deg": 263.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 98.5,
+      "phase": "loiter",
+      "latitude": -6.14917114,
+      "longitude": 106.89697596,
+      "course_deg": 269.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 99.0,
+      "phase": "loiter",
+      "latitude": -6.14916929,
+      "longitude": 106.89693084,
+      "course_deg": 275.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 99.5,
+      "phase": "loiter",
+      "latitude": -6.14916297,
+      "longitude": 106.89688613,
+      "course_deg": 281.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 100.0,
+      "phase": "loiter",
+      "latitude": -6.14915224,
+      "longitude": 106.89684228,
+      "course_deg": 286.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 100.5,
+      "phase": "loiter",
+      "latitude": -6.14913722,
+      "longitude": 106.89679973,
+      "course_deg": 292.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 101.0,
+      "phase": "loiter",
+      "latitude": -6.14911804,
+      "longitude": 106.8967589,
+      "course_deg": 298.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 101.5,
+      "phase": "loiter",
+      "latitude": -6.14909491,
+      "longitude": 106.89672019,
+      "course_deg": 303.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 102.0,
+      "phase": "loiter",
+      "latitude": -6.14906805,
+      "longitude": 106.89668401,
+      "course_deg": 309.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 102.5,
+      "phase": "loiter",
+      "latitude": -6.14903774,
+      "longitude": 106.8966507,
+      "course_deg": 315.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 103.0,
+      "phase": "loiter",
+      "latitude": -6.14900427,
+      "longitude": 106.8966206,
+      "course_deg": 321.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 103.5,
+      "phase": "loiter",
+      "latitude": -6.14896798,
+      "longitude": 106.89659401,
+      "course_deg": 326.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 104.0,
+      "phase": "loiter",
+      "latitude": -6.14892923,
+      "longitude": 106.8965712,
+      "course_deg": 332.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 104.5,
+      "phase": "loiter",
+      "latitude": -6.14888841,
+      "longitude": 106.8965524,
+      "course_deg": 338.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 105.0,
+      "phase": "loiter",
+      "latitude": -6.14884593,
+      "longitude": 106.89653778,
+      "course_deg": 344.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 105.5,
+      "phase": "loiter",
+      "latitude": -6.14880221,
+      "longitude": 106.89652751,
+      "course_deg": 349.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 106.0,
+      "phase": "loiter",
+      "latitude": -6.14875769,
+      "longitude": 106.89652167,
+      "course_deg": 355.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 106.5,
+      "phase": "loiter",
+      "latitude": -6.14871282,
+      "longitude": 106.89652034,
+      "course_deg": 1.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 107.0,
+      "phase": "loiter",
+      "latitude": -6.14866803,
+      "longitude": 106.89652352,
+      "course_deg": 6.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 107.5,
+      "phase": "loiter",
+      "latitude": -6.14862379,
+      "longitude": 106.89653118,
+      "course_deg": 12.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 108.0,
+      "phase": "loiter",
+      "latitude": -6.14858052,
+      "longitude": 106.89654324,
+      "course_deg": 18.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 108.5,
+      "phase": "loiter",
+      "latitude": -6.14853867,
+      "longitude": 106.89655959,
+      "course_deg": 24.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 109.0,
+      "phase": "loiter",
+      "latitude": -6.14849865,
+      "longitude": 106.89658006,
+      "course_deg": 29.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 109.5,
+      "phase": "loiter",
+      "latitude": -6.14846086,
+      "longitude": 106.89660444,
+      "course_deg": 35.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 110.0,
+      "phase": "loiter",
+      "latitude": -6.14842568,
+      "longitude": 106.8966325,
+      "course_deg": 41.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 110.5,
+      "phase": "loiter",
+      "latitude": -6.14839346,
+      "longitude": 106.89666395,
+      "course_deg": 47.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 111.0,
+      "phase": "loiter",
+      "latitude": -6.14836453,
+      "longitude": 106.89669848,
+      "course_deg": 52.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 111.5,
+      "phase": "loiter",
+      "latitude": -6.14833917,
+      "longitude": 106.89673574,
+      "course_deg": 58.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 112.0,
+      "phase": "loiter",
+      "latitude": -6.14831763,
+      "longitude": 106.89677536,
+      "course_deg": 64.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 112.5,
+      "phase": "loiter",
+      "latitude": -6.14830013,
+      "longitude": 106.89681695,
+      "course_deg": 69.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 113.0,
+      "phase": "loiter",
+      "latitude": -6.14828685,
+      "longitude": 106.89686008,
+      "course_deg": 75.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 113.5,
+      "phase": "loiter",
+      "latitude": -6.14827791,
+      "longitude": 106.89690433,
+      "course_deg": 81.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 114.0,
+      "phase": "loiter",
+      "latitude": -6.14827341,
+      "longitude": 106.89694926,
+      "course_deg": 87.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 114.5,
+      "phase": "exit_tower_0",
+      "latitude": -6.14873294,
+      "longitude": 106.89699157,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 115.0,
+      "phase": "exit_tower_0",
+      "latitude": -6.14875498,
+      "longitude": 106.89703099,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 115.5,
+      "phase": "exit_tower_0",
+      "latitude": -6.14877702,
+      "longitude": 106.89707041,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 116.0,
+      "phase": "exit_tower_0",
+      "latitude": -6.14879906,
+      "longitude": 106.89710984,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 116.5,
+      "phase": "exit_tower_0",
+      "latitude": -6.1488211,
+      "longitude": 106.89714926,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 117.0,
+      "phase": "exit_tower_0",
+      "latitude": -6.14884314,
+      "longitude": 106.89718868,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 117.5,
+      "phase": "exit_tower_0",
+      "latitude": -6.14886518,
+      "longitude": 106.8972281,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 118.0,
+      "phase": "exit_tower_0",
+      "latitude": -6.14888722,
+      "longitude": 106.89726752,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 118.5,
+      "phase": "exit_tower_0",
+      "latitude": -6.14890926,
+      "longitude": 106.89730694,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 119.0,
+      "phase": "exit_tower_0",
+      "latitude": -6.14893131,
+      "longitude": 106.89734636,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 119.5,
+      "phase": "exit_tower_0",
+      "latitude": -6.14895335,
+      "longitude": 106.89738578,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 120.0,
+      "phase": "exit_tower_0",
+      "latitude": -6.14897539,
+      "longitude": 106.8974252,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 120.5,
+      "phase": "exit_tower_0",
+      "latitude": -6.14899743,
+      "longitude": 106.89746462,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 121.0,
+      "phase": "exit_tower_0",
+      "latitude": -6.14901947,
+      "longitude": 106.89750404,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 121.5,
+      "phase": "exit_tower_0",
+      "latitude": -6.14904151,
+      "longitude": 106.89754347,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 122.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14905925,
+      "longitude": 106.89757519,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 122.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.14907262,
+      "longitude": 106.89759912,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 123.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.149086,
+      "longitude": 106.89762305,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 123.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.14909938,
+      "longitude": 106.89764697,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 124.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14911275,
+      "longitude": 106.8976709,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 124.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.14912613,
+      "longitude": 106.89769483,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 125.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14913951,
+      "longitude": 106.89771875,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 125.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.14915289,
+      "longitude": 106.89774268,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 126.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14916626,
+      "longitude": 106.89776661,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 126.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.14917964,
+      "longitude": 106.89779053,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 127.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14919302,
+      "longitude": 106.89781446,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 127.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.14920639,
+      "longitude": 106.89783838,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 128.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14921977,
+      "longitude": 106.89786231,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 128.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.14923315,
+      "longitude": 106.89788624,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 129.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14924653,
+      "longitude": 106.89791016,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 129.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.1492599,
+      "longitude": 106.89793409,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 130.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14927328,
+      "longitude": 106.89795802,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 130.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.14928666,
+      "longitude": 106.89798194,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 131.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14930004,
+      "longitude": 106.89800587,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 131.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.14931341,
+      "longitude": 106.8980298,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 132.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14932679,
+      "longitude": 106.89805372,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 132.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.14934017,
+      "longitude": 106.89807765,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 133.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14935354,
+      "longitude": 106.89810158,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 133.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.14936692,
+      "longitude": 106.8981255,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 134.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.1493803,
+      "longitude": 106.89814943,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 134.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.14939368,
+      "longitude": 106.89817336,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 135.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14940705,
+      "longitude": 106.89819728,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 135.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.14942043,
+      "longitude": 106.89822121,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 136.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14943381,
+      "longitude": 106.89824514,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 136.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.14944718,
+      "longitude": 106.89826906,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 137.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14946056,
+      "longitude": 106.89829299,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 137.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.14947394,
+      "longitude": 106.89831691,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 138.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14948732,
+      "longitude": 106.89834084,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 138.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.14950069,
+      "longitude": 106.89836477,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 139.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14951407,
+      "longitude": 106.89838869,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 139.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.14952745,
+      "longitude": 106.89841262,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 140.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14954083,
+      "longitude": 106.89843655,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 140.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.1495542,
+      "longitude": 106.89846047,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 141.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14956758,
+      "longitude": 106.8984844,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 141.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.14958096,
+      "longitude": 106.89850833,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 142.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14959433,
+      "longitude": 106.89853225,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 142.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.14960771,
+      "longitude": 106.89855618,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 143.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14962109,
+      "longitude": 106.89858011,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 143.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.14963447,
+      "longitude": 106.89860403,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 144.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14964784,
+      "longitude": 106.89862796,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 144.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.14966122,
+      "longitude": 106.89865189,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 145.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.1496746,
+      "longitude": 106.89867581,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 145.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.14968797,
+      "longitude": 106.89869974,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 146.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14970135,
+      "longitude": 106.89872367,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 146.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.14971473,
+      "longitude": 106.89874759,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 147.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14972811,
+      "longitude": 106.89877152,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 147.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.14974148,
+      "longitude": 106.89879544,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 148.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14975486,
+      "longitude": 106.89881937,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 148.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.14976824,
+      "longitude": 106.8988433,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 149.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14978162,
+      "longitude": 106.89886722,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 149.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.14979499,
+      "longitude": 106.89889115,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 150.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14980837,
+      "longitude": 106.89891508,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 150.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.14982175,
+      "longitude": 106.898939,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 151.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14983512,
+      "longitude": 106.89896293,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 151.5,
+      "phase": "approach_tower_1",
+      "latitude": -6.1498485,
+      "longitude": 106.89898686,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 152.0,
+      "phase": "approach_tower_1",
+      "latitude": -6.14986188,
+      "longitude": 106.89901078,
+      "course_deg": 119.4,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 152.5,
+      "phase": "loiter",
+      "latitude": -6.14941505,
+      "longitude": 106.89905569,
+      "course_deg": 95.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 153.0,
+      "phase": "loiter",
+      "latitude": -6.14942172,
+      "longitude": 106.89910035,
+      "course_deg": 101.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 153.5,
+      "phase": "loiter",
+      "latitude": -6.14943279,
+      "longitude": 106.89914411,
+      "course_deg": 107.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 154.0,
+      "phase": "loiter",
+      "latitude": -6.14944814,
+      "longitude": 106.89918654,
+      "course_deg": 112.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 154.5,
+      "phase": "loiter",
+      "latitude": -6.14946763,
+      "longitude": 106.89922722,
+      "course_deg": 118.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 155.0,
+      "phase": "loiter",
+      "latitude": -6.14949107,
+      "longitude": 106.89926574,
+      "course_deg": 124.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 155.5,
+      "phase": "loiter",
+      "latitude": -6.1495182,
+      "longitude": 106.89930172,
+      "course_deg": 130.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 156.0,
+      "phase": "loiter",
+      "latitude": -6.14954878,
+      "longitude": 106.89933478,
+      "course_deg": 135.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 156.5,
+      "phase": "loiter",
+      "latitude": -6.14958248,
+      "longitude": 106.89936462,
+      "course_deg": 141.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 157.0,
+      "phase": "loiter",
+      "latitude": -6.14961898,
+      "longitude": 106.89939092,
+      "course_deg": 147.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 157.5,
+      "phase": "loiter",
+      "latitude": -6.1496579,
+      "longitude": 106.89941342,
+      "course_deg": 153.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 158.0,
+      "phase": "loiter",
+      "latitude": -6.14969887,
+      "longitude": 106.89943191,
+      "course_deg": 158.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 158.5,
+      "phase": "loiter",
+      "latitude": -6.14974146,
+      "longitude": 106.89944618,
+      "course_deg": 164.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 159.0,
+      "phase": "loiter",
+      "latitude": -6.14978526,
+      "longitude": 106.89945611,
+      "course_deg": 170.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 159.5,
+      "phase": "loiter",
+      "latitude": -6.14982982,
+      "longitude": 106.89946159,
+      "course_deg": 175.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 160.0,
+      "phase": "loiter",
+      "latitude": -6.14987471,
+      "longitude": 106.89946257,
+      "course_deg": 181.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 160.5,
+      "phase": "loiter",
+      "latitude": -6.14991947,
+      "longitude": 106.89945904,
+      "course_deg": 187.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 161.0,
+      "phase": "loiter",
+      "latitude": -6.14996365,
+      "longitude": 106.89945103,
+      "course_deg": 193.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 161.5,
+      "phase": "loiter",
+      "latitude": -6.15000682,
+      "longitude": 106.89943863,
+      "course_deg": 198.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 162.0,
+      "phase": "loiter",
+      "latitude": -6.15004854,
+      "longitude": 106.89942195,
+      "course_deg": 204.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 162.5,
+      "phase": "loiter",
+      "latitude": -6.1500884,
+      "longitude": 106.89940117,
+      "course_deg": 210.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 163.0,
+      "phase": "loiter",
+      "latitude": -6.150126,
+      "longitude": 106.89937648,
+      "course_deg": 216.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 163.5,
+      "phase": "loiter",
+      "latitude": -6.15016096,
+      "longitude": 106.89934815,
+      "course_deg": 221.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 164.0,
+      "phase": "loiter",
+      "latitude": -6.15019293,
+      "longitude": 106.89931645,
+      "course_deg": 227.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 164.5,
+      "phase": "loiter",
+      "latitude": -6.15022159,
+      "longitude": 106.89928169,
+      "course_deg": 233.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 165.0,
+      "phase": "loiter",
+      "latitude": -6.15024667,
+      "longitude": 106.89924423,
+      "course_deg": 238.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 165.5,
+      "phase": "loiter",
+      "latitude": -6.15026789,
+      "longitude": 106.89920444,
+      "course_deg": 244.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 166.0,
+      "phase": "loiter",
+      "latitude": -6.15028507,
+      "longitude": 106.89916272,
+      "course_deg": 250.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 166.5,
+      "phase": "loiter",
+      "latitude": -6.15029801,
+      "longitude": 106.89911948,
+      "course_deg": 256.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 167.0,
+      "phase": "loiter",
+      "latitude": -6.1503066,
+      "longitude": 106.89907516,
+      "course_deg": 261.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 167.5,
+      "phase": "loiter",
+      "latitude": -6.15031075,
+      "longitude": 106.89903019,
+      "course_deg": 267.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 168.0,
+      "phase": "loiter",
+      "latitude": -6.15031041,
+      "longitude": 106.89898504,
+      "course_deg": 273.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 168.5,
+      "phase": "loiter",
+      "latitude": -6.1503056,
+      "longitude": 106.89894014,
+      "course_deg": 279.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 169.0,
+      "phase": "loiter",
+      "latitude": -6.15029635,
+      "longitude": 106.89889595,
+      "course_deg": 284.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 169.5,
+      "phase": "loiter",
+      "latitude": -6.15028276,
+      "longitude": 106.89885292,
+      "course_deg": 290.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 170.0,
+      "phase": "loiter",
+      "latitude": -6.15026496,
+      "longitude": 106.89881146,
+      "course_deg": 296.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 170.5,
+      "phase": "loiter",
+      "latitude": -6.15024314,
+      "longitude": 106.89877199,
+      "course_deg": 301.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 171.0,
+      "phase": "loiter",
+      "latitude": -6.15021752,
+      "longitude": 106.89873491,
+      "course_deg": 307.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 171.5,
+      "phase": "loiter",
+      "latitude": -6.15018834,
+      "longitude": 106.8987006,
+      "course_deg": 313.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 172.0,
+      "phase": "loiter",
+      "latitude": -6.1501559,
+      "longitude": 106.89866938,
+      "course_deg": 319.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 172.5,
+      "phase": "loiter",
+      "latitude": -6.15012052,
+      "longitude": 106.89864157,
+      "course_deg": 324.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 173.0,
+      "phase": "loiter",
+      "latitude": -6.15008256,
+      "longitude": 106.89861746,
+      "course_deg": 330.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 173.5,
+      "phase": "loiter",
+      "latitude": -6.15004239,
+      "longitude": 106.89859728,
+      "course_deg": 336.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 174.0,
+      "phase": "loiter",
+      "latitude": -6.15000043,
+      "longitude": 106.89858123,
+      "course_deg": 342.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 174.5,
+      "phase": "loiter",
+      "latitude": -6.14995708,
+      "longitude": 106.89856948,
+      "course_deg": 347.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 175.0,
+      "phase": "loiter",
+      "latitude": -6.14991278,
+      "longitude": 106.89856214,
+      "course_deg": 353.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 175.5,
+      "phase": "loiter",
+      "latitude": -6.14986797,
+      "longitude": 106.89855928,
+      "course_deg": 359.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 176.0,
+      "phase": "loiter",
+      "latitude": -6.1498231,
+      "longitude": 106.89856094,
+      "course_deg": 5.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 176.5,
+      "phase": "loiter",
+      "latitude": -6.14977863,
+      "longitude": 106.8985671,
+      "course_deg": 10.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 177.0,
+      "phase": "loiter",
+      "latitude": -6.14973498,
+      "longitude": 106.89857768,
+      "course_deg": 16.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 177.5,
+      "phase": "loiter",
+      "latitude": -6.14969261,
+      "longitude": 106.8985926,
+      "course_deg": 22.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 178.0,
+      "phase": "loiter",
+      "latitude": -6.14965192,
+      "longitude": 106.8986117,
+      "course_deg": 27.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 178.5,
+      "phase": "loiter",
+      "latitude": -6.14961334,
+      "longitude": 106.89863479,
+      "course_deg": 33.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 179.0,
+      "phase": "loiter",
+      "latitude": -6.14957724,
+      "longitude": 106.89866164,
+      "course_deg": 39.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 179.5,
+      "phase": "loiter",
+      "latitude": -6.14954398,
+      "longitude": 106.89869198,
+      "course_deg": 45.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 180.0,
+      "phase": "loiter",
+      "latitude": -6.14951391,
+      "longitude": 106.8987255,
+      "course_deg": 50.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 180.5,
+      "phase": "loiter",
+      "latitude": -6.14948731,
+      "longitude": 106.89876188,
+      "course_deg": 56.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 181.0,
+      "phase": "loiter",
+      "latitude": -6.14946445,
+      "longitude": 106.89880075,
+      "course_deg": 62.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 181.5,
+      "phase": "loiter",
+      "latitude": -6.14944557,
+      "longitude": 106.89884172,
+      "course_deg": 68.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 182.0,
+      "phase": "loiter",
+      "latitude": -6.14943085,
+      "longitude": 106.89888438,
+      "course_deg": 73.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 182.5,
+      "phase": "loiter",
+      "latitude": -6.14942043,
+      "longitude": 106.8989283,
+      "course_deg": 79.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 183.0,
+      "phase": "loiter",
+      "latitude": -6.14941443,
+      "longitude": 106.89897306,
+      "course_deg": 85.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 183.5,
+      "phase": "loiter",
+      "latitude": -6.1494129,
+      "longitude": 106.89901819,
+      "course_deg": 90.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 184.0,
+      "phase": "loiter",
+      "latitude": -6.14941586,
+      "longitude": 106.89906325,
+      "course_deg": 96.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 184.5,
+      "phase": "loiter",
+      "latitude": -6.14942327,
+      "longitude": 106.89910778,
+      "course_deg": 102.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 185.0,
+      "phase": "loiter",
+      "latitude": -6.14943507,
+      "longitude": 106.89915135,
+      "course_deg": 108.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 185.5,
+      "phase": "loiter",
+      "latitude": -6.14945114,
+      "longitude": 106.89919352,
+      "course_deg": 113.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 186.0,
+      "phase": "loiter",
+      "latitude": -6.1494713,
+      "longitude": 106.89923386,
+      "course_deg": 119.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 186.5,
+      "phase": "loiter",
+      "latitude": -6.14949538,
+      "longitude": 106.89927198,
+      "course_deg": 125.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 187.0,
+      "phase": "loiter",
+      "latitude": -6.14952311,
+      "longitude": 106.89930749,
+      "course_deg": 131.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 187.5,
+      "phase": "loiter",
+      "latitude": -6.14955424,
+      "longitude": 106.89934004,
+      "course_deg": 136.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 188.0,
+      "phase": "loiter",
+      "latitude": -6.14958843,
+      "longitude": 106.89936929,
+      "course_deg": 142.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 188.5,
+      "phase": "loiter",
+      "latitude": -6.14962536,
+      "longitude": 106.89939497,
+      "course_deg": 148.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 189.0,
+      "phase": "loiter",
+      "latitude": -6.14966466,
+      "longitude": 106.89941682,
+      "course_deg": 153.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 189.5,
+      "phase": "loiter",
+      "latitude": -6.14970593,
+      "longitude": 106.8994346,
+      "course_deg": 159.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 190.0,
+      "phase": "loiter",
+      "latitude": -6.14974875,
+      "longitude": 106.89944816,
+      "course_deg": 165.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 190.5,
+      "phase": "loiter",
+      "latitude": -6.14979271,
+      "longitude": 106.89945735,
+      "course_deg": 171.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 191.0,
+      "phase": "loiter",
+      "latitude": -6.14983736,
+      "longitude": 106.89946208,
+      "course_deg": 176.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 191.5,
+      "phase": "loiter",
+      "latitude": -6.14988226,
+      "longitude": 106.8994623,
+      "course_deg": 182.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 192.0,
+      "phase": "loiter",
+      "latitude": -6.14992695,
+      "longitude": 106.89945801,
+      "course_deg": 188.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 192.5,
+      "phase": "loiter",
+      "latitude": -6.14997099,
+      "longitude": 106.89944925,
+      "course_deg": 194.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 193.0,
+      "phase": "loiter",
+      "latitude": -6.15001395,
+      "longitude": 106.89943612,
+      "course_deg": 199.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 193.5,
+      "phase": "loiter",
+      "latitude": -6.15005539,
+      "longitude": 106.89941874,
+      "course_deg": 205.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 194.0,
+      "phase": "loiter",
+      "latitude": -6.15009489,
+      "longitude": 106.89939728,
+      "course_deg": 211.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 194.5,
+      "phase": "loiter",
+      "latitude": -6.15013207,
+      "longitude": 106.89937197,
+      "course_deg": 217.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 195.0,
+      "phase": "loiter",
+      "latitude": -6.15016655,
+      "longitude": 106.89934305,
+      "course_deg": 222.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 195.5,
+      "phase": "loiter",
+      "latitude": -6.15019799,
+      "longitude": 106.89931081,
+      "course_deg": 228.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 196.0,
+      "phase": "loiter",
+      "latitude": -6.15022607,
+      "longitude": 106.89927557,
+      "course_deg": 234.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 196.5,
+      "phase": "loiter",
+      "latitude": -6.15025051,
+      "longitude": 106.89923769,
+      "course_deg": 239.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 197.0,
+      "phase": "loiter",
+      "latitude": -6.15027107,
+      "longitude": 106.89919755,
+      "course_deg": 245.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 197.5,
+      "phase": "loiter",
+      "latitude": -6.15028754,
+      "longitude": 106.89915554,
+      "course_deg": 251.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 198.0,
+      "phase": "loiter",
+      "latitude": -6.15029977,
+      "longitude": 106.89911209,
+      "course_deg": 257.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 198.5,
+      "phase": "loiter",
+      "latitude": -6.15030761,
+      "longitude": 106.89906763,
+      "course_deg": 262.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 199.0,
+      "phase": "loiter",
+      "latitude": -6.15031101,
+      "longitude": 106.8990226,
+      "course_deg": 268.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 199.5,
+      "phase": "loiter",
+      "latitude": -6.15030992,
+      "longitude": 106.89897746,
+      "course_deg": 274.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 200.0,
+      "phase": "loiter",
+      "latitude": -6.15030435,
+      "longitude": 106.89893265,
+      "course_deg": 280.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 200.5,
+      "phase": "loiter",
+      "latitude": -6.15029436,
+      "longitude": 106.89888862,
+      "course_deg": 285.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 201.0,
+      "phase": "loiter",
+      "latitude": -6.15028006,
+      "longitude": 106.89884582,
+      "course_deg": 291.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 201.5,
+      "phase": "loiter",
+      "latitude": -6.15026157,
+      "longitude": 106.89880467,
+      "course_deg": 297.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 202.0,
+      "phase": "loiter",
+      "latitude": -6.15023909,
+      "longitude": 106.89876558,
+      "course_deg": 302.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 202.5,
+      "phase": "loiter",
+      "latitude": -6.15021285,
+      "longitude": 106.89872894,
+      "course_deg": 308.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 203.0,
+      "phase": "loiter",
+      "latitude": -6.1501831,
+      "longitude": 106.89869512,
+      "course_deg": 314.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 203.5,
+      "phase": "loiter",
+      "latitude": -6.15015014,
+      "longitude": 106.89866446,
+      "course_deg": 320.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 204.0,
+      "phase": "loiter",
+      "latitude": -6.15011431,
+      "longitude": 106.89863725,
+      "course_deg": 325.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 204.5,
+      "phase": "loiter",
+      "latitude": -6.15007595,
+      "longitude": 106.89861379,
+      "course_deg": 331.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 205.0,
+      "phase": "loiter",
+      "latitude": -6.15003545,
+      "longitude": 106.89859429,
+      "course_deg": 337.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 205.5,
+      "phase": "loiter",
+      "latitude": -6.14999322,
+      "longitude": 106.89857895,
+      "course_deg": 343.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 206.0,
+      "phase": "loiter",
+      "latitude": -6.14994968,
+      "longitude": 106.89856794,
+      "course_deg": 348.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 206.5,
+      "phase": "loiter",
+      "latitude": -6.14990527,
+      "longitude": 106.89856135,
+      "course_deg": 354.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 207.0,
+      "phase": "loiter",
+      "latitude": -6.14986042,
+      "longitude": 106.89855925,
+      "course_deg": 0.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 207.5,
+      "phase": "loiter",
+      "latitude": -6.14981559,
+      "longitude": 106.89856166,
+      "course_deg": 5.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 208.0,
+      "phase": "loiter",
+      "latitude": -6.14977122,
+      "longitude": 106.89856857,
+      "course_deg": 11.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 208.5,
+      "phase": "loiter",
+      "latitude": -6.14972776,
+      "longitude": 106.89857989,
+      "course_deg": 17.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 209.0,
+      "phase": "loiter",
+      "latitude": -6.14968564,
+      "longitude": 106.89859553,
+      "course_deg": 23.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 209.5,
+      "phase": "loiter",
+      "latitude": -6.14964528,
+      "longitude": 106.89861531,
+      "course_deg": 28.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 210.0,
+      "phase": "loiter",
+      "latitude": -6.14960708,
+      "longitude": 106.89863905,
+      "course_deg": 34.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 210.5,
+      "phase": "loiter",
+      "latitude": -6.14957144,
+      "longitude": 106.8986665,
+      "course_deg": 40.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 211.0,
+      "phase": "loiter",
+      "latitude": -6.1495387,
+      "longitude": 106.8986974,
+      "course_deg": 46.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 211.5,
+      "phase": "loiter",
+      "latitude": -6.14950918,
+      "longitude": 106.89873143,
+      "course_deg": 51.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 212.0,
+      "phase": "loiter",
+      "latitude": -6.1494832,
+      "longitude": 106.89876825,
+      "course_deg": 57.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 212.5,
+      "phase": "loiter",
+      "latitude": -6.14946099,
+      "longitude": 106.8988075,
+      "course_deg": 63.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 213.0,
+      "phase": "loiter",
+      "latitude": -6.1494428,
+      "longitude": 106.89884879,
+      "course_deg": 69.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 213.5,
+      "phase": "loiter",
+      "latitude": -6.14942879,
+      "longitude": 106.89889169,
+      "course_deg": 74.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 214.0,
+      "phase": "loiter",
+      "latitude": -6.14941911,
+      "longitude": 106.89893578,
+      "course_deg": 80.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 214.5,
+      "phase": "loiter",
+      "latitude": -6.14941386,
+      "longitude": 106.89898063,
+      "course_deg": 86.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 215.0,
+      "phase": "loiter",
+      "latitude": -6.14941308,
+      "longitude": 106.89902578,
+      "course_deg": 91.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 215.5,
+      "phase": "loiter",
+      "latitude": -6.14941679,
+      "longitude": 106.89907078,
+      "course_deg": 97.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 216.0,
+      "phase": "loiter",
+      "latitude": -6.14942495,
+      "longitude": 106.89911519,
+      "course_deg": 103.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 216.5,
+      "phase": "loiter",
+      "latitude": -6.14943748,
+      "longitude": 106.89915855,
+      "course_deg": 109.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 217.0,
+      "phase": "loiter",
+      "latitude": -6.14945424,
+      "longitude": 106.89920044,
+      "course_deg": 114.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 217.5,
+      "phase": "loiter",
+      "latitude": -6.14947509,
+      "longitude": 106.89924044,
+      "course_deg": 120.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 218.0,
+      "phase": "loiter",
+      "latitude": -6.14949979,
+      "longitude": 106.89927814,
+      "course_deg": 126.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 218.5,
+      "phase": "loiter",
+      "latitude": -6.14952812,
+      "longitude": 106.89931318,
+      "course_deg": 132.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 219.0,
+      "phase": "loiter",
+      "latitude": -6.14955978,
+      "longitude": 106.89934519,
+      "course_deg": 137.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 219.5,
+      "phase": "loiter",
+      "latitude": -6.14959446,
+      "longitude": 106.89937387,
+      "course_deg": 143.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 220.0,
+      "phase": "loiter",
+      "latitude": -6.14963182,
+      "longitude": 106.89939892,
+      "course_deg": 149.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 220.5,
+      "phase": "loiter",
+      "latitude": -6.14967147,
+      "longitude": 106.8994201,
+      "course_deg": 154.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 221.0,
+      "phase": "loiter",
+      "latitude": -6.14971303,
+      "longitude": 106.89943718,
+      "course_deg": 160.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 221.5,
+      "phase": "loiter",
+      "latitude": -6.14975608,
+      "longitude": 106.89945001,
+      "course_deg": 166.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 222.0,
+      "phase": "loiter",
+      "latitude": -6.14980018,
+      "longitude": 106.89945846,
+      "course_deg": 172.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 222.5,
+      "phase": "loiter",
+      "latitude": -6.1498449,
+      "longitude": 106.89946243,
+      "course_deg": 177.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 223.0,
+      "phase": "loiter",
+      "latitude": -6.1498898,
+      "longitude": 106.89946189,
+      "course_deg": 183.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 223.5,
+      "phase": "loiter",
+      "latitude": -6.14993441,
+      "longitude": 106.89945685,
+      "course_deg": 189.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 224.0,
+      "phase": "loiter",
+      "latitude": -6.14997831,
+      "longitude": 106.89944735,
+      "course_deg": 195.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 224.5,
+      "phase": "loiter",
+      "latitude": -6.15002104,
+      "longitude": 106.89943349,
+      "course_deg": 200.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 225.0,
+      "phase": "loiter",
+      "latitude": -6.15006218,
+      "longitude": 106.89941541,
+      "course_deg": 206.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 225.5,
+      "phase": "loiter",
+      "latitude": -6.15010132,
+      "longitude": 106.89939329,
+      "course_deg": 212.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 226.0,
+      "phase": "loiter",
+      "latitude": -6.15013807,
+      "longitude": 106.89936735,
+      "course_deg": 217.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 226.5,
+      "phase": "loiter",
+      "latitude": -6.15017206,
+      "longitude": 106.89933785,
+      "course_deg": 223.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 227.0,
+      "phase": "loiter",
+      "latitude": -6.15020295,
+      "longitude": 106.89930508,
+      "course_deg": 229.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 227.5,
+      "phase": "loiter",
+      "latitude": -6.15023044,
+      "longitude": 106.89926938,
+      "course_deg": 235.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 228.0,
+      "phase": "loiter",
+      "latitude": -6.15025425,
+      "longitude": 106.89923109,
+      "course_deg": 240.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 228.5,
+      "phase": "loiter",
+      "latitude": -6.15027413,
+      "longitude": 106.89919061,
+      "course_deg": 246.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 229.0,
+      "phase": "loiter",
+      "latitude": -6.1502899,
+      "longitude": 106.89914833,
+      "course_deg": 252.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 229.5,
+      "phase": "loiter",
+      "latitude": -6.15030139,
+      "longitude": 106.89910467,
+      "course_deg": 258.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 230.0,
+      "phase": "loiter",
+      "latitude": -6.1503085,
+      "longitude": 106.89906009,
+      "course_deg": 263.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 230.5,
+      "phase": "loiter",
+      "latitude": -6.15031114,
+      "longitude": 106.89901501,
+      "course_deg": 269.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 231.0,
+      "phase": "loiter",
+      "latitude": -6.15030929,
+      "longitude": 106.89896989,
+      "course_deg": 275.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 231.5,
+      "phase": "loiter",
+      "latitude": -6.15030298,
+      "longitude": 106.89892518,
+      "course_deg": 281.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 232.0,
+      "phase": "loiter",
+      "latitude": -6.15029226,
+      "longitude": 106.89888133,
+      "course_deg": 286.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 232.5,
+      "phase": "loiter",
+      "latitude": -6.15027723,
+      "longitude": 106.89883878,
+      "course_deg": 292.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 233.0,
+      "phase": "loiter",
+      "latitude": -6.15025807,
+      "longitude": 106.89879794,
+      "course_deg": 298.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 233.5,
+      "phase": "loiter",
+      "latitude": -6.15023494,
+      "longitude": 106.89875924,
+      "course_deg": 303.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 234.0,
+      "phase": "loiter",
+      "latitude": -6.15020809,
+      "longitude": 106.89872305,
+      "course_deg": 309.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 234.5,
+      "phase": "loiter",
+      "latitude": -6.15017778,
+      "longitude": 106.89868973,
+      "course_deg": 315.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 235.0,
+      "phase": "loiter",
+      "latitude": -6.15014431,
+      "longitude": 106.89865963,
+      "course_deg": 321.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 235.5,
+      "phase": "loiter",
+      "latitude": -6.15010802,
+      "longitude": 106.89863304,
+      "course_deg": 326.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 236.0,
+      "phase": "loiter",
+      "latitude": -6.15006928,
+      "longitude": 106.89861023,
+      "course_deg": 332.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 236.5,
+      "phase": "loiter",
+      "latitude": -6.15002846,
+      "longitude": 106.89859141,
+      "course_deg": 338.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 237.0,
+      "phase": "loiter",
+      "latitude": -6.14998598,
+      "longitude": 106.8985768,
+      "course_deg": 344.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 237.5,
+      "phase": "loiter",
+      "latitude": -6.14994226,
+      "longitude": 106.89856652,
+      "course_deg": 349.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 238.0,
+      "phase": "loiter",
+      "latitude": -6.14989774,
+      "longitude": 106.89856068,
+      "course_deg": 355.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 238.5,
+      "phase": "loiter",
+      "latitude": -6.14985287,
+      "longitude": 106.89855934,
+      "course_deg": 1.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 239.0,
+      "phase": "loiter",
+      "latitude": -6.14980808,
+      "longitude": 106.89856251,
+      "course_deg": 6.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 239.5,
+      "phase": "loiter",
+      "latitude": -6.14976383,
+      "longitude": 106.89857017,
+      "course_deg": 12.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 240.0,
+      "phase": "loiter",
+      "latitude": -6.14972057,
+      "longitude": 106.89858223,
+      "course_deg": 18.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 240.5,
+      "phase": "loiter",
+      "latitude": -6.14967872,
+      "longitude": 106.89859857,
+      "course_deg": 24.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 241.0,
+      "phase": "loiter",
+      "latitude": -6.14963869,
+      "longitude": 106.89861903,
+      "course_deg": 29.8,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 241.5,
+      "phase": "loiter",
+      "latitude": -6.1496009,
+      "longitude": 106.89864341,
+      "course_deg": 35.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 242.0,
+      "phase": "loiter",
+      "latitude": -6.14956572,
+      "longitude": 106.89867147,
+      "course_deg": 41.3,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 242.5,
+      "phase": "loiter",
+      "latitude": -6.1495335,
+      "longitude": 106.89870291,
+      "course_deg": 47.0,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 243.0,
+      "phase": "loiter",
+      "latitude": -6.14950456,
+      "longitude": 106.89873744,
+      "course_deg": 52.7,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 243.5,
+      "phase": "loiter",
+      "latitude": -6.14947919,
+      "longitude": 106.8987747,
+      "course_deg": 58.5,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 244.0,
+      "phase": "loiter",
+      "latitude": -6.14945765,
+      "longitude": 106.89881431,
+      "course_deg": 64.2,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 244.5,
+      "phase": "loiter",
+      "latitude": -6.14944015,
+      "longitude": 106.8988559,
+      "course_deg": 69.9,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 245.0,
+      "phase": "loiter",
+      "latitude": -6.14942686,
+      "longitude": 106.89889903,
+      "course_deg": 75.6,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 245.5,
+      "phase": "loiter",
+      "latitude": -6.14941792,
+      "longitude": 106.89894328,
+      "course_deg": 81.4,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 246.0,
+      "phase": "loiter",
+      "latitude": -6.14941342,
+      "longitude": 106.89898821,
+      "course_deg": 87.1,
+      "speed_ms": 3.0
+    },
+    {
+      "time_s": 246.5,
+      "phase": "exit_tower_1",
+      "latitude": -6.14986889,
+      "longitude": 106.89898969,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 247.0,
+      "phase": "exit_tower_1",
+      "latitude": -6.14988279,
+      "longitude": 106.89894668,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 247.5,
+      "phase": "exit_tower_1",
+      "latitude": -6.14989669,
+      "longitude": 106.89890367,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 248.0,
+      "phase": "exit_tower_1",
+      "latitude": -6.14991059,
+      "longitude": 106.89886066,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 248.5,
+      "phase": "exit_tower_1",
+      "latitude": -6.14992449,
+      "longitude": 106.89881765,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 249.0,
+      "phase": "exit_tower_1",
+      "latitude": -6.14993839,
+      "longitude": 106.89877464,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 249.5,
+      "phase": "exit_tower_1",
+      "latitude": -6.14995229,
+      "longitude": 106.89873163,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 250.0,
+      "phase": "exit_tower_1",
+      "latitude": -6.14996619,
+      "longitude": 106.89868862,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 250.5,
+      "phase": "exit_tower_1",
+      "latitude": -6.1499801,
+      "longitude": 106.89864561,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 251.0,
+      "phase": "exit_tower_1",
+      "latitude": -6.149994,
+      "longitude": 106.89860259,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 251.5,
+      "phase": "exit_tower_1",
+      "latitude": -6.1500079,
+      "longitude": 106.89855958,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 252.0,
+      "phase": "exit_tower_1",
+      "latitude": -6.1500218,
+      "longitude": 106.89851657,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 252.5,
+      "phase": "exit_tower_1",
+      "latitude": -6.1500357,
+      "longitude": 106.89847356,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 253.0,
+      "phase": "exit_tower_1",
+      "latitude": -6.1500496,
+      "longitude": 106.89843055,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 253.5,
+      "phase": "exit_tower_1",
+      "latitude": -6.1500635,
+      "longitude": 106.89838754,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 254.0,
+      "phase": "return_to_start",
+      "latitude": -6.15007432,
+      "longitude": 106.89835406,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 254.5,
+      "phase": "return_to_start",
+      "latitude": -6.15008201,
+      "longitude": 106.89833028,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 255.0,
+      "phase": "return_to_start",
+      "latitude": -6.15008969,
+      "longitude": 106.8983065,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 255.5,
+      "phase": "return_to_start",
+      "latitude": -6.15009738,
+      "longitude": 106.89828272,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 256.0,
+      "phase": "return_to_start",
+      "latitude": -6.15010507,
+      "longitude": 106.89825894,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 256.5,
+      "phase": "return_to_start",
+      "latitude": -6.15011275,
+      "longitude": 106.89823516,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 257.0,
+      "phase": "return_to_start",
+      "latitude": -6.15012044,
+      "longitude": 106.89821138,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 257.5,
+      "phase": "return_to_start",
+      "latitude": -6.15012812,
+      "longitude": 106.8981876,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 258.0,
+      "phase": "return_to_start",
+      "latitude": -6.15013581,
+      "longitude": 106.89816382,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 258.5,
+      "phase": "return_to_start",
+      "latitude": -6.15014349,
+      "longitude": 106.89814004,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 259.0,
+      "phase": "return_to_start",
+      "latitude": -6.15015118,
+      "longitude": 106.89811626,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 259.5,
+      "phase": "return_to_start",
+      "latitude": -6.15015886,
+      "longitude": 106.89809248,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 260.0,
+      "phase": "return_to_start",
+      "latitude": -6.15016655,
+      "longitude": 106.89806871,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 260.5,
+      "phase": "return_to_start",
+      "latitude": -6.15017423,
+      "longitude": 106.89804493,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 261.0,
+      "phase": "return_to_start",
+      "latitude": -6.15018192,
+      "longitude": 106.89802115,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 261.5,
+      "phase": "return_to_start",
+      "latitude": -6.1501896,
+      "longitude": 106.89799737,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 262.0,
+      "phase": "return_to_start",
+      "latitude": -6.15019729,
+      "longitude": 106.89797359,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 262.5,
+      "phase": "return_to_start",
+      "latitude": -6.15020498,
+      "longitude": 106.89794981,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 263.0,
+      "phase": "return_to_start",
+      "latitude": -6.15021266,
+      "longitude": 106.89792603,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 263.5,
+      "phase": "return_to_start",
+      "latitude": -6.15022035,
+      "longitude": 106.89790225,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 264.0,
+      "phase": "return_to_start",
+      "latitude": -6.15022803,
+      "longitude": 106.89787847,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 264.5,
+      "phase": "return_to_start",
+      "latitude": -6.15023572,
+      "longitude": 106.89785469,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 265.0,
+      "phase": "return_to_start",
+      "latitude": -6.1502434,
+      "longitude": 106.89783091,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 265.5,
+      "phase": "return_to_start",
+      "latitude": -6.15025109,
+      "longitude": 106.89780713,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 266.0,
+      "phase": "return_to_start",
+      "latitude": -6.15025877,
+      "longitude": 106.89778335,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 266.5,
+      "phase": "return_to_start",
+      "latitude": -6.15026646,
+      "longitude": 106.89775957,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 267.0,
+      "phase": "return_to_start",
+      "latitude": -6.15027414,
+      "longitude": 106.8977358,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 267.5,
+      "phase": "return_to_start",
+      "latitude": -6.15028183,
+      "longitude": 106.89771202,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 268.0,
+      "phase": "return_to_start",
+      "latitude": -6.15028951,
+      "longitude": 106.89768824,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 268.5,
+      "phase": "return_to_start",
+      "latitude": -6.1502972,
+      "longitude": 106.89766446,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 269.0,
+      "phase": "return_to_start",
+      "latitude": -6.15030489,
+      "longitude": 106.89764068,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 269.5,
+      "phase": "return_to_start",
+      "latitude": -6.15031257,
+      "longitude": 106.8976169,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 270.0,
+      "phase": "return_to_start",
+      "latitude": -6.15032026,
+      "longitude": 106.89759312,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 270.5,
+      "phase": "return_to_start",
+      "latitude": -6.15032794,
+      "longitude": 106.89756934,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 271.0,
+      "phase": "return_to_start",
+      "latitude": -6.15033563,
+      "longitude": 106.89754556,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 271.5,
+      "phase": "return_to_start",
+      "latitude": -6.15034331,
+      "longitude": 106.89752178,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 272.0,
+      "phase": "return_to_start",
+      "latitude": -6.150351,
+      "longitude": 106.897498,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 272.5,
+      "phase": "return_to_start",
+      "latitude": -6.15035868,
+      "longitude": 106.89747422,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 273.0,
+      "phase": "return_to_start",
+      "latitude": -6.15036637,
+      "longitude": 106.89745044,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 273.5,
+      "phase": "return_to_start",
+      "latitude": -6.15037405,
+      "longitude": 106.89742666,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 274.0,
+      "phase": "return_to_start",
+      "latitude": -6.15038174,
+      "longitude": 106.89740289,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 274.5,
+      "phase": "return_to_start",
+      "latitude": -6.15038942,
+      "longitude": 106.89737911,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 275.0,
+      "phase": "return_to_start",
+      "latitude": -6.15039711,
+      "longitude": 106.89735533,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 275.5,
+      "phase": "return_to_start",
+      "latitude": -6.1504048,
+      "longitude": 106.89733155,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 276.0,
+      "phase": "return_to_start",
+      "latitude": -6.15041248,
+      "longitude": 106.89730777,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 276.5,
+      "phase": "return_to_start",
+      "latitude": -6.15042017,
+      "longitude": 106.89728399,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 277.0,
+      "phase": "return_to_start",
+      "latitude": -6.15042785,
+      "longitude": 106.89726021,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 277.5,
+      "phase": "return_to_start",
+      "latitude": -6.15043554,
+      "longitude": 106.89723643,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 278.0,
+      "phase": "return_to_start",
+      "latitude": -6.15044322,
+      "longitude": 106.89721265,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 278.5,
+      "phase": "return_to_start",
+      "latitude": -6.15045091,
+      "longitude": 106.89718887,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 279.0,
+      "phase": "return_to_start",
+      "latitude": -6.15045859,
+      "longitude": 106.89716509,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 279.5,
+      "phase": "return_to_start",
+      "latitude": -6.15046628,
+      "longitude": 106.89714131,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 280.0,
+      "phase": "return_to_start",
+      "latitude": -6.15047396,
+      "longitude": 106.89711753,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 280.5,
+      "phase": "return_to_start",
+      "latitude": -6.15048165,
+      "longitude": 106.89709375,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 281.0,
+      "phase": "return_to_start",
+      "latitude": -6.15048933,
+      "longitude": 106.89706998,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 281.5,
+      "phase": "return_to_start",
+      "latitude": -6.15049702,
+      "longitude": 106.8970462,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 282.0,
+      "phase": "return_to_start",
+      "latitude": -6.15050471,
+      "longitude": 106.89702242,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 282.5,
+      "phase": "return_to_start",
+      "latitude": -6.15051239,
+      "longitude": 106.89699864,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    },
+    {
+      "time_s": 283.0,
+      "phase": "return_to_start",
+      "latitude": -6.15052008,
+      "longitude": 106.89697486,
+      "course_deg": 252.0,
+      "speed_ms": 10.0
+    }
+  ]
+}

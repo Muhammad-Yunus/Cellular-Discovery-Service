@@ -32,6 +32,26 @@ _last_provider_type: str | None = None
 _cached_provider = None
 
 
+def get_cached_provider():
+    """Return the singleton GPS provider instance (if any)."""
+    return _cached_provider
+
+
+def reset_gps_start_time() -> bool:
+    """Reset the moving_mock GPS timer so the trajectory restarts from t=0.
+
+    Returns True if the provider supports reset and was reset, False otherwise.
+    """
+    global _cached_provider
+    if _cached_provider is None:
+        return False
+    if hasattr(_cached_provider, "reset_start_time"):
+        _cached_provider.reset_start_time()
+        logger.info("GPS provider start_time reset (trajectory restarting)")
+        return True
+    return False
+
+
 def _calculate_speed(
     current: GPSLocation,
     previous: GPSLocation,

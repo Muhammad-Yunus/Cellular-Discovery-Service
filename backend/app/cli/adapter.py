@@ -3,11 +3,18 @@ import json
 import logging
 import shutil
 import os
+import threading
 from typing import Optional
 from app.cli.exceptions import CLIError, CLITimeoutError, CLIParseError, CLINotFoundError
 from app.cli.schemas import CLIScanResponse, CLIScanResult
 
 logger = logging.getLogger(__name__)
+
+# Module-level lock so only one CLI scan invocation runs at a time.
+# The LTE modem (e.g., /dev/ttyUSB0) is a shared resource — concurrent scans
+# will interfere with each other and may cause SIGTERM or data corruption.
+# Serialise all CLIAdapter instances to ensure atomic execution.
+_cli_cli_lock = threading.Lock()
 
 
 class CLIAdapter:
@@ -33,35 +40,35 @@ class CLIAdapter:
                 raise CLIError(
                     f"Simulated CLI failure (MOCK_CLI_FAIL={MOCK_CLI_FAIL})"
                 )
-        cmd = self._find_command()
-        args = [cmd, "scan", "--port", port, "--json"]
 
+        with _cli_cli_lock:
+            cmd = self._find_command()
+            args = [cmd, "scan", "--port", port, "--json"]
 
+            logger.info(f"Executing CLI: {' '.join(args)}")
 
-        logger.info(f"Executing CLI: {' '.join(args)}")
+            try:
+                result = subprocess.run(
+                    args,
+                    capture_output=True,
+                    text=True,
+                    timeout=timeout,
+                )
+            except subprocess.TimeoutExpired as e:
+                logger.error(f"CLI timed out after {timeout}s")
+                logger.warning("CLI timed out, returning empty results")
+                return CLIScanResponse(results=[], raw_output=f"{{\"error\": \"timeout\", \"port\": \"{port}}}")
+            except FileNotFoundError as e:
+                raise CLINotFoundError(self.command)
 
-        try:
-            result = subprocess.run(
-                args,
-                capture_output=True,
-                text=True,
-                timeout=timeout,
-            )
-        except subprocess.TimeoutExpired as e:
-            logger.error(f"CLI timed out after {timeout}s")
-            logger.warning("CLI timed out, returning empty results")
-            return CLIScanResponse(results=[], raw_output=f"{{\"error\": \"timeout\", \"port\": \"{port}}}")
-        except FileNotFoundError as e:
-            raise CLINotFoundError(self.command)
+            logger.info(f"CLI completed with return code {result.returncode}")
 
-        logger.info(f"CLI completed with return code {result.returncode}")
+            if result.returncode != 0:
+                logger.error(f"CLI error: {result.stderr}")
+                # Don't raise error on non-zero return, just log and return empty
+                return CLIScanResponse(results=[], raw_output=result.stderr)
 
-        if result.returncode != 0:
-            logger.error(f"CLI error: {result.stderr}")
-            # Don't raise error on non-zero return, just log and return empty
-            return CLIScanResponse(results=[], raw_output=result.stderr)
-
-        return self._parse_output(result.stdout)
+            return self._parse_output(result.stdout)
 
     def _parse_output(self, stdout: str) -> CLIScanResponse:
         try:

@@ -90,6 +90,13 @@ class ScanResultRepository:
         session_id: int,
         results: list[dict],
     ) -> list[ScanResult]:
+        import logging
+        logger = logging.getLogger(__name__)
+
+        if not results:
+            logger.warning(f"No results to save for session {session_id}")
+            return []
+
         scan_results = []
         for item in results:
             result = ScanResult(
@@ -103,11 +110,17 @@ class ScanResultRepository:
             self.db.add(result)
             scan_results.append(result)
 
-        self.db.commit()
+        try:
+            self.db.commit()
+        except Exception as e:
+            logger.error(f"Failed to commit scan results for session {session_id}: {e}")
+            self.db.rollback()
+            raise
 
         for result in scan_results:
             self.db.refresh(result)
 
+        logger.info(f"Saved {len(scan_results)} results for session {session_id}")
         return scan_results
 
     def get_by_id(self, result_id: int) -> Optional[ScanResult]:

@@ -1,0 +1,94 @@
+{
+  "config": {
+    "name": "TEST-2TOWER-SPEED10-R100",
+    "start": {
+      "latitude": -6.150521,
+      "longitude": 106.896972
+    },
+    "waypoints": [
+      {
+        "index": 0,
+        "latitude": -6.149622,
+        "longitude": 106.896972
+      },
+      {
+        "index": 1,
+        "latitude": -6.15014,
+        "longitude": 106.898151
+      }
+    ],
+    "loiter_radius_m": 50.0,
+    "cruise_speed_ms": 10.0,
+    "loiter_laps": 3,
+    "total_loop_duration_s": 252.02
+  },
+  "segments_summary": [
+    {
+      "type": "approach_tower_0",
+      "distance_m": 100.0,
+      "duration_s": 10.0
+    },
+    {
+      "type": "loiter",
+      "distance_m": 314.2,
+      "duration_s": 94.25
+    },
+    {
+      "type": "exit_tower_0",
+      "distance_m": 75.0,
+      "duration_s": 7.5
+    },
+    {
+      "type": "approach_tower_1",
+      "distance_m": 185.9,
+      "duration_s": 18.59
+    },
+    {
+      "type": "loiter",
+      "distance_m": 314.2,
+      "duration_s": 94.25
+    },
+    {
+      "type": "exit_tower_1",
+      "distance_m": 75.0,
+      "duration_s": 7.5
+    },
+    {
+      "type": "return_to_start",
+      "distance_m": 199.3,
+      "duration_s": 19.93
+    }
+  ],
+  "path_points": [
+    {
+      "index": 0,
+      "latitude": -6.150521,
+      "longitude": 106.896972
+    },
+    {
+      "index": 1,
+      "latitude": -6.149622,
+      "longitude": 106.896972
+    },
+    {
+      "index": 2,
+      "latitude": -6.14894751,
+      "longitude": 106.896972
+    },
+    {
+      "index": 3,
+      "latitude": -6.15014,
+      "longitude": 106.898151
+    },
+    {
+      "index": 4,
+      "latitude": -6.15041262,
+      "longitude": 106.89877151
+    },
+    {
+      "index": 5,
+      "latitude": -6.150521,
+      "longitude": 106.896972
+    }
+  ]
+}

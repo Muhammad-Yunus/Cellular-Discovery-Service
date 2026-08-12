@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     GPS_CLI_COUNT: int = 10
     GPS_CLI_COMMAND: str = "/home/pi/GPS/build/gps"
 
-    SCAN_TIMEOUT: int = 30
+    SCAN_TIMEOUT: int = 90
 
     MISSION_MAX_LOCATIONS: int = Field(default=10_000, gt=0, description="Maximum number of locations allowed per mission upload")
     MISSION_DEFAULT_RADIUS_METERS: int = Field(default=20, gt=0, description="Default geofence radius (meters) when mission radius not specified")
@@ -40,7 +40,8 @@ class Settings(BaseSettings):
     MISSION_CLI_TIMEOUT: int = Field(default=30, gt=0, description="Timeout per scan CLI call in seconds")
     # Scan behavior when GPS is loitering around a tower
     MISSION_SCAN_INTERVAL_SEC: float = Field(default=8.0, gt=0, description="Seconds between scans during loiter at a tower (0 = scan once)")
-    MISSION_SCAN_MAX_PER_TOWER: int = Field(default=10, gt=0, description="Maximum scans per tower during loiter before marking visited")
+    MISSION_SCAN_MAX_PER_TOWER: int = Field(default=100, gt=0, description="Maximum scans per tower during loiter before stopping")
+    MISSION_SCAN_MIN_FOR_VISITED: int = Field(default=4, gt=0, description="Minimum scan sessions before marking location as VISITED")
     MISSION_START_GPS_TIMEOUT: int = Field(default=5, gt=0, description="Maximum time to wait for GPS availability at mission start")
     MISSION_LOG_SIZE: int = Field(default=200, gt=0, description="Maximum number of log entries stored per mission")
 
