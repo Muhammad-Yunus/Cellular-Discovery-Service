@@ -42,12 +42,14 @@ class MovingMockGPSProvider(GPSProvider):
         loiter_radius_m: float = 20.0,
         cruise_speed_ms: float = 50.0,  # 50 m/s = 180 km/h, fast for testing
         loiter_laps: int = 3,
+        altitude_m: float = 100.0,  # Fixed altitude for drone simulation
     ):
         self._start = (start_lat, start_lon)
         self._waypoints = waypoints or []
         self._loiter_radius_m = loiter_radius_m
         self._cruise_speed_ms = cruise_speed_ms
         self._loiter_laps = loiter_laps
+        self._altitude_m = altitude_m
 
         # Build full path: start -> waypoints -> start
         self._path = [self._start] + list(self._waypoints) + [self._start]
@@ -69,6 +71,8 @@ class MovingMockGPSProvider(GPSProvider):
 
         self._lock = threading.Lock()
         self._start_time = time.time()
+        self._last_position = None
+        self._last_timestamp = None
 
     def _loiter_duration_s(self) -> float:
         """Time for `loiter_laps` circles at radius with angular speed.
@@ -112,8 +116,19 @@ class MovingMockGPSProvider(GPSProvider):
         lon_offset = (radius_m * math.sin(angle)) / max(lon_scale, 1e-6)
         return (center[0] + lat_offset, center[1] + lon_offset)
 
+    def _bearing_to_waypoint(self, from_pos: tuple[float, float], to_pos: tuple[float, float]) -> float:
+        """Calculate bearing from current position to target position in degrees."""
+        lat1, lon1 = math.radians(from_pos[0]), math.radians(from_pos[1])
+        lat2, lon2 = math.radians(to_pos[0]), math.radians(to_pos[1])
+        dlon = lon2 - lon1
+        x = math.sin(dlon) * math.cos(lat2)
+        y = math.cos(lat1) * math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(dlon)
+        bearing = math.degrees(math.atan2(x, y))
+        return (bearing + 360) % 360
+
     def get_location(self) -> GPSLocation:
-        """Return simulated drone position."""
+        """Return simulated drone position with altitude, course, and speed."""
+        import datetime
         with self._lock:
             elapsed = time.time() - self._start_time
             # Loop the tour forever
@@ -148,7 +163,34 @@ class MovingMockGPSProvider(GPSProvider):
                 # Past last segment (shouldn't happen with mod)
                 pos = self._path[-1]
 
-            return GPSLocation(latitude=pos[0], longitude=pos[1])
+            # Calculate course and speed
+            now = datetime.datetime.now()
+            current_time = now.timestamp()
+
+            if self._last_position is not None:
+                dist = self._haversine_m(self._last_position, pos)
+                time_diff = current_time - self._last_timestamp
+                if time_diff > 0:
+                    speed = dist / time_diff
+                    course = self._bearing_to_waypoint(self._last_position, pos)
+                else:
+                    speed = 0.0
+                    course = 0.0
+            else:
+                # First call - use bearing from start to first position
+                speed = 0.0
+                course = self._bearing_to_waypoint(self._start, pos) if self._start != pos else 0.0
+
+            # Update tracking
+            self._last_position = pos
+            self._last_timestamp = current_time
+
+            return GPSLocation(
+                latitude=pos[0],
+                longitude=pos[1],
+                altitude=self._altitude_m,
+                course_deg=round(course, 2),
+            )
 
     def is_available(self) -> bool:
         return True

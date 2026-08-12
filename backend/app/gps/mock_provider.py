@@ -17,16 +17,23 @@ class MockGPSProvider:
         self,
         latitude: float = -6.150676643667096,
         longitude: float = 106.89665223346297,
+        altitude: float = 50.0,
     ):
         self._latitude = latitude
         self._longitude = longitude
+        self._altitude = altitude
 
     def get_location(self) -> GPSLocation:
         # Test-only fault injection: when MOCK_GPS_FAIL=1, raise as if the device
         # returned unreadable data.
         if os.environ.get("MOCK_GPS_FAIL") == "1":
             raise GPSReadError("Simulated GPS read failure (MOCK_GPS_FAIL=1)")
-        return GPSLocation(latitude=self._latitude, longitude=self._longitude)
+        return GPSLocation(
+            latitude=self._latitude,
+            longitude=self._longitude,
+            altitude=self._altitude,
+            course_deg=None,
+        )
 
     def is_available(self) -> bool:
         # Even when failing reads, the device is "available" — the operator
