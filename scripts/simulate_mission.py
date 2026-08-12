@@ -37,6 +37,8 @@ import json
 import math
 import argparse
 import subprocess
+import atexit
+import signal
 import requests
 from pathlib import Path
 from io import StringIO
@@ -84,6 +86,65 @@ def log(msg: str):
     flush=True memastikan pesan langsung keluar (tidak di-buffer).
     """
     print(f"[{time.strftime('%H:%M:%S')}] {msg}", flush=True)
+
+
+# ============================================================================
+# SAFETY NET: GPS REVERT HANDLER
+# ============================================================================
+# Track mission_id globally agar bisa di-revert saat exit/interrupt/timeout
+_GPS_REVERTED = False
+_ACTIVE_MISSION_ID: int | None = None
+
+
+def _revert_gps_on_exit():
+    """Dipanggil otomatis oleh atexit atau signal handler.
+    Memastikan GPS dikembalikan ke provider 'cli' jika masih 'moving_mock'.
+    """
+    global _GPS_REVERTED
+    if _GPS_REVERTED:
+        return
+    _GPS_REVERTED = True
+
+    try:
+        log("[safety] Reverting GPS provider to 'cli' (safety net)...")
+        # Stop mission jika masih aktif
+        if _ACTIVE_MISSION_ID is not None:
+            try:
+                stop_mission(_ACTIVE_MISSION_ID)
+                log(f"[safety] Mission {_ACTIVE_MISSION_ID} stopped")
+            except Exception as e:
+                log(f"[safety] Gagal stop mission: {e}")
+
+        # Set GPS provider ke cli
+        try:
+            set_gps_provider("cli")
+            log("[safety] GPS_PROVIDER=cli written to .env")
+        except Exception as e:
+            log(f"[safety] Gagal set gps provider: {e}")
+
+        # Restart backend supaya konfigurasi di-apply
+        try:
+            restart_backend()
+            log("[safety] Backend restarted with cli provider")
+        except Exception as e:
+            log(f"[safety] Gagal restart backend: {e}")
+    except Exception as e:
+        log(f"[safety] Error during revert: {e}")
+
+
+def _signal_handler(signum, frame):
+    """Handle SIGINT/SIGTERM agar teardown tetap jalan."""
+    log(f"[safety] Received signal {signum}, exiting gracefully...")
+    _revert_gps_on_exit()
+    sys.exit(128 + signum)
+
+
+# Register atexit hook (works for normal exit, sys.exit, unhandled exceptions)
+atexit.register(_revert_gps_on_exit)
+
+# Register signal handlers (Ctrl+C, kill, etc.)
+signal.signal(signal.SIGINT, _signal_handler)
+signal.signal(signal.SIGTERM, _signal_handler)
 
 
 # ============================================================================
@@ -668,6 +729,9 @@ def run_mission(start_lat: float, start_lon: float, name: str = "AUTO-MISSION",
         # STEP 2: Buat mission baru
         # =========================================================================
         mission_id = create_mission(name, f"Auto-generated mission dengan {count} tower", tty_port=tty_port)
+        # Track globally supaya safety net bisa stop mission jika script interrupt
+        global _ACTIVE_MISSION_ID
+        _ACTIVE_MISSION_ID = mission_id
 
         # =========================================================================
         # STEP 3: Upload lokasi ke backend
