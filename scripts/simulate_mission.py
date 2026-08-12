@@ -803,6 +803,10 @@ def run_mission(start_lat: float, start_lon: float, name: str = "AUTO-MISSION",
         # =========================================================================
         monitor_mission(mission_id, interval=MONITOR_INTERVAL, max_duration=MAX_MISSION_DURATION)
 
+        # Delay 2 menit sebelum restart service setelah mission COMPLETED
+        log("Mission selesai, menunggu 2 menit sebelum restart service...")
+        time.sleep(120)
+
     except Exception as e:
         log(f"ERROR: {e}")
         import traceback
