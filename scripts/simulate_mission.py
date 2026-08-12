@@ -43,6 +43,9 @@ import requests
 from pathlib import Path
 from io import StringIO
 
+from app.config.settings import get_settings
+settings = get_settings()
+
 # ============================================================================
 # KONFIGURASI
 # ============================================================================
@@ -361,7 +364,7 @@ def generate_tower_locations(start_lat: float, start_lon: float, count: int,
 # FUNGSI API - INTERAKSI DENGAN BACKEND
 # ============================================================================
 
-def create_mission(name: str, description: str = "", tty_port: str = None) -> int:
+def create_mission(name: str, description: str = "", tty_port: str = None) -> tuple[int, int]:
     """
     Membuat mission baru via API.
 
@@ -371,13 +374,12 @@ def create_mission(name: str, description: str = "", tty_port: str = None) -> in
         tty_port: Port USB modem (misal /dev/ttyUSB0)
 
     Returns:
-        Mission ID yang dibuat
+        (mission_id, radius_meters) yang dibuat
     """
     log(f"Membuat mission: {name} (tty_port={tty_port})")
     payload = {
         "name": name,
         "description": description,
-        "radius_meters": 20,  # Radius geofence 20 meter
         "tty_port": tty_port,
     }
     resp = requests.post(f"{API_BASE}/api/v1/missions", json=payload)
@@ -385,7 +387,15 @@ def create_mission(name: str, description: str = "", tty_port: str = None) -> in
     data = resp.json()
     mission_id = data["id"]
     log(f"Mission dibuat: id={mission_id}, status={data['status']}")
-    return mission_id
+
+    # Ambil radius dari API response (backend bisa mendefinisikan sendiri)
+    resp_detail = requests.get(f"{API_BASE}/api/v1/missions/{mission_id}")
+    resp_detail.raise_for_status()
+    detail = resp_detail.json()
+    radius_meters = detail.get("radius_meters") or data.get("radius_meters") or settings.MISSION_DEFAULT_RADIUS_METERS
+    log(f"  -> radius_meters={radius_meters}")
+
+    return mission_id, radius_meters
 
 
 def upload_locations(mission_id: int, locations: list[dict]):
@@ -746,7 +756,7 @@ def run_mission(start_lat: float, start_lon: float, name: str = "AUTO-MISSION",
         # =========================================================================
         # STEP 2: Buat mission baru
         # =========================================================================
-        mission_id = create_mission(name, f"Auto-generated mission dengan {count} tower", tty_port=tty_port)
+        mission_id, radius_meters = create_mission(name, f"Auto-generated mission dengan {count} tower", tty_port=tty_port)
         # Track globally supaya safety net bisa stop mission jika script interrupt
         global _ACTIVE_MISSION_ID
         _ACTIVE_MISSION_ID = mission_id
