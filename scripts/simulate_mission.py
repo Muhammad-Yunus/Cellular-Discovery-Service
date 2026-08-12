@@ -546,13 +546,17 @@ def monitor_mission(mission_id: int, interval: int = MONITOR_INTERVAL,
 # FUNGSI KONFIGURASI GPS
 # ============================================================================
 
-def set_gps_provider(provider_type: str, speed_ms: float = 50.0):
+def set_gps_provider(provider_type: str, speed_ms: float = 50.0,
+                     loiter_laps: int | None = None,
+                     loiter_radius_m: float | None = None):
     """
     Mengupdate konfigurasi GPS provider di file .env.
 
     Args:
         provider_type: Tipe provider ("cli", "mock", "moving_mock", "serial")
         speed_ms: Mock GPS cruise speed in m/s (only for moving_mock)
+        loiter_laps: Jumlah putaran orbit di setiap tower (only for moving_mock)
+        loiter_radius_m: Radius orbit dalam meter (only for moving_mock)
     """
     log(f"Mengatur GPS provider ke: {provider_type} (speed={speed_ms} m/s)")
 
@@ -567,11 +571,22 @@ def set_gps_provider(provider_type: str, speed_ms: float = 50.0):
             if provider_type == "moving_mock":
                 new_lines.append(f"MOCK_GPS_SPEED_MS={speed_ms}")
             else:
-                new_lines.append(line)  # Keep existing value when switching away
+                new_lines.append(line)
+        elif line.startswith("MOCK_GPS_LOITER_LAPS="):
+            if provider_type == "moving_mock" and loiter_laps is not None:
+                new_lines.append(f"MOCK_GPS_LOITER_LAPS={loiter_laps}")
+            else:
+                new_lines.append(line)
+        elif line.startswith("MOCK_GPS_LOITER_RADIUS_M="):
+            if provider_type == "moving_mock" and loiter_radius_m is not None:
+                new_lines.append(f"MOCK_GPS_LOITER_RADIUS_M={loiter_radius_m}")
+            else:
+                new_lines.append(line)
         else:
             new_lines.append(line)
 
     env_path.write_text("\n".join(new_lines) + "\n")
+    log(f"  -> LOITER_LAPS={loiter_laps or 'keep'}, LOITER_RADIUS={loiter_radius_m or 'keep'}m")
 
 
 def update_mock_start_lat_lon(lat: float, lon: float):
@@ -666,7 +681,8 @@ def restart_backend():
 
 def run_mission(start_lat: float, start_lon: float, name: str = "AUTO-MISSION",
                 count: int = 5, min_dist: int = 200, max_dist: int = 400,
-                speed_ms: float = 50.0):
+                speed_ms: float = 50.0,
+                loiter_laps: int = 6, loiter_radius_m: float = 50.0):
     """
     Workflow utama untuk menjalankan mission otonom.
 
@@ -677,6 +693,8 @@ def run_mission(start_lat: float, start_lon: float, name: str = "AUTO-MISSION",
         min_dist: Jarak minimum tower (meter)
         max_dist: Jarak maksimum tower (meter)
         speed_ms: Mock GPS cruise speed (m/s)
+        loiter_laps: Jumlah putaran orbit di tiap tower (default: 6)
+        loiter_radius_m: Radius orbit dalam meter (default: 50)
 
     Returns:
         Mission ID jika berhasil, None jika gagal
@@ -754,7 +772,9 @@ def run_mission(start_lat: float, start_lon: float, name: str = "AUTO-MISSION",
             log(f"  #{item['sequence_order']}: {item['cellular_tower_id']} ({item['latitude']}, {item['longitude']})")
 
         # Set provider ke moving_mock untuk mission execution
-        set_gps_provider("moving_mock", speed_ms=speed_ms)
+        log(f"Setting loiter config: {loiter_laps} laps @ {loiter_radius_m}m radius")
+        set_gps_provider("moving_mock", speed_ms=speed_ms,
+                        loiter_laps=loiter_laps, loiter_radius_m=loiter_radius_m)
 
         # Update waypoints di .env
         update_waypoints_in_env(waypoints_str)
@@ -805,6 +825,8 @@ def main():
     parser.add_argument("--min-dist", type=int, default=200, help="Jarak minimum tower meter (default: 200)")
     parser.add_argument("--max-dist", type=int, default=400, help="Jarak maksimum tower meter (default: 400)")
     parser.add_argument("--speed", type=float, default=50.0, help="Mock GPS cruise speed m/s (default: 50)")
+    parser.add_argument("--loiter-laps", type=int, default=6, help="Jumlah putaran orbit tiap tower (default: 6)")
+    parser.add_argument("--loiter-radius", type=float, default=50.0, help="Radius orbit meter (default: 50)")
     args = parser.parse_args()
 
     log("="*60)
@@ -827,7 +849,9 @@ def main():
         count=args.count,
         min_dist=args.min_dist,
         max_dist=args.max_dist,
-        speed_ms=args.speed
+        speed_ms=args.speed,
+        loiter_laps=args.loiter_laps,
+        loiter_radius_m=args.loiter_radius
     )
 
     log("="*60)

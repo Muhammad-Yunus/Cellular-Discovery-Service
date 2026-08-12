@@ -62,6 +62,9 @@ class MissionExecutor:
         self._info_distance_threshold_m: float = 150.0
         self._info_log_proximity_m: float = 100.0  # Only log when target is within this distance
 
+        # Multi-scan during loiter tracking: (mission_id, location_id) -> {"scan_count": int, "last_scan_ts": datetime}
+        self._scan_tracker: dict[tuple[int, int], dict] = {}
+
     def _make_scan_service(self, db):
         settings = get_settings()
         return ScanService(
@@ -321,7 +324,8 @@ class MissionExecutor:
         finally:
             db.close()
 
-    async def _visit(self, mission_id: int, target, dist: float) -> None:
+    async def _mark_visited(self, mission_id: int, target, dist: float, tracker: dict) -> None:
+        """Mark location as visited when all scans are complete."""
         db = self._session_factory()
         try:
             mission = MissionRepository(db).get_by_id(mission_id)
@@ -334,42 +338,16 @@ class MissionExecutor:
         finally:
             db.close()
 
-        try:
-            scan = await asyncio.to_thread(
-                self._run_scan,
-                port=port,
-                timeout=get_settings().MISSION_CLI_TIMEOUT,
-                mission_location_id=target.id,
-            )
-            # Respect pause/stop during the blocking scan
-            mission = self._load_mission(mission_id)
-            if mission is None or mission.status != "RUNNING":
-                return
-        except Exception as e:
-            self._log(
-                mission_id,
-                "SCAN_ERROR",
-                f"Scan failed for {target.cellular_tower_id}: {e}",
-            )
-            db = self._session_factory()
-            try:
-                MissionLocationRepository(db).mark_skipped(mission_id, target.id)
-            finally:
-                db.close()
-            await self._emit(
-                "mission_skipped",
-                mission_id,
-                location_id=target.id,
-                tower_id=target.cellular_tower_id,
-                reason="SCAN_ERROR",
-            )
-            return
+        scan_max = get_settings().MISSION_SCAN_MAX_PER_TOWER
+        scan_count = tracker.get("scan_count", 0)
 
+        # Mark as visited and link to last scan session
+        self._log(mission_id, "INFO", f"{target.cellular_tower_id}: max scans ({scan_max}) reached, marking visited")
         db = self._session_factory()
         try:
-            repo = MissionRepository(db)
             loc_repo = MissionLocationRepository(db)
-            loc_repo.mark_visited(mission_id, target.id, scan.id)
+            loc_repo.mark_visited(mission_id, target.id, tracker.get("last_scan_session_id"))
+            repo = MissionRepository(db)
             mission = repo.get_by_id(mission_id)
             mission.visited_locations += 1
             mission.current_location_id = target.id
@@ -379,7 +357,7 @@ class MissionExecutor:
         self._log(
             mission_id,
             "VISITED",
-            f"{target.cellular_tower_id} scanned, session {scan.id} linked",
+            f"{target.cellular_tower_id} completed ({scan_max} scans), session {tracker.get('last_scan_session_id')} linked",
         )
         await self._emit(
             "mission_visit",
@@ -387,15 +365,86 @@ class MissionExecutor:
             location_id=target.id,
             tower_id=target.cellular_tower_id,
             tower_name=target.cellular_tower_name,
-            scan_session_id=scan.id,
+            scan_session_id=tracker.get("last_scan_session_id"),
             distance_m=round(dist, 2),
         )
+
+    async def _trigger_scan(self, mission_id: int, target, dist: float) -> None:
+        """Trigger a scan in the background without immediately marking as visited."""
+        # Note: lock is already held by caller (_run())
+        db = self._session_factory()
+        try:
+            mission = MissionRepository(db).get_by_id(mission_id)
+            if not mission.tty_port:
+                raise ValueError(
+                    f"Mission {mission_id} has no tty_port configured. "
+                    f"Please set a valid USB modem port (e.g., /dev/ttyUSB0) in the mission settings."
+                )
+            port = mission.tty_port
+        finally:
+            db.close()
+
+        scan_max = get_settings().MISSION_SCAN_MAX_PER_TOWER
+        key = (mission_id, target.id)
+        tracker = self._scan_tracker.get(key, {})
+        scan_count = tracker.get("scan_count", 0)
+
+        self._log(
+            mission_id,
+            "INFO",
+            f"Triggering scan {scan_count + 1}/{scan_max} for {target.cellular_tower_id}",
+        )
+
+        async def _do_scan():
+            try:
+                scan = await asyncio.to_thread(
+                    self._run_scan,
+                    port=port,
+                    timeout=get_settings().MISSION_CLI_TIMEOUT,
+                    mission_location_id=target.id,
+                )
+                # Update tracker with scan session ID only (don't re-increment count!)
+                # scan_count was already incremented when trigger was called
+                self._scan_tracker[key] = {
+                    **tracker,
+                    "scan_count": scan_count,  # Keep same count - already incremented
+                    "last_scan_ts": datetime.now(timezone.utc),
+                    "last_scan_session_id": scan.id,
+                }
+                self._log(
+                    mission_id,
+                    "INFO",
+                    f"Scan completed for {target.cellular_tower_id} (session {scan.id})",
+                )
+            except Exception as e:
+                self._log(
+                    mission_id,
+                    "SCAN_ERROR",
+                    f"Scan failed for {target.cellular_tower_id}: {e}",
+                )
+                db = self._session_factory()
+                try:
+                    MissionLocationRepository(db).mark_skipped(mission_id, target.id)
+                finally:
+                    db.close()
+                await self._emit(
+                    "mission_skipped",
+                    mission_id,
+                    location_id=target.id,
+                    tower_id=target.cellular_tower_id,
+                    reason="SCAN_ERROR",
+                )
+
+        # Launch scan in background - don't block GPS movement
+        asyncio.create_task(_do_scan())
 
     # ----- main loop -----
 
     async def _run(self, mission_id: int) -> None:
         async with self.lock:
             try:
+                scan_interval = get_settings().MISSION_SCAN_INTERVAL_SEC
+                scan_max = get_settings().MISSION_SCAN_MAX_PER_TOWER
                 while not self._shutdown:
                     mission = self._load_mission(mission_id)
                     if mission is None:
@@ -440,8 +489,79 @@ class MissionExecutor:
                         mission.radius_meters
                         or get_settings().MISSION_DEFAULT_RADIUS_METERS
                     )
+                    # Scan grace radius: allow scanning even when GPS is further
+                    # (needed because CLI scans take ~30s and GPS keeps moving)
+                    scan_radius = radius * 10  # e.g., 500m for 50m radius
+
+                    # Check if we already have enough scans for this location
+                    key = (mission_id, target.id)
+                    tracker = self._scan_tracker.get(key, {})
+                    scan_count = tracker.get("scan_count", 0)
+                    last_scan_ts = tracker.get("last_scan_ts")
+                    now = datetime.now(timezone.utc)
+
                     if dist <= radius:
-                        await self._visit(mission_id, target, dist)
+                        # Inside the actual radius - manage scan timing
+                        key = (mission_id, target.id)
+                        tracker = self._scan_tracker.get(key, {})
+                        scan_count = tracker.get("scan_count", 0)
+                        last_scan_ts = tracker.get("last_scan_ts")
+                        now = datetime.now(timezone.utc)
+
+                        if scan_count >= scan_max:
+                            # Already have enough scans, mark visited
+                            await self._mark_visited(mission_id, target, dist, tracker)
+                        else:
+                            # Check if we can trigger another scan
+                            should_scan = (
+                                last_scan_ts is None
+                                or (now - last_scan_ts).total_seconds() >= scan_interval
+                            )
+                            if should_scan:
+                                # Trigger scan (non-blocking)
+                                await self._trigger_scan(mission_id, target, dist)
+                                # Update tracker immediately to prevent double-triggering
+                                self._scan_tracker[key] = {
+                                    **tracker,
+                                    "scan_count": scan_count + 1,  # Increment here
+                                    "last_scan_ts": now,
+                                }
+                            else:
+                                # Wait for next scan interval
+                                wait = scan_interval - (now - last_scan_ts).total_seconds()
+                                if wait > 0:
+                                    await asyncio.sleep(min(wait, get_settings().MISSION_POLL_INTERVAL))
+                                    continue
+                    elif dist <= scan_radius:
+                        # Within scan grace radius - manage scan timing
+                        key = (mission_id, target.id)
+                        tracker = self._scan_tracker.get(key, {})
+                        scan_count = tracker.get("scan_count", 0)
+                        last_scan_ts = tracker.get("last_scan_ts")
+                        now = datetime.now(timezone.utc)
+
+                        if scan_count < scan_max:
+                            should_scan = (
+                                last_scan_ts is None
+                                or (now - last_scan_ts).total_seconds() >= scan_interval
+                            )
+                            if should_scan:
+                                # Trigger scan but don't mark visited yet
+                                await self._trigger_scan(mission_id, target, dist)
+                                # Update tracker
+                                self._scan_tracker[key] = {
+                                    **tracker,
+                                    "scan_count": scan_count + 1,
+                                    "last_scan_ts": now,
+                                }
+                            else:
+                                # Wait for next scan interval
+                                wait = scan_interval - (now - last_scan_ts).total_seconds()
+                                if wait > 0:
+                                    await asyncio.sleep(min(wait, get_settings().MISSION_POLL_INTERVAL))
+                                    continue
+                        else:
+                            await self._mark_visited(mission_id, target, dist, tracker)
                     else:
                         self._log(
                             mission_id,

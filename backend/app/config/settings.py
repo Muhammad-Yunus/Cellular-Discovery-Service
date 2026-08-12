@@ -38,6 +38,9 @@ class Settings(BaseSettings):
     MISSION_POLL_INTERVAL: int = Field(default=2, gt=0, description="Seconds between GPS location checks during mission execution")
     MISSION_GPS_FAILURE_THRESHOLD: int = Field(default=10, gt=0, description="Consecutive GPS failures before mission marked as FAILED")
     MISSION_CLI_TIMEOUT: int = Field(default=30, gt=0, description="Timeout per scan CLI call in seconds")
+    # Scan behavior when GPS is loitering around a tower
+    MISSION_SCAN_INTERVAL_SEC: float = Field(default=8.0, gt=0, description="Seconds between scans during loiter at a tower (0 = scan once)")
+    MISSION_SCAN_MAX_PER_TOWER: int = Field(default=10, gt=0, description="Maximum scans per tower during loiter before marking visited")
     MISSION_START_GPS_TIMEOUT: int = Field(default=5, gt=0, description="Maximum time to wait for GPS availability at mission start")
     MISSION_LOG_SIZE: int = Field(default=200, gt=0, description="Maximum number of log entries stored per mission")
 
