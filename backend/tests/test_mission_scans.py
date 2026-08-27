@@ -191,7 +191,7 @@ class TestMissionScanRepository:
         csv = service.get_mission_csv(mission.id)
         # Normalize line endings for comparison
         header = csv.replace("\r", "").split("\n")[0]
-        expected = "scan_time,latitude,longitude,operator_name,mcc,mnc,rat,cellular_tower_id,cellular_tower_name"
+        expected = "scan_time,latitude,longitude,operator_name,mcc,mnc,rat,cellular_tower_id,cellular_tower_name,frequency_mhz,earfcn,pci,rsrp,rsrq,snr"
         assert header == expected
 
     def test_u08_empty_mission_no_scans(self, db_session):
