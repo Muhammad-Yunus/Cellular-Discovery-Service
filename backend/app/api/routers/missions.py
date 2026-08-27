@@ -20,12 +20,6 @@ def create_mission(
     payload: MissionCreate,
     db: Session = Depends(get_db),
 ):
-    # Pre-validate band is provided
-    if not payload.band:
-        raise HTTPException(
-            status_code=422,
-            detail="band is required. Provide a valid LTE band (e.g., 8, 20, 40).",
-        )
     service = MissionService(db)
     return service.create(payload)
 

@@ -42,13 +42,13 @@ class TestScanEndpoints:
         try:
             response = client.post(
                 "/api/v1/scan",
-                json={"band": 8},
+                json={},
             )
 
             assert response.status_code == 200
             data = response.json()
-            assert data["band"] == "8"
-            assert len(data["results"]) == 1
+            # band is now set from settings (LTE_SCAN_BANDS)
+            assert len(data["results"]) >= 1
         finally:
             client.app.dependency_overrides.pop(get_gps_provider, None)
             client.app.dependency_overrides.pop(get_cli_adapter, None)

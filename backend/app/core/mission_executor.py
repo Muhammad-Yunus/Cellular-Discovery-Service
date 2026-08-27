@@ -314,12 +314,12 @@ class MissionExecutor:
             completed_at=completed_at.isoformat(),
         )
 
-    def _run_scan(self, band: str, timeout: int, mission_location_id: int):
+    def _run_scan(self, bands: list[int], timeout: int, mission_location_id: int):
         db = self._session_factory()
         try:
             service = self._scan_factory(db)
             return service.execute_scan(
-                band=band,
+                bands=bands,
                 timeout=timeout,
                 mission_location_id=mission_location_id,
             )
@@ -375,17 +375,8 @@ class MissionExecutor:
     async def _trigger_scan(self, mission_id: int, target, dist: float) -> None:
         """Trigger a scan in the background without immediately marking as visited."""
         # Note: lock is already held by caller (_run())
-        db = self._session_factory()
-        try:
-            mission = MissionRepository(db).get_by_id(mission_id)
-            if not mission.band:
-                raise ValueError(
-                    f"Mission {mission_id} has no band configured. "
-                    f"Please set a valid LTE band (e.g., B7, B20) in the mission settings."
-                )
-            band = mission.band
-        finally:
-            db.close()
+        # Band config comes from settings, not mission
+        scan_bands = get_settings().LTE_SCAN_BANDS
 
         scan_max = get_settings().MISSION_SCAN_MAX_PER_TOWER
         key = (mission_id, target.id)
@@ -412,7 +403,7 @@ class MissionExecutor:
 
                 scan = await asyncio.to_thread(
                     self._run_scan,
-                    band=band,
+                    bands=scan_bands,
                     timeout=get_settings().MISSION_CLI_TIMEOUT,
                     mission_location_id=target.id,
                 )

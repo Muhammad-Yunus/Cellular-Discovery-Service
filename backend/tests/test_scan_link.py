@@ -75,15 +75,18 @@ class TestScanServiceLink:
             raw_output='{"cells": []}',
         )
 
-    def test_u03_execute_scan_without_kwarg(self, db_session):
+    def test_u03_execute_scan_multiband(self, db_session):
         service, cli_adapter, gps_provider = self._make_service(db_session)
         self._mock_deps(cli_adapter, gps_provider)
 
-        result = service.execute_scan(band=8)
+        result = service.execute_scan(bands=[5, 8])
 
         assert result.mission_location_id is None
         gps_provider.get_location.assert_called_once()
-        cli_adapter.execute.assert_called_once_with(band=8, timeout=30)
+        # CLI should be called for each band
+        assert cli_adapter.execute.call_count == 2
+        cli_adapter.execute.assert_any_call(band=5, timeout=30)
+        cli_adapter.execute.assert_any_call(band=8, timeout=30)
 
     def test_u04_execute_scan_with_mission_location_id(self, db_session):
         service, cli_adapter, gps_provider = self._make_service(db_session)
@@ -91,7 +94,8 @@ class TestScanServiceLink:
         loc = make_location(db_session)
 
         result = service.execute_scan(
-            band=8, mission_location_id=loc.id
+            bands=[5, 8],
+            mission_location_id=loc.id
         )
 
         assert result.mission_location_id == loc.id
@@ -137,7 +141,7 @@ class TestScanLinkEndpoints:
         client.app.dependency_overrides[get_cli_adapter] = lambda: mock_cli
 
         try:
-            response = client.post("/api/v1/scan", json={"band": 8})
+            response = client.post("/api/v1/scan", json={})
 
             assert response.status_code == 200
             assert response.json()["mission_location_id"] is None
@@ -158,7 +162,8 @@ class TestScanLinkEndpoints:
         service = ScanService(db=db_session, cli_adapter=cli_adapter, gps_provider=gps_provider)
 
         result = service.execute_scan(
-            band=8, mission_location_id=loc.id
+            bands=[5, 8],
+            mission_location_id=loc.id
         )
 
         assert db_session.query(ScanSession).filter_by(id=result.id).one().mission_location_id == loc.id

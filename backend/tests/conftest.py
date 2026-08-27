@@ -167,18 +167,8 @@ def fast_settings(monkeypatch):
 
 
 # Patch band validator at module load time so tests work without USB ports
-import app.schemas.mission as _mission_schema
-_original_validate_band = _mission_schema._validate_band
-
-def _test_validate_band(cls, v):
-    if v is None:
-        return v
-    v = str(v).strip()
-    if not v:
-        raise ValueError("band cannot be empty")
-    return v
-
-_mission_schema._validate_band = _test_validate_band
+# (No longer needed since band was removed from Mission schema; kept for backward compat)
+_OriginalBandPatch = None
 
 
 @pytest.fixture
@@ -186,9 +176,6 @@ def api(db_session, monkeypatch):
     import app.core.mission_executor as me
     from fastapi.testclient import TestClient
     from app.api.dependencies.providers import get_gps_provider
-
-    # Restore original validator after test
-    monkeypatch.setattr("app.schemas.mission._validate_band", _original_validate_band)
 
     original_session_local = me.SessionLocal
     me.SessionLocal = TestingSessionLocal
@@ -227,7 +214,7 @@ def executor(api, fast_settings):
     return executor
 
 
-def make_planned(db, csv=CSV_1, radius=50, status="IDLE", name="Exec Mission", band="8"):
+def make_planned(db, csv=CSV_1, radius=50, status="IDLE", name="Exec Mission", band=None):
     mission = Mission(name=name, status=status, radius_meters=radius, band=band)
     db.add(mission)
     db.commit()

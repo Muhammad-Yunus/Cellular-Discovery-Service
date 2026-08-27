@@ -38,10 +38,9 @@ class TestScanService:
             raw_output='{"cells": []}',
         )
 
-        result = service.execute_scan(band=8)
+        result = service.execute_scan(bands=[8])
 
         assert result is not None
-        assert result.band == "8"
         assert len(result.results) == 1
         assert result.results[0].operator_name == "Telkomsel"
 

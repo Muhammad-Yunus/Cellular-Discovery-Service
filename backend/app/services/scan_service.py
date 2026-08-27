@@ -24,21 +24,24 @@ class ScanService:
 
     def execute_scan(
         self,
-        band: int,
+        bands: list[int],
         timeout: int = 30,
         *,
         mission_location_id: int | None = None,
     ) -> ScanSessionResponse:
-        logger.info(f"Starting scan on band: {band}")
+        logger.info(f"Starting multi-band scan: {bands}")
 
         location = self.gps_provider.get_location()
         logger.info(f"GPS location: {location.latitude}, {location.longitude}")
 
-        cli_response = self.cli_adapter.execute(band=band, timeout=timeout)
-        logger.info(f"CLI returned {len(cli_response.results)} results")
+        all_results = []
+        for band in bands:
+            cli_response = self.cli_adapter.execute(band=band, timeout=timeout)
+            logger.info(f"Band {band}: {len(cli_response.results)} cells")
+            all_results.extend(cli_response.results)
 
         session = self.session_repo.create(
-            band=str(band),
+            band=str(bands[0]) if bands else "",
             latitude=location.latitude,
             longitude=location.longitude,
             mission_location_id=mission_location_id,
@@ -62,7 +65,7 @@ class ScanService:
                 "rsrq": r.rsrq,
                 "snr": r.snr,
             }
-            for r in cli_response.results
+            for r in all_results
         ]
 
         self.result_repo.create_bulk(
@@ -70,7 +73,10 @@ class ScanService:
             results=results_data,
         )
 
-        logger.info(f"Scan completed, session ID: {session.id}")
+        logger.info(
+            f"Scan completed, session ID: {session.id}, "
+            f"total results: {len(all_results)}"
+        )
 
         return self._to_response(session)
 

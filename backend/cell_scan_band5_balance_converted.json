@@ -3,8 +3,8 @@
     "band": 5,
     "gain_db": 43,
     "mode": "balance",
-    "total_cells": 2,
-    "timestamp": "2026-08-27T14:11:46.737422+00:00"
+    "total_cells": 1,
+    "timestamp": "2026-08-27T22:33:17.150488+00:00"
   },
   "cells": [
     {
@@ -12,34 +12,17 @@
       "earfcn": 2448,
       "band": "5",
       "bandwidth_mhz": null,
-      "pci": 1,
+      "pci": 423,
       "cell_id": null,
       "tac": null,
       "mcc": 510,
       "mnc": 9,
-      "rsrp": -7.7,
+      "rsrp": -18.9,
       "rsrq": null,
       "snr": null,
       "operator": "Smartfren",
       "country": "Indonesia",
-      "timestamp": "2026-08-27T14:11:46.737422+00:00"
-    },
-    {
-      "frequency_mhz": 875.0,
-      "earfcn": 2460,
-      "band": "5",
-      "bandwidth_mhz": null,
-      "pci": 265,
-      "cell_id": null,
-      "tac": null,
-      "mcc": 510,
-      "mnc": 9,
-      "rsrp": -14.1,
-      "rsrq": null,
-      "snr": null,
-      "operator": "Smartfren",
-      "country": "Indonesia",
-      "timestamp": "2026-08-27T14:11:46.737422+00:00"
+      "timestamp": "2026-08-27T22:33:17.150488+00:00"
     }
   ]
 }

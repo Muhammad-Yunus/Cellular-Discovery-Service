@@ -1,5 +1,5 @@
 from pathlib import Path
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
 from functools import lru_cache
 import os
@@ -47,9 +47,14 @@ class Settings(BaseSettings):
 
     # LTE Scan (RTL-SDR) configuration
     LTE_SCAN_COMMAND: str = "lte-scan"
-    LTE_SCAN_BAND: int = 8
+    LTE_SCAN_BANDS: str = "8"
     LTE_SCAN_GAIN: int = 43
     LTE_SCAN_MODE: str = "balance"  # fast, balance, full
+
+    @field_validator("LTE_SCAN_BANDS")
+    @classmethod
+    def parse_band_list(cls, v):
+        return [int(b.strip()) for b in v.split(",") if b.strip()]
 
     LOG_LEVEL: str = "INFO"
 

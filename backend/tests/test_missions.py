@@ -91,13 +91,12 @@ class TestMissionService:
 
         result = service.update(
             mission.id,
-            MissionUpdate(name="Renamed", description="notes", radius_meters=30, band="20"),
+            MissionUpdate(name="Renamed", description="notes", radius_meters=30),
         )
 
         assert result.name == "Renamed"
         assert result.description == "notes"
         assert result.radius_meters == 30
-        assert result.band == "20"
         assert result.status == "IDLE"
 
     def test_u08_update_clear_tty_and_start(self, db_session):
@@ -106,13 +105,11 @@ class TestMissionService:
         upload_locations(db_session, mission.id)
         first = db_session.query(MissionLocation).filter_by(mission_id=mission.id).first()
         mission.start_location_id = first.id
-        mission.band = "40"
         db_session.commit()
 
-        service.update(mission.id, MissionUpdate(band=None, start_location_id=None))
+        service.update(mission.id, MissionUpdate(start_location_id=None))
         db_session.refresh(mission)
 
-        assert mission.band is None
         assert mission.start_location_id is None
 
     def test_u09_update_foreign_start_location(self, db_session):
@@ -181,7 +178,7 @@ class TestMissionEndpoints:
     def test_e01_create_then_list(self, client, db_session):
         create = client.post(
             "/api/v1/missions",
-            json={"name": "Smoke Mission", "description": "test", "radius_meters": 20, "band": 8},
+            json={"name": "Smoke Mission", "description": "test", "radius_meters": 20},
         )
 
         assert create.status_code == 201
@@ -211,7 +208,8 @@ class TestMissionEndpoints:
     def test_e03_patch_valid_start_location(self, client, db_session):
         mission = make_mission(db_session)
         upload_locations(db_session, mission.id)
-        loc_id = db_session.query(MissionLocation).filter_by(mission_id=mission.id).first().id
+        loc = db_session.query(MissionLocation).filter_by(mission_id=mission.id).first()
+        loc_id = loc.id
 
         response = client.patch(
             f"/api/v1/missions/{mission.id}",
@@ -225,7 +223,8 @@ class TestMissionEndpoints:
         mission = make_mission(db_session)
         other = make_mission(db_session, name="Other")
         upload_locations(db_session, other.id)
-        foreign_id = db_session.query(MissionLocation).filter_by(mission_id=other.id).first().id
+        foreign_loc = db_session.query(MissionLocation).filter_by(mission_id=other.id).first()
+        foreign_id = foreign_loc.id
 
         response = client.patch(
             f"/api/v1/missions/{mission.id}",
@@ -292,3 +291,15 @@ class TestMissionEndpoints:
 
         assert response.status_code == 422
         assert "radius_meters must be >= 10" in response.json()["detail"]
+
+    def test_u15_create_without_band(self, client):
+        """Mission creation should work without band field - band comes from settings now."""
+        response = client.post(
+            "/api/v1/missions",
+            json={"name": "No Band Mission", "description": "Test"},
+        )
+
+        assert response.status_code == 201
+        data = response.json()
+        assert data["name"] == "No Band Mission"
+        assert data["status"] == "IDLE"

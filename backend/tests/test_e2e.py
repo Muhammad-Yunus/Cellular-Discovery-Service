@@ -52,15 +52,15 @@ class TestScanWorkflowE2E:
         try:
             response = client.post(
                 "/api/v1/scan",
-                json={"band": 8},
+                json={},
             )
 
             assert response.status_code == 200
             data = response.json()
-            assert data["band"] == "8"
             assert data["latitude"] == pytest.approx(-6.150676643667096)
             assert data["longitude"] == pytest.approx(106.89665223346297)
-            assert len(data["results"]) == 2
+            # Multi-band scan [5,8] with 2 results per band = 4 total
+            assert len(data["results"]) == 4
             assert data["results"][0]["operator_name"] == "Telkomsel"
             assert data["results"][0]["mcc"] == "510"
             assert data["results"][1]["operator_name"] == "XL Axiata"
@@ -86,15 +86,19 @@ class TestScanWorkflowE2E:
             for i in range(3):
                 response = client.post(
                     "/api/v1/scan",
-                    json={"band": [4, 5, 8][i]},
+                    json={},
                 )
                 assert response.status_code == 200
 
             list_response = client.get("/api/v1/scans")
             assert list_response.status_code == 200
             data = list_response.json()
-            assert data["total"] == 6
-            assert len(data["items"]) == 6
+            # Each scan call creates 1 session with 4 results (2 bands x 2 cells)
+            # PaginatedResponse returns flat rows (1 per scan result), not per session
+            assert data["total"] == 12
+            assert len(data["items"]) == 10  # default page_size is 10
+            assert data["page"] == 1
+            assert data["total_pages"] == 2
 
         finally:
             client.app.dependency_overrides.pop(get_gps_provider, None)
@@ -111,7 +115,7 @@ class TestScanWorkflowE2E:
         try:
             response = client.post(
                 "/api/v1/scan",
-                json={"band": 8},
+                json={},
             )
 
             assert response.status_code == 500
@@ -130,7 +134,7 @@ class TestHistoryCRUDE2E:
         try:
             create_resp = client.post(
                 "/api/v1/scan",
-                json={"band": 8},
+                json={},
             )
             result_id = create_resp.json()["results"][0]["id"]
 
@@ -148,7 +152,7 @@ class TestHistoryCRUDE2E:
         try:
             create_resp = client.post(
                 "/api/v1/scan",
-                json={"band": 8},
+                json={},
             )
             result_id = create_resp.json()["results"][0]["id"]
 
@@ -239,7 +243,7 @@ class TestPaginationE2E:
             for i in range(count):
                 client.post(
                     "/api/v1/scan",
-                    json={"band": [4, 5, 8, 20, 40][i % 5]},
+                    json={},
                 )
         finally:
             client.app.dependency_overrides.pop(get_gps_provider, None)
@@ -251,11 +255,13 @@ class TestPaginationE2E:
         response = client.get("/api/v1/scans")
         assert response.status_code == 200
         data = response.json()
-        assert data["total"] == 50
+        # Each scan creates 1 session with 4 results (2 bands x 2 cells)
+        # PaginatedResponse returns flat rows (1 per scan result), not per session
+        assert data["total"] == 100
         assert len(data["items"]) == 10
         assert data["page"] == 1
         assert data["page_size"] == 10
-        assert data["total_pages"] == 5
+        assert data["total_pages"] == 10
 
     def test_pagination_page_2(self, client, db_session, mock_cli, mock_gps):
         self._populate_scans(client, 25, mock_cli, mock_gps)
@@ -281,7 +287,8 @@ class TestPaginationE2E:
         assert response.status_code == 200
         data = response.json()
         assert len(data["items"]) == 5
-        assert data["total_pages"] == 6
+        # 15 sessions * 4 results = 60 flat rows, ceil(60/5) = 12 pages
+        assert data["total_pages"] == 12
 
 
 class TestHealthCheckE2E:

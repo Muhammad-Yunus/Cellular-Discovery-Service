@@ -59,7 +59,6 @@ class MissionService:
             description=mission.description,
             status=mission.status,
             radius_meters=mission.radius_meters,
-            band=mission.band,
             start_location_id=mission.start_location_id,
             current_location_id=mission.current_location_id,
             total_locations=mission.total_locations,
@@ -78,7 +77,6 @@ class MissionService:
             name=payload.name.strip(),
             description=payload.description,
             radius_meters=payload.radius_meters or settings.MISSION_DEFAULT_RADIUS_METERS,
-            band=payload.band,
         )
         return self._to_response(mission)
 
@@ -147,7 +145,7 @@ class MissionService:
             self._ensure_location_belongs(mission_id, payload.start_location_id)
 
         fields = payload.model_dump(exclude_unset=True)
-        structural = {"radius_meters", "band", "start_location_id"} & payload.model_fields_set
+        structural = {"radius_meters", "start_location_id"} & payload.model_fields_set
         mission = self.repo.update(mission, fields)
 
         if structural:
