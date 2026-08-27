@@ -29,12 +29,11 @@ class MissionLocation(Base):
         Index("idx_mission_locations_status", "status"),
         Index("idx_mission_locations_scan_session", "scan_session_id"),
         Index("idx_mission_locations_batch", "upload_batch_id"),
-        {"schema": "app"},
     )
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     mission_id = Column(
-        Integer, ForeignKey("app.missions.id", ondelete="CASCADE"), nullable=False
+        Integer, ForeignKey("missions.id", ondelete="CASCADE"), nullable=False
     )
     cellular_tower_id = Column(String(100), nullable=False)
     cellular_tower_name = Column(String(255), nullable=True)
@@ -49,7 +48,7 @@ class MissionLocation(Base):
     actual_visit_time = Column(DateTime(timezone=True), nullable=True)
     scan_session_id = Column(
         Integer,
-        ForeignKey("app.scan_sessions.id", ondelete="SET NULL"),
+        ForeignKey("scan_sessions.id", ondelete="SET NULL"),
         unique=True,
         nullable=True,
     )

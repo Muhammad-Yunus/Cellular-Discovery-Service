@@ -22,7 +22,7 @@ def execute_scan(
 
     try:
         settings = get_settings()
-        result = service.execute_scan(port=request.tty, timeout=settings.SCAN_TIMEOUT)
+        result = service.execute_scan(band=request.band, timeout=settings.SCAN_TIMEOUT)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

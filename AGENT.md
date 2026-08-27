@@ -1,5 +1,39 @@
 # AGENT.md
 
+# ⚠️ CRITICAL: RTL-SDR MIGRATION - NO lte-discovery ALLOWED ⚠️
+
+## MASAALUKU: JANGAN PERNAH PAKAI `lte-discovery` LAGI!
+
+**Sistem ini TELAH BERALIH KE `lte-scan` CLI BERBASIS RTL-SDR.**
+
+Semua referensi ke `lte-discovery`, `tty_port`, `/dev/ttyUSB0` untuk scan LTE **HARUS DIHAPUS**.
+
+### Command yang Valid (HANYA INI):
+```bash
+lte-scan balance 8 --json --gain 43
+lte-scan fast 5 --json --gain 43
+lte-scan full <band> --json --gain 43
+```
+
+### Hardware yang Digunakan:
+- ✅ **RTL-SDR Dongle** (Realtek RTL2832U) - Terdeteksi di `/dev/bus/usb/*`
+- ✅ GPS UART via `/dev/ttyAMA0` (UBLOX NEO M6)
+- ❌ **TIDAK ADA** USB Modem LTE untuk scanning
+
+### Output Format Baru:
+```json
+{
+  "scan_info": { "band": 8, "gain_db": 43, "mode": "balance" },
+  "cells": [
+    { "mcc": 510, "mnc": 10, "operator": "Telkomsel", "pci": 1, "rsrp": -15.2 }
+  ]
+}
+```
+
+**Lihat MIGRATION_PLAN.md untuk detail lengkap.**
+
+---
+
 # USB Modem LTE Network Discovery Web Backend
 
 **Backend Framework:** Python FastAPI  
@@ -149,7 +183,7 @@ DATABASE_PASSWORD=engen1us
 DATABASE_SCHEMA=app
 
 GPS_PROVIDER=mock
-DEFAULT_TTY=/dev/ttyUSB0
+DEFAULT_TTY=/dev/ttyAMA0
 SCAN_TIMEOUT=30
 
 LOG_LEVEL=INFO
@@ -354,9 +388,7 @@ CLI Adapter
 Responsible for executing
 
 ```
-lte-discovery scan \
-    --port /dev/ttyUSB0 \
-    --json
+lte-scan balance 8 --json --gain 43
 ```
 
 Responsibilities
@@ -478,7 +510,7 @@ Settings Service
 
 Manage
 
-- Default USB modem
+- LTE band to scan
 - GPS provider
 - Scan timeout
 - Future application settings
@@ -696,7 +728,7 @@ Delete scan history.
 ```
 id
 scan_time
-tty_port
+band
 latitude
 longitude
 created_at
@@ -862,7 +894,7 @@ Integration Tests
 - REST API
 - PostgreSQL
 
-The test suite MUST NOT require a physical USB modem.
+The test suite MUST NOT require an RTL-SDR dongle.
 
 CLI execution SHALL be mocked.
 

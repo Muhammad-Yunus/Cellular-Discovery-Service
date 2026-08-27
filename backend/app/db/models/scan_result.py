@@ -5,10 +5,9 @@ from app.db.base import Base
 
 class ScanResult(Base):
     __tablename__ = "scan_results"
-    __table_args__ = {"schema": "app"}
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    session_id = Column(Integer, ForeignKey("app.scan_sessions.id", ondelete="CASCADE"), nullable=False)
+    session_id = Column(Integer, ForeignKey("scan_sessions.id", ondelete="CASCADE"), nullable=False)
     operator_name = Column(String(100), nullable=True)
     mcc = Column(String(10), nullable=True)
     mnc = Column(String(10), nullable=True)

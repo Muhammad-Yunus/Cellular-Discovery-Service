@@ -44,13 +44,13 @@ class MissionRepository:
         name: str,
         description: Optional[str] = None,
         radius_meters: Optional[int] = None,
-        tty_port: Optional[str] = None,
+        band: Optional[str] = None,
     ) -> Mission:
         mission = Mission(
             name=name,
             description=description,
             radius_meters=radius_meters,
-            tty_port=tty_port,
+            band=band,
             status="IDLE",
             total_locations=0,
             visited_locations=0,

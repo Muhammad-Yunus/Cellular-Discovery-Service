@@ -54,7 +54,7 @@ class HistoryService:
                 id=r.id,
                 scan_session_id=r.session_id,
                 scan_time=r.session.scan_time,
-                tty_port=r.session.tty_port,
+                band=str(r.session.band),
                 latitude=r.session.latitude,
                 longitude=r.session.longitude,
                 created_at=r.session.created_at,
@@ -100,7 +100,7 @@ class HistoryService:
         writer = csv.writer(output)
         # Header
         writer.writerow([
-            "id", "session_id", "scan_time", "tty_port", "latitude",
+            "id", "session_id", "scan_time", "band", "latitude",
             "longitude", "created_at", "operator_name", "mcc", "mnc", "rat", "status"
         ])
         # Rows
@@ -109,7 +109,7 @@ class HistoryService:
                 r.id,
                 r.session_id,
                 r.session.scan_time.isoformat() if r.session.scan_time else "",
-                r.session.tty_port,
+                r.session.band,
                 r.session.latitude,
                 r.session.longitude,
                 r.session.created_at.isoformat() if r.session.created_at else "",
@@ -131,7 +131,7 @@ class HistoryService:
             id=result.id,
             scan_session_id=result.session_id,
             scan_time=result.session.scan_time,
-            tty_port=result.session.tty_port,
+            band=str(result.session.band),
             latitude=result.session.latitude,
             longitude=result.session.longitude,
             created_at=result.session.created_at,

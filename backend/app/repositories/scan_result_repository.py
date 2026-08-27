@@ -145,7 +145,7 @@ class ScanResultRepository:
             from sqlalchemy import or_
             query = query.filter(
                 or_(
-                    ScanSession.tty_port.ilike(f"%{search}%"),
+                    ScanSession.band.ilike(f"%{search}%"),
                     ScanResult.operator_name.ilike(f"%{search}%"),
                     ScanResult.mcc.ilike(f"%{search}%"),
                     ScanResult.mnc.ilike(f"%{search}%"),
@@ -197,7 +197,7 @@ class ScanResultRepository:
             from sqlalchemy import or_
             query = query.filter(
                 or_(
-                    ScanSession.tty_port.ilike(f"%{search}%"),
+                    ScanSession.band.ilike(f"%{search}%"),
                     ScanResult.operator_name.ilike(f"%{search}%"),
                     ScanResult.mcc.ilike(f"%{search}%"),
                     ScanResult.mnc.ilike(f"%{search}%"),

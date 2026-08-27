@@ -10,13 +10,13 @@ class ScanSessionRepository:
 
     def create(
         self,
-        tty_port: str,
+        band: str,
         latitude: Optional[float] = None,
         longitude: Optional[float] = None,
         mission_location_id: Optional[int] = None,
     ) -> ScanSession:
         session = ScanSession(
-            tty_port=tty_port,
+            band=band,
             latitude=latitude,
             longitude=longitude,
             mission_location_id=mission_location_id,
@@ -40,7 +40,7 @@ class ScanSessionRepository:
 
         if search:
             query = query.filter(
-                ScanSession.tty_port.ilike(f"%{search}%")
+                ScanSession.band.ilike(f"%{search}%")
             )
 
         total = query.count()

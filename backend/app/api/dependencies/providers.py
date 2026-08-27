@@ -8,7 +8,7 @@ from app.core.mission_executor import MissionExecutor
 
 
 def get_cli_adapter(settings: Settings = Depends(get_settings)) -> CLIAdapter:
-    return CLIAdapter(command=settings.LTE_DISCOVERY_COMMAND)
+    return CLIAdapter(command=settings.LTE_SCAN_COMMAND)
 
 
 def get_gps_provider(settings: Settings = Depends(get_settings)) -> GPSProvider:

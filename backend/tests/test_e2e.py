@@ -18,18 +18,18 @@ def mock_cli():
                 operator_name="Telkomsel",
                 mcc="510",
                 mnc="10",
-                rat="4G",
-                status="registered",
+                rat="LTE",
+                status="Available",
             ),
             CLIScanResult(
                 operator_name="XL Axiata",
                 mcc="510",
                 mnc="11",
-                rat="4G",
-                status="registered",
+                rat="LTE",
+                status="Available",
             ),
         ],
-        raw_output='{"results": []}',
+        raw_output='{"cells": []}',
     )
     return cli
 
@@ -52,12 +52,12 @@ class TestScanWorkflowE2E:
         try:
             response = client.post(
                 "/api/v1/scan",
-                json={"tty": "/dev/ttyUSB0"},
+                json={"band": 8},
             )
 
             assert response.status_code == 200
             data = response.json()
-            assert data["tty_port"] == "/dev/ttyUSB0"
+            assert data["band"] == "8"
             assert data["latitude"] == pytest.approx(-6.150676643667096)
             assert data["longitude"] == pytest.approx(106.89665223346297)
             assert len(data["results"]) == 2
@@ -86,7 +86,7 @@ class TestScanWorkflowE2E:
             for i in range(3):
                 response = client.post(
                     "/api/v1/scan",
-                    json={"tty": f"/dev/ttyUSB{i}"},
+                    json={"band": [4, 5, 8][i]},
                 )
                 assert response.status_code == 200
 
@@ -111,7 +111,7 @@ class TestScanWorkflowE2E:
         try:
             response = client.post(
                 "/api/v1/scan",
-                json={"tty": "/dev/ttyUSB0"},
+                json={"band": 8},
             )
 
             assert response.status_code == 500
@@ -130,7 +130,7 @@ class TestHistoryCRUDE2E:
         try:
             create_resp = client.post(
                 "/api/v1/scan",
-                json={"tty": "/dev/ttyUSB0"},
+                json={"band": 8},
             )
             result_id = create_resp.json()["results"][0]["id"]
 
@@ -148,7 +148,7 @@ class TestHistoryCRUDE2E:
         try:
             create_resp = client.post(
                 "/api/v1/scan",
-                json={"tty": "/dev/ttyUSB0"},
+                json={"band": 8},
             )
             result_id = create_resp.json()["results"][0]["id"]
 
@@ -189,7 +189,7 @@ class TestSettingsE2E:
         response = client.put(
             "/api/v1/settings",
             json=[
-                {"key": "default_tty", "value": "/dev/ttyUSB0"},
+                {"key": "default_band", "value": "8"},
                 {"key": "gps_provider", "value": "mock"},
                 {"key": "scan_timeout", "value": "30"},
             ],
@@ -199,21 +199,21 @@ class TestSettingsE2E:
         assert len(data) == 3
 
         keys = {s["key"] for s in data}
-        assert keys == {"default_tty", "gps_provider", "scan_timeout"}
+        assert keys == {"default_band", "gps_provider", "scan_timeout"}
 
     def test_update_settings(self, client, db_session):
         client.put(
             "/api/v1/settings",
-            json=[{"key": "default_tty", "value": "/dev/ttyUSB0"}],
+            json=[{"key": "default_band", "value": "8"}],
         )
 
         response = client.put(
             "/api/v1/settings",
-            json=[{"key": "default_tty", "value": "/dev/ttyUSB1"}],
+            json=[{"key": "default_band", "value": "20"}],
         )
         assert response.status_code == 200
         data = response.json()
-        assert data[0]["value"] == "/dev/ttyUSB1"
+        assert data[0]["value"] == "20"
 
     def test_settings_persist(self, client, db_session):
         client.put(
@@ -239,7 +239,7 @@ class TestPaginationE2E:
             for i in range(count):
                 client.post(
                     "/api/v1/scan",
-                    json={"tty": f"/dev/ttyUSB{i % 5}"},
+                    json={"band": [4, 5, 8, 20, 40][i % 5]},
                 )
         finally:
             client.app.dependency_overrides.pop(get_gps_provider, None)

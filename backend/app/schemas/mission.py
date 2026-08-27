@@ -3,7 +3,7 @@ import re
 from enum import Enum
 from typing import Optional
 from datetime import datetime
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from app.schemas.mission_location import MissionLocationResponse
 
 
@@ -59,19 +59,26 @@ def _get_connected_usb_ports() -> set[str]:
         return set()
 
 
-def _validate_tty_port(cls, v):
+VALID_BANDS = {"8", "20", "28", "40", "42"}
+
+
+def _validate_band(cls, v):
     if v is None:
         return v
     v = str(v).strip()
+    # Accept numeric band identifiers (e.g. "8", "20", "40")
+    if v in VALID_BANDS:
+        return v
+    # Accept USB serial port paths
     if not v.startswith("/dev/ttyUSB"):
-        raise ValueError("tty_port must be a /dev/ttyUSB* device")
+        raise ValueError("band must be a valid integer or string")
     # Check if port exists in system
     if not __import__("os").path.exists(v):
-        raise ValueError(f"tty_port {v} does not exist on this device")
+        raise ValueError(f"band {v} is not valid")
     # Check if port appears in lsusb (USB-connected device)
     connected_ports = _get_connected_usb_ports()
     if connected_ports and v not in connected_ports:
-        raise ValueError(f"tty_port {v} is not connected via USB. Available: {sorted(connected_ports)}")
+        raise ValueError(f"band {v} is not available")
     return v
 
 
@@ -79,7 +86,14 @@ class MissionCreate(BaseModel):
     name: str
     description: Optional[str] = None
     radius_meters: Optional[int] = Field(default=None, ge=10, le=100)
-    tty_port: str  # Required: must be a valid, existing /dev/ttyUSB* port
+    band: str  # Required: must be a valid, existing /dev/ttyUSB* port
+
+    @model_validator(mode="before")
+    @classmethod
+    def _convert_band(cls, data):
+        if isinstance(data, dict) and "band" in data:
+            data["band"] = str(data["band"])
+        return data
 
     @field_validator("name")
     @classmethod
@@ -89,18 +103,25 @@ class MissionCreate(BaseModel):
             raise ValueError("Mission name is required")
         return name
 
-    @field_validator("tty_port")
+    @field_validator("band")
     @classmethod
-    def _validate_tty_port(cls, v):
-        return _validate_tty_port(cls, v)
+    def _validate_band(cls, v):
+        return _validate_band(cls, v)
 
 
 class MissionUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     radius_meters: Optional[int] = Field(default=None, ge=10, le=100)
-    tty_port: Optional[str] = None
+    band: Optional[str] = None
     start_location_id: Optional[int] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _convert_band(cls, data):
+        if isinstance(data, dict) and "band" in data and data["band"] is not None:
+            data["band"] = str(data["band"])
+        return data
 
     @field_validator("name")
     @classmethod
@@ -112,10 +133,10 @@ class MissionUpdate(BaseModel):
             raise ValueError("Mission name is required")
         return name
 
-    @field_validator("tty_port")
+    @field_validator("band")
     @classmethod
-    def _validate_tty_port(cls, v):
-        return _validate_tty_port(cls, v)
+    def _validate_band(cls, v):
+        return _validate_band(cls, v)
 
 
 class MissionResponse(BaseModel):
@@ -124,7 +145,7 @@ class MissionResponse(BaseModel):
     description: Optional[str] = None
     status: MissionStatus
     radius_meters: Optional[int] = None
-    tty_port: Optional[str] = None
+    band: Optional[str] = None
     start_location_id: Optional[int] = None
     current_location_id: Optional[int] = None
     total_locations: int

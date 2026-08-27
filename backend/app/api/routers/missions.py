@@ -20,11 +20,11 @@ def create_mission(
     payload: MissionCreate,
     db: Session = Depends(get_db),
 ):
-    # Pre-validate tty_port is provided
-    if not payload.tty_port:
+    # Pre-validate band is provided
+    if not payload.band:
         raise HTTPException(
             status_code=422,
-            detail="tty_port is required. Provide a valid USB modem port (e.g., /dev/ttyUSB0).",
+            detail="band is required. Provide a valid USB modem port (e.g., /dev/ttyUSB0).",
         )
     service = MissionService(db)
     return service.create(payload)

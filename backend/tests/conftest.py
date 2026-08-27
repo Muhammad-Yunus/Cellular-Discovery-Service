@@ -15,7 +15,12 @@ from app.main import app
 from app.services import LocationService, MissionPlannerService
 from app.services.scan_service import ScanService
 
-TEST_DATABASE_URL = "sqlite:///./test.db"
+import tempfile
+import os
+
+# Use a unique temp file per test session to avoid cross-test pollution
+TEST_DATABASE_FILE = os.path.join(tempfile.gettempdir(), f"cds_test_{os.getpid()}.db")
+TEST_DATABASE_URL = f"sqlite:///{TEST_DATABASE_FILE}"
 
 engine = create_engine(
     TEST_DATABASE_URL,
@@ -106,6 +111,28 @@ class FakeGPS:
             raise GPSError("fake gps failure")
         return GPSLocation(latitude=self.lat, longitude=self.lon)
 
+    def move_to(self, lat: float, lon: float):
+        """Move GPS to a new location."""
+        self.lat = lat
+        self.lon = lon
+
+
+class MovingGPS(FakeGPS):
+    """FakeGPS that cycles through a list of locations."""
+
+    def __init__(self, locations, fail_after=None):
+        super().__init__(fail_after=fail_after)
+        self.locations = locations
+        self.index = 0
+
+    def get_location(self):
+        self.calls += 1
+        if self.fail_after is not None and self.calls > self.fail_after:
+            raise GPSError("fake gps failure")
+        loc = self.locations[self.index % len(self.locations)]
+        self.index += 1
+        return GPSLocation(latitude=loc[0], longitude=loc[1])
+
     def is_available(self):
         return True
 
@@ -114,7 +141,7 @@ class FakeCLI:
     def __init__(self, error=None):
         self.error = error
 
-    def execute(self, port, timeout):
+    def execute(self, band, timeout):
         if self.error:
             raise self.error
         return SimpleNamespace(results=[])
@@ -130,10 +157,28 @@ def fast_settings(monkeypatch):
             "MISSION_POLL_INTERVAL": 0.05,
             "MISSION_START_GPS_TIMEOUT": 1,
             "MISSION_CLI_TIMEOUT": 1,
+            "MISSION_SCAN_INTERVAL_SEC": 0.2,
+            "MISSION_SCAN_MIN_FOR_VISITED": 1,
+            "MISSION_SCAN_MAX_PER_TOWER": 2,
         }
     )
     monkeypatch.setattr(me, "get_settings", lambda: fast)
     return fast
+
+
+# Patch band validator at module load time so tests work without USB ports
+import app.schemas.mission as _mission_schema
+_original_validate_band = _mission_schema._validate_band
+
+def _test_validate_band(cls, v):
+    if v is None:
+        return v
+    v = str(v).strip()
+    if not v:
+        raise ValueError("band cannot be empty")
+    return v
+
+_mission_schema._validate_band = _test_validate_band
 
 
 @pytest.fixture
@@ -141,6 +186,9 @@ def api(db_session, monkeypatch):
     import app.core.mission_executor as me
     from fastapi.testclient import TestClient
     from app.api.dependencies.providers import get_gps_provider
+
+    # Restore original validator after test
+    monkeypatch.setattr("app.schemas.mission._validate_band", _original_validate_band)
 
     original_session_local = me.SessionLocal
     me.SessionLocal = TestingSessionLocal
@@ -179,8 +227,8 @@ def executor(api, fast_settings):
     return executor
 
 
-def make_planned(db, csv=CSV_1, radius=50, status="IDLE", name="Exec Mission"):
-    mission = Mission(name=name, status=status, radius_meters=radius)
+def make_planned(db, csv=CSV_1, radius=50, status="IDLE", name="Exec Mission", band="8"):
+    mission = Mission(name=name, status=status, radius_meters=radius, band=band)
     db.add(mission)
     db.commit()
     db.refresh(mission)

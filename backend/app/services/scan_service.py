@@ -23,21 +23,21 @@ class ScanService:
 
     def execute_scan(
         self,
-        port: str,
+        band: int,
         timeout: int = 30,
         *,
         mission_location_id: int | None = None,
     ) -> ScanSessionResponse:
-        logger.info(f"Starting scan on port: {port}")
+        logger.info(f"Starting scan on band: {band}")
 
         location = self.gps_provider.get_location()
         logger.info(f"GPS location: {location.latitude}, {location.longitude}")
 
-        cli_response = self.cli_adapter.execute(port=port, timeout=timeout)
+        cli_response = self.cli_adapter.execute(band=band, timeout=timeout)
         logger.info(f"CLI returned {len(cli_response.results)} results")
 
         session = self.session_repo.create(
-            tty_port=port,
+            band=str(band),
             latitude=location.latitude,
             longitude=location.longitude,
             mission_location_id=mission_location_id,
@@ -74,7 +74,7 @@ class ScanService:
         return ScanSessionResponse(
             id=session.id,
             scan_time=session.scan_time,
-            tty_port=session.tty_port,
+            band=session.band,
             latitude=session.latitude,
             longitude=session.longitude,
             mission_location_id=session.mission_location_id,

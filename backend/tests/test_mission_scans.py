@@ -26,14 +26,14 @@ class TestMissionScanRepository:
         db_session.commit()
 
         s_repo = ScanSessionRepository(db_session)
-        s_a = s_repo.create(tty_port="/dev/a", latitude=-6.2, longitude=106.84, mission_location_id=loc1.id)
+        s_a = s_repo.create(band="8", latitude=-6.2, longitude=106.84, mission_location_id=loc1.id)
         r_repo = ScanResultRepository(db_session)
         r_repo.create(session_id=s_a.id, operator_name="A", rat="LTE", status="OK")
 
-        s_b = s_repo.create(tty_port="/dev/b", latitude=-6.3, longitude=106.85, mission_location_id=loc2.id)
+        s_b = s_repo.create(band="5", latitude=-6.3, longitude=106.85, mission_location_id=loc2.id)
         r_repo.create(session_id=s_b.id, operator_name="B", rat="GSM", status="OK")
 
-        s_manual = s_repo.create(tty_port="/dev/manual")
+        s_manual = s_repo.create(band="8")
         r_repo.create(session_id=s_manual.id, operator_name="Manual", rat="LTE", status="OK")
 
         results, total = repo.get_mission_flat(m1.id)
@@ -62,11 +62,11 @@ class TestMissionScanRepository:
         db_session.commit()
 
         sess = ScanSessionRepository(db_session).create(
-            tty_port="/dev/ttyUSB0", latitude=-6.2, longitude=106.84, mission_location_id=loc.id
+            band="8", latitude=-6.2, longitude=106.84, mission_location_id=loc.id
         )
         ScanResultRepository(db_session).create(session_id=sess.id, operator_name="Telkomsel", mcc="510", mnc="10", rat="LTE", status="OK")
 
-        results, _ = repo.get_mission_flat(mission.id, search="ttyUSB0")
+        results, _ = repo.get_mission_flat(mission.id, search="8")
         assert len(results) == 1
 
         results, _ = repo.get_mission_flat(mission.id, search="Telkomsel")
@@ -91,7 +91,7 @@ class TestMissionScanRepository:
         # Create three linked scan sessions
         for rat_name in ["LTE", "GSM", "UMTS"]:
             sess = ScanSessionRepository(db_session).create(
-                tty_port=f"/dev/{rat_name}", latitude=-6.2, longitude=106.84, mission_location_id=loc.id
+                band=rat_name, latitude=-6.2, longitude=106.84, mission_location_id=loc.id
             )
             ScanResultRepository(db_session).create(session_id=sess.id, operator_name=rat_name, rat=rat_name, status="OK")
 
@@ -137,7 +137,7 @@ class TestMissionScanRepository:
 
         for i in range(25):
             sess = ScanSessionRepository(db_session).create(
-                tty_port=f"/dev/{i}", latitude=-6.2, longitude=106.84, mission_location_id=loc.id
+                band=str(i+1), latitude=-6.2, longitude=106.84, mission_location_id=loc.id
             )
             ScanResultRepository(db_session).create(session_id=sess.id, operator_name=f"R{i}", rat="LTE", status="OK")
 
@@ -179,7 +179,7 @@ class TestMissionScanRepository:
         db_session.commit()
 
         sess = ScanSessionRepository(db_session).create(
-            tty_port="/dev/test", latitude=-6.2, longitude=106.84, mission_location_id=loc.id
+            band="8", latitude=-6.2, longitude=106.84, mission_location_id=loc.id
         )
         ScanResultRepository(db_session).create(
             session_id=sess.id, operator_name="Test", mcc="123", mnc="45", rat="LTE", status="OK"
@@ -191,7 +191,7 @@ class TestMissionScanRepository:
         csv = service.get_mission_csv(mission.id)
         # Normalize line endings for comparison
         header = csv.replace("\r", "").split("\n")[0]
-        expected = "id,session_id,scan_time,tty_port,latitude,longitude,created_at,operator_name,mcc,mnc,rat,status,mission_location_id,cellular_tower_id,cellular_tower_name"
+        expected = "scan_time,latitude,longitude,operator_name,mcc,mnc,rat,cellular_tower_id,cellular_tower_name"
         assert header == expected
 
     def test_u08_empty_mission_no_scans(self, db_session):
@@ -217,7 +217,7 @@ class TestMissionScanRepository:
             id=1,
             scan_session_id=1,
             scan_time=datetime.now(),
-            tty_port="/dev/null",
+            band="8",
             created_at=datetime.now(),
             mission_location_id=None,
         )

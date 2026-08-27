@@ -1,5 +1,5 @@
-from pydantic import BaseModel, validator
-from typing import Optional
+from pydantic import BaseModel, field_validator, ValidationInfo
+from typing import Optional, List
 from datetime import datetime
 
 
@@ -7,7 +7,7 @@ class ScanResultFlatResponse(BaseModel):
     id: int
     scan_session_id: int
     scan_time: datetime
-    tty_port: str
+    band: str
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     mission_location_id: Optional[int] = None
@@ -39,23 +39,32 @@ class ScanResultResponse(BaseModel):
 class ScanSessionResponse(BaseModel):
     id: int
     scan_time: datetime
-    tty_port: str
+    band: str
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     mission_location_id: Optional[int] = None
     created_at: datetime
-    results: list[ScanResultResponse] = []
+    results: List[ScanResultResponse] = []
 
     class Config:
         from_attributes = True
 
 
 class ScanRequest(BaseModel):
-    tty: str = "/dev/ttyUSB0"
+    band: int
+    tty: Optional[str] = None
+
+    @field_validator("band")
+    @classmethod
+    def validate_band(cls, v):
+        valid_bands = [4, 5, 8, 20, 40]
+        if v not in valid_bands:
+            raise ValueError(f"band must be one of {valid_bands}")
+        return v
 
 
 class PaginatedResponse(BaseModel):
-    items: list[ScanResultFlatResponse]
+    items: List[ScanResultFlatResponse]
     total: int
     page: int
     page_size: int
@@ -75,9 +84,11 @@ class SettingUpdateRequest(BaseModel):
     key: str
     value: str
 
-    @validator("value")
-    def validate_gps_provider_value(cls, v, values):
-        key = values.get("key", "")
+    @field_validator("value")
+    @classmethod
+    def validate_gps_provider_value(cls, v, info: ValidationInfo):
+        data = info.data if hasattr(info, 'data') else {}
+        key = data.get("key", "")
         if key == "gps_provider":
             valid = ("mock", "serial", "cli")
             if v not in valid:

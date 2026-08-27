@@ -45,7 +45,11 @@ class Settings(BaseSettings):
     MISSION_START_GPS_TIMEOUT: int = Field(default=5, gt=0, description="Maximum time to wait for GPS availability at mission start")
     MISSION_LOG_SIZE: int = Field(default=200, gt=0, description="Maximum number of log entries stored per mission")
 
-    LTE_DISCOVERY_COMMAND: str = "lte-discovery"
+    # LTE Scan (RTL-SDR) configuration
+    LTE_SCAN_COMMAND: str = "lte-scan"
+    LTE_SCAN_BAND: int = 8
+    LTE_SCAN_GAIN: int = 43
+    LTE_SCAN_MODE: str = "balance"  # fast, balance, full
 
     LOG_LEVEL: str = "INFO"
 

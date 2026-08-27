@@ -10,7 +10,9 @@
   <img src="https://img.shields.io/badge/status-active-brightgreen" alt="Status">
 </p>
 
-**REST API backend for USB Modem LTE Network Discovery Web Application** — orchestrates CLI-based LTE scans, mission planning with GPS navigation, stores scan history in PostgreSQL, and provides realtime updates via WebSocket. Runs on Raspberry Pi OS 64-bit.
+**REST API backend for RTL-SDR LTE Network Discovery Web Application** — orchestrates CLI-based LTE scans using `lte-scan` (RTL-SDR dongle), mission planning with GPS navigation, stores scan history in PostgreSQL, and provides realtime updates via WebSocket. Runs on Raspberry Pi OS 64-bit.
+
+> ⚠️ **CRITICAL:** This system uses `lte-scan` CLI with RTL-SDR hardware. The old `lte-scan` CLI with RTL-SDR hardware. See [MIGRATION_PLAN.md](MIGRATION_PLAN.md) for details.
 
 ---
 
@@ -347,7 +349,10 @@ DATABASE_PASSWORD=engen1us
 DATABASE_SCHEMA=app
 
 GPS_PROVIDER=mock          # Valid: mock | serial | cli
-DEFAULT_TTY=/dev/ttyUSB0
+DEFAULT_GPS_TTY=/dev/ttyAMA0
+LTE_SCAN_COMMAND=lte-scan
+LTE_SCAN_BAND=8
+LTE_SCAN_GAIN=43
 SCAN_TIMEOUT=30
 
 LOG_LEVEL=INFO             # DEBUG | INFO | WARNING | ERROR

@@ -91,7 +91,7 @@ class MissionScanService:
                     id=r.id,
                     scan_session_id=session.id,
                     scan_time=session.scan_time,
-                    tty_port=session.tty_port,
+                    band=session.band,
                     latitude=session.latitude,
                     longitude=session.longitude,
                     mission_location_id=mission_loc_id,

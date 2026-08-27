@@ -9,12 +9,11 @@ class MissionLog(Base):
     __table_args__ = (
         Index("idx_mission_logs_mission", "mission_id"),
         Index("idx_mission_logs_timestamp", "timestamp"),
-        {"schema": "app"},
     )
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     mission_id = Column(
-        Integer, ForeignKey("app.missions.id", ondelete="CASCADE"), nullable=False
+        Integer, ForeignKey("missions.id", ondelete="CASCADE"), nullable=False
     )
     timestamp = Column(DateTime(timezone=True), nullable=False)
     event_type = Column(String(50), nullable=False)

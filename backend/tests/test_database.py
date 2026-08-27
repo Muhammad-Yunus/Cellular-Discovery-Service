@@ -88,7 +88,7 @@ class TestMissionModels:
         assert len(mission.locations) == 3
 
     def test_u04_scan_session_mission_location_id_nullable(self, db_session):
-        legacy = ScanSession(tty_port="/dev/ttyUSB0")
+        legacy = ScanSession(band="8")
 
         db_session.add(legacy)
         db_session.commit()
@@ -117,7 +117,7 @@ class TestMissionModels:
                 ),
             ]
         )
-        session = ScanSession(tty_port="/dev/ttyUSB0")
+        session = ScanSession(band="8")
         db_session.add(session)
         db_session.commit()
 
@@ -156,7 +156,7 @@ class TestMissionModels:
 
     def test_u07_scan_session_id_unique(self, db_session):
         mission = Mission(name="M", status="IDLE")
-        session = ScanSession(tty_port="/dev/ttyUSB0")
+        session = ScanSession(band="8")
         db_session.add_all([mission, session])
         db_session.flush()
 

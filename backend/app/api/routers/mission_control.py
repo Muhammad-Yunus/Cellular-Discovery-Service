@@ -54,10 +54,11 @@ def mission_logs(
 ):
     """
     Get paginated logs for a mission, sorted by timestamp DESC.
-    
+
     Args:
         mission_id: ID of the mission
         page: Page number (default: 1)
         page_size: Items per page (default: 10)
     """
-    return executor.get_logs(mission_id, page=page, page_size=page_size)
+    result = executor.get_logs(mission_id, page=page, page_size=page_size)
+    return result["items"]

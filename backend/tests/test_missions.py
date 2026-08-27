@@ -91,13 +91,13 @@ class TestMissionService:
 
         result = service.update(
             mission.id,
-            MissionUpdate(name="Renamed", description="notes", radius_meters=30, tty_port="/dev/ttyUSB1"),
+            MissionUpdate(name="Renamed", description="notes", radius_meters=30, band="20"),
         )
 
         assert result.name == "Renamed"
         assert result.description == "notes"
         assert result.radius_meters == 30
-        assert result.tty_port == "/dev/ttyUSB1"
+        assert result.band == "20"
         assert result.status == "IDLE"
 
     def test_u08_update_clear_tty_and_start(self, db_session):
@@ -106,13 +106,13 @@ class TestMissionService:
         upload_locations(db_session, mission.id)
         first = db_session.query(MissionLocation).filter_by(mission_id=mission.id).first()
         mission.start_location_id = first.id
-        mission.tty_port = "/dev/ttyUSB2"
+        mission.band = "40"
         db_session.commit()
 
-        service.update(mission.id, MissionUpdate(tty_port=None, start_location_id=None))
+        service.update(mission.id, MissionUpdate(band=None, start_location_id=None))
         db_session.refresh(mission)
 
-        assert mission.tty_port is None
+        assert mission.band is None
         assert mission.start_location_id is None
 
     def test_u09_update_foreign_start_location(self, db_session):
@@ -181,7 +181,7 @@ class TestMissionEndpoints:
     def test_e01_create_then_list(self, client, db_session):
         create = client.post(
             "/api/v1/missions",
-            json={"name": "Smoke Mission", "description": "test", "radius_meters": 20, "tty_port": "/dev/ttyUSB0"},
+            json={"name": "Smoke Mission", "description": "test", "radius_meters": 20, "band": 8},
         )
 
         assert create.status_code == 201
@@ -246,7 +246,7 @@ class TestMissionEndpoints:
         mission = make_mission(db_session)
         upload_locations(db_session, mission.id)
         loc = db_session.query(MissionLocation).filter_by(mission_id=mission.id).first()
-        session = ScanSession(tty_port="/dev/ttyUSB0")
+        session = ScanSession(band="8")
         db_session.add(session)
         db_session.commit()
         loc.scan_session_id = session.id

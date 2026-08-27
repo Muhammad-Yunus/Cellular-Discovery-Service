@@ -12,19 +12,19 @@ class TestScanSessionRepository:
         self.repo = ScanSessionRepository(db_session)
 
         session = self.repo.create(
-            tty_port="/dev/ttyUSB0",
+            band="8",
             latitude=-6.150676643667096,
             longitude=106.89665223346297,
         )
 
         assert session.id is not None
-        assert session.tty_port == "/dev/ttyUSB0"
+        assert session.band == "8"
         assert session.latitude == -6.150676643667096
 
     def test_get_by_id(self, db_session):
         self.repo = ScanSessionRepository(db_session)
 
-        session = self.repo.create(tty_port="/dev/ttyUSB0")
+        session = self.repo.create(band="8")
         found = self.repo.get_by_id(session.id)
 
         assert found is not None
@@ -40,8 +40,8 @@ class TestScanSessionRepository:
     def test_get_all(self, db_session):
         self.repo = ScanSessionRepository(db_session)
 
-        self.repo.create(tty_port="/dev/ttyUSB0")
-        self.repo.create(tty_port="/dev/ttyUSB1")
+        self.repo.create(band="8")
+        self.repo.create(band="20")
 
         sessions, total = self.repo.get_all()
 
@@ -51,7 +51,7 @@ class TestScanSessionRepository:
     def test_delete_session(self, db_session):
         self.repo = ScanSessionRepository(db_session)
 
-        session = self.repo.create(tty_port="/dev/ttyUSB0")
+        session = self.repo.create(band="8")
         deleted = self.repo.delete(session.id)
 
         assert deleted is True
@@ -73,7 +73,7 @@ class TestScanResultRepository:
         self.session_repo = ScanSessionRepository(db_session)
         self.repo = ScanResultRepository(db_session)
 
-        session = self.session_repo.create(tty_port="/dev/ttyUSB0")
+        session = self.session_repo.create(band="8")
         result = self.repo.create(
             session_id=session.id,
             operator_name="Telkomsel",
@@ -90,7 +90,7 @@ class TestScanResultRepository:
         self.session_repo = ScanSessionRepository(db_session)
         self.repo = ScanResultRepository(db_session)
 
-        session = self.session_repo.create(tty_port="/dev/ttyUSB0")
+        session = self.session_repo.create(band="8")
         results = self.repo.create_bulk(
             session_id=session.id,
             results=[
@@ -105,7 +105,7 @@ class TestScanResultRepository:
         self.session_repo = ScanSessionRepository(db_session)
         self.repo = ScanResultRepository(db_session)
 
-        session = self.session_repo.create(tty_port="/dev/ttyUSB0")
+        session = self.session_repo.create(band="8")
         self.repo.create(session_id=session.id, operator_name="Telkomsel")
         self.repo.create(session_id=session.id, operator_name="XL")
 
@@ -140,7 +140,7 @@ class TestScanResultRepository:
         sessions = []
         results = []
         for tty, payload in enumerate(plan):
-            s = self.session_repo.create(tty_port=f"/dev/ttyUSB{tty}")
+            s = self.session_repo.create(band=str(tty+1))
             sessions.append(s)
             r = self.repo.create(
                 session_id=s.id,

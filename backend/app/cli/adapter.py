@@ -11,14 +11,13 @@ from app.cli.schemas import CLIScanResponse, CLIScanResult
 logger = logging.getLogger(__name__)
 
 # Module-level lock so only one CLI scan invocation runs at a time.
-# The LTE modem (e.g., /dev/ttyUSB0) is a shared resource — concurrent scans
-# will interfere with each other and may cause SIGTERM or data corruption.
+# The RTL-SDR device is a shared resource — concurrent scans will interfere.
 # Serialise all CLIAdapter instances to ensure atomic execution.
 _cli_cli_lock = threading.Lock()
 
 
 class CLIAdapter:
-    def __init__(self, command: str = "lte-discovery"):
+    def __init__(self, command: str = "lte-scan"):
         self.command = command
 
     def _find_command(self) -> str:
@@ -26,12 +25,8 @@ class CLIAdapter:
             return self.command
         raise CLINotFoundError(self.command)
 
-    def execute(self, port: str, timeout: int = 30) -> CLIScanResponse:
-        # Test-only fault injection: MOCK_CLI_FAIL=<truthy> raises a CLIError so
-        # the executor exercises the SCAN_ERROR -> SKIPPED branch (S06).
-        # Top-level import so the module instance is shared between
-        # test_management (PUT endpoint) and adapter (CLI execute) — lazy import
-        # was masking the global counter in some test runs.
+    def execute(self, band: int, timeout: int = 30) -> CLIScanResponse:
+        # Test-only fault injection: MOCK_CLI_FAIL=<truthy> raises a CLIError
         MOCK_CLI_FAIL = os.environ.get("MOCK_CLI_FAIL")
         if MOCK_CLI_FAIL:
             from app.gps.test_management import _decrement_cli_fail
@@ -43,7 +38,8 @@ class CLIAdapter:
 
         with _cli_cli_lock:
             cmd = self._find_command()
-            args = [cmd, "scan", "--port", port, "--json"]
+            # lte-scan [mode] [band] --json --gain N
+            args = [cmd, "balance", str(band), "--json", "--gain", "43"]
 
             logger.info(f"Executing CLI: {' '.join(args)}")
 
@@ -56,8 +52,7 @@ class CLIAdapter:
                 )
             except subprocess.TimeoutExpired as e:
                 logger.error(f"CLI timed out after {timeout}s")
-                logger.warning("CLI timed out, returning empty results")
-                return CLIScanResponse(results=[], raw_output=f"{{\"error\": \"timeout\", \"port\": \"{port}}}")
+                return CLIScanResponse(results=[], raw_output=f'{{"error": "timeout", "band": "{band}"}}')
             except FileNotFoundError as e:
                 raise CLINotFoundError(self.command)
 
@@ -65,12 +60,11 @@ class CLIAdapter:
 
             if result.returncode != 0:
                 logger.error(f"CLI error: {result.stderr}")
-                # Don't raise error on non-zero return, just log and return empty
                 return CLIScanResponse(results=[], raw_output=result.stderr)
 
-            return self._parse_output(result.stdout)
+            return self._parse_output(result.stdout, band)
 
-    def _parse_output(self, stdout: str) -> CLIScanResponse:
+    def _parse_output(self, stdout: str, band: int) -> CLIScanResponse:
         try:
             data = json.loads(stdout)
         except json.JSONDecodeError as e:
@@ -79,32 +73,46 @@ class CLIAdapter:
                 raw_output=stdout,
             )
 
-        # Handle both formats: raw list [...] or object {"results": [...]}
-        if isinstance(data, list):
-            scan_results = data
-        elif isinstance(data, dict):
-            scan_results = data.get("results", data.get("networks", []))
-            if not isinstance(scan_results, list):
-                raise CLIParseError(
-                    "Expected 'results' or 'networks' to be a list",
-                    raw_output=stdout,
-                )
+        # Handle lte-scan output format
+        if isinstance(data, dict):
+            cells = data.get("cells", [])
+        elif isinstance(data, list):
+            cells = data
         else:
             raise CLIParseError(
-                f"Unexpected JSON type: {type(data).__name__}, expected list or dict",
+                f"Unexpected JSON type: {type(data).__name__}, expected dict or list",
                 raw_output=stdout,
             )
 
         results = []
-        for item in scan_results:
+        for cell in cells:
+            # Map lte-scan fields to CLIScanResult
+            operator = cell.get("operator") or cell.get("operator_name")
+            mcc = str(cell.get("mcc", ""))
+            mnc = str(cell.get("mnc", ""))
+
+            # Derive RAT from band
+            rat = self._band_to_rat(band)
+
             results.append(
                 CLIScanResult(
-                    operator_name=item.get("operator_name", item.get("operator")),
-                    mcc=item.get("mcc"),
-                    mnc=item.get("mnc"),
-                    rat=item.get("rat"),
-                    status=item.get("status"),
+                    operator_name=operator,
+                    mcc=mcc,
+                    mnc=mnc,
+                    rat=rat,
+                    status="Available",  # RTL-SDR detects available cells
                 )
             )
 
         return CLIScanResponse(results=results, raw_output=stdout)
+
+    def _band_to_rat(self, band: int) -> str:
+        """Map LTE band to RAT type."""
+        rat_map = {
+            4: "LTE",
+            5: "LTE",
+            8: "LTE",
+            20: "LTE",
+            40: "LTE",
+        }
+        return rat_map.get(band, "LTE")

@@ -42,12 +42,12 @@ class TestScanEndpoints:
         try:
             response = client.post(
                 "/api/v1/scan",
-                json={"tty": "/dev/ttyUSB0"},
+                json={"band": 8},
             )
 
             assert response.status_code == 200
             data = response.json()
-            assert data["tty_port"] == "/dev/ttyUSB0"
+            assert data["band"] == "8"
             assert len(data["results"]) == 1
         finally:
             client.app.dependency_overrides.pop(get_gps_provider, None)

@@ -35,20 +35,20 @@ class TestScanService:
                     status="active",
                 )
             ],
-            raw_output='{"results": []}',
+            raw_output='{"cells": []}',
         )
 
-        result = service.execute_scan(port="/dev/ttyUSB0")
+        result = service.execute_scan(band=8)
 
         assert result is not None
-        assert result.tty_port == "/dev/ttyUSB0"
+        assert result.band == "8"
         assert len(result.results) == 1
         assert result.results[0].operator_name == "Telkomsel"
 
     def test_get_session(self, db_session):
         service, _, _ = self._make_service(db_session)
 
-        session = service.session_repo.create(tty_port="/dev/ttyUSB0")
+        session = service.session_repo.create(band="8")
         result = service.get_session(session.id)
 
         assert result is not None
@@ -76,7 +76,7 @@ class TestHistoryService:
     def test_get_sessions_with_data(self, db_session):
         service = self._make_service(db_session)
 
-        session = service.session_repo.create(tty_port="/dev/ttyUSB0")
+        session = service.session_repo.create(band="8")
         service.result_repo.create(session_id=session.id, operator_name="Telkomsel")
 
         result = service.get_sessions()
@@ -90,7 +90,7 @@ class TestHistoryService:
         service = self._make_service(db_session)
 
         for i in range(15):
-            session = service.session_repo.create(tty_port=f"/dev/ttyUSB{i}")
+            session = service.session_repo.create(band=str([4, 5, 8][i % 3]))
             service.result_repo.create(session_id=session.id, operator_name=f"Op{i}")
 
         result = service.get_sessions(page=1, page_size=10)
@@ -102,7 +102,7 @@ class TestHistoryService:
     def test_get_session_detail(self, db_session):
         service = self._make_service(db_session)
 
-        session = service.session_repo.create(tty_port="/dev/ttyUSB0")
+        session = service.session_repo.create(band="8")
         scan_result = service.result_repo.create(
             session_id=session.id,
             operator_name="Telkomsel",
@@ -117,7 +117,7 @@ class TestHistoryService:
     def test_delete_session(self, db_session):
         service = self._make_service(db_session)
 
-        session = service.session_repo.create(tty_port="/dev/ttyUSB0")
+        session = service.session_repo.create(band="8")
         scan_result = service.result_repo.create(session_id=session.id)
         deleted = service.delete_session(scan_result.id)
 

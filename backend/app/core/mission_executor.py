@@ -314,12 +314,12 @@ class MissionExecutor:
             completed_at=completed_at.isoformat(),
         )
 
-    def _run_scan(self, port: str, timeout: int, mission_location_id: int):
+    def _run_scan(self, band: str, timeout: int, mission_location_id: int):
         db = self._session_factory()
         try:
             service = self._scan_factory(db)
             return service.execute_scan(
-                port=port,
+                band=band,
                 timeout=timeout,
                 mission_location_id=mission_location_id,
             )
@@ -338,13 +338,16 @@ class MissionExecutor:
         scan_max = get_settings().MISSION_SCAN_MAX_PER_TOWER
         scan_count = tracker.get("scan_count", 0)
 
+        # Read the latest tracker from memory to ensure we have the scan_session_id
+        fresh_tracker = self._scan_tracker.get(key, tracker)
+        session_id = fresh_tracker.get("last_scan_session_id") or tracker.get("last_scan_session_id")
         # Mark as visited and link to last scan session
         reason = f"min scans ({scan_min}) reached" if scan_count >= scan_min else f"max scans ({scan_max}) reached"
         self._log(mission_id, "INFO", f"{target.cellular_tower_id}: {reason}, marking visited")
         db = self._session_factory()
         try:
             loc_repo = MissionLocationRepository(db)
-            loc_repo.mark_visited(mission_id, target.id, tracker.get("last_scan_session_id"))
+            loc_repo.mark_visited(mission_id, target.id, session_id)
             repo = MissionRepository(db)
             mission = repo.get_by_id(mission_id)
             mission.visited_locations += 1
@@ -357,7 +360,7 @@ class MissionExecutor:
         self._log(
             mission_id,
             "VISITED",
-            f"{target.cellular_tower_id} marked visited ({scan_count} scans), session {tracker.get('last_scan_session_id')} linked",
+            f"{target.cellular_tower_id} marked visited ({scan_count} scans), session {session_id} linked",
         )
         await self._emit(
             "mission_visit",
@@ -365,7 +368,7 @@ class MissionExecutor:
             location_id=target.id,
             tower_id=target.cellular_tower_id,
             tower_name=target.cellular_tower_name,
-            scan_session_id=tracker.get("last_scan_session_id"),
+            scan_session_id=session_id,
             distance_m=round(dist, 2),
         )
 
@@ -375,12 +378,12 @@ class MissionExecutor:
         db = self._session_factory()
         try:
             mission = MissionRepository(db).get_by_id(mission_id)
-            if not mission.tty_port:
+            if not mission.band:
                 raise ValueError(
-                    f"Mission {mission_id} has no tty_port configured. "
-                    f"Please set a valid USB modem port (e.g., /dev/ttyUSB0) in the mission settings."
+                    f"Mission {mission_id} has no band configured. "
+                    f"Please set a valid LTE band (e.g., B7, B20) in the mission settings."
                 )
-            port = mission.tty_port
+            band = mission.band
         finally:
             db.close()
 
@@ -409,7 +412,7 @@ class MissionExecutor:
 
                 scan = await asyncio.to_thread(
                     self._run_scan,
-                    port=port,
+                    band=band,
                     timeout=get_settings().MISSION_CLI_TIMEOUT,
                     mission_location_id=target.id,
                 )
@@ -426,6 +429,10 @@ class MissionExecutor:
                     "INFO",
                     f"Scan completed for {target.cellular_tower_id} (session {scan.id})",
                 )
+                # Immediately check if we should mark visited (avoid race with main loop)
+                scan_min = get_settings().MISSION_SCAN_MIN_FOR_VISITED
+                if (scan_count + 1) >= scan_min and not self._visited_flags.get(key, False):
+                    await self._mark_visited(mission_id, target, dist, tracker)
             except Exception as e:
                 self._log(
                     mission_id,
@@ -541,9 +548,9 @@ class MissionExecutor:
                                         continue
                             # else: max reached, no more scans
                         elif scan_count >= scan_min:
-                            # Minimum scans reached, mark visited
-                            await self._mark_visited(mission_id, target, dist, tracker)
-                            # After marking visited, continue scanning if under max
+                            # Minimum scans reached - let background task handle _mark_visited
+                            # after scan completes (avoids race condition with missing session_id)
+                            # Just continue scanning if under max
                             if scan_count < scan_max:
                                 should_scan = (
                                     last_scan_ts is None

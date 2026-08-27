@@ -31,7 +31,7 @@ def make_location(db: Session) -> MissionLocation:
 
 class TestScanSessionRepository:
     def test_u01_create_without_mission_location_id(self, db_session):
-        session = ScanSessionRepository(db_session).create(tty_port="/dev/ttyUSB0")
+        session = ScanSessionRepository(db_session).create(band="8")
 
         assert session.mission_location_id is None
 
@@ -39,7 +39,7 @@ class TestScanSessionRepository:
         loc = make_location(db_session)
 
         session = ScanSessionRepository(db_session).create(
-            tty_port="/dev/ttyUSB0",
+            band="8",
             latitude=-6.2,
             longitude=106.84,
             mission_location_id=loc.id,
@@ -71,19 +71,19 @@ class TestScanServiceLink:
             longitude=106.89665223346297,
         )
         cli_adapter.execute.return_value = CLIScanResponse(
-            results=[CLIScanResult(operator_name="Telkomsel", mcc="510", mnc="10", rat="4G", status="active")],
-            raw_output='{"results": []}',
+            results=[CLIScanResult(operator_name="Telkomsel", mcc="510", mnc="10", rat="LTE", status="Available")],
+            raw_output='{"cells": []}',
         )
 
     def test_u03_execute_scan_without_kwarg(self, db_session):
         service, cli_adapter, gps_provider = self._make_service(db_session)
         self._mock_deps(cli_adapter, gps_provider)
 
-        result = service.execute_scan(port="/dev/ttyUSB0")
+        result = service.execute_scan(band=8)
 
         assert result.mission_location_id is None
         gps_provider.get_location.assert_called_once()
-        cli_adapter.execute.assert_called_once_with(port="/dev/ttyUSB0", timeout=30)
+        cli_adapter.execute.assert_called_once_with(band=8, timeout=30)
 
     def test_u04_execute_scan_with_mission_location_id(self, db_session):
         service, cli_adapter, gps_provider = self._make_service(db_session)
@@ -91,7 +91,7 @@ class TestScanServiceLink:
         loc = make_location(db_session)
 
         result = service.execute_scan(
-            port="/dev/ttyUSB0", mission_location_id=loc.id
+            band=8, mission_location_id=loc.id
         )
 
         assert result.mission_location_id == loc.id
@@ -103,7 +103,7 @@ class TestScanServiceLink:
         response = ScanSessionResponse(
             id=1,
             scan_time="2026-07-31T09:00:00Z",
-            tty_port="/dev/ttyUSB0",
+            band="8",
             created_at="2026-07-31T09:00:00Z",
         )
 
@@ -112,7 +112,7 @@ class TestScanServiceLink:
         with_id = ScanSessionResponse(
             id=2,
             scan_time="2026-07-31T09:00:00Z",
-            tty_port="/dev/ttyUSB0",
+            band="8",
             created_at="2026-07-31T09:00:00Z",
             mission_location_id=7,
         )
@@ -129,15 +129,15 @@ class TestScanLinkEndpoints:
         )
         mock_cli = MagicMock()
         mock_cli.execute.return_value = CLIScanResponse(
-            results=[CLIScanResult(operator_name="Telkomsel", mcc="510", mnc="10", rat="4G", status="active")],
-            raw_output='{"results": []}',
+            results=[CLIScanResult(operator_name="Telkomsel", mcc="510", mnc="10", rat="LTE", status="Available")],
+            raw_output='{"cells": []}',
         )
 
         client.app.dependency_overrides[get_gps_provider] = lambda: mock_gps
         client.app.dependency_overrides[get_cli_adapter] = lambda: mock_cli
 
         try:
-            response = client.post("/api/v1/scan", json={"tty": "/dev/ttyUSB0"})
+            response = client.post("/api/v1/scan", json={"band": 8})
 
             assert response.status_code == 200
             assert response.json()["mission_location_id"] is None
@@ -153,12 +153,12 @@ class TestScanLinkEndpoints:
             latitude=-6.15, longitude=106.89
         )
         cli_adapter.execute.return_value = CLIScanResponse(
-            results=[], raw_output='{"results": []}'
+            results=[], raw_output='{"cells": []}'
         )
         service = ScanService(db=db_session, cli_adapter=cli_adapter, gps_provider=gps_provider)
 
         result = service.execute_scan(
-            port="/dev/ttyUSB0", mission_location_id=loc.id
+            band=8, mission_location_id=loc.id
         )
 
         assert db_session.query(ScanSession).filter_by(id=result.id).one().mission_location_id == loc.id
