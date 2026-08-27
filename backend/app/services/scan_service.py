@@ -4,6 +4,7 @@ from app.cli import CLIAdapter
 from app.gps import GPSProvider
 from app.repositories import ScanSessionRepository, ScanResultRepository
 from app.schemas.scan import ScanSessionResponse, ScanResultResponse
+from app.config.settings import get_settings
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +42,9 @@ class ScanService:
             latitude=location.latitude,
             longitude=location.longitude,
             mission_location_id=mission_location_id,
+            tty_port=get_settings().DEFAULT_GPS_TTY,
+            altitude=location.altitude,
+            course_deg=location.course_deg,
         )
 
         results_data = [
@@ -78,6 +82,8 @@ class ScanService:
             latitude=session.latitude,
             longitude=session.longitude,
             mission_location_id=session.mission_location_id,
+            altitude=session.altitude,
+            course_deg=session.course_deg,
             created_at=session.created_at,
             results=[
                 ScanResultResponse(

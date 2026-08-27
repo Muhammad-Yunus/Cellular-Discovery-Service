@@ -12,6 +12,7 @@ class ScanSession(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     scan_time = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    tty_port = Column(String(255), nullable=False, default="")
     band = Column(String(10), nullable=False)
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
@@ -20,6 +21,8 @@ class ScanSession(Base):
         ForeignKey("mission_locations.id", ondelete="SET NULL", use_alter=True),
         nullable=True,
     )
+    altitude = Column(Float, nullable=True)
+    course_deg = Column(Float, nullable=True)
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     results = relationship("ScanResult", back_populates="session", cascade="all, delete-orphan")

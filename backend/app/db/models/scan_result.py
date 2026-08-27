@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, ForeignKey
 from sqlalchemy.orm import relationship
 from app.db.base import Base
 
@@ -13,5 +13,13 @@ class ScanResult(Base):
     mnc = Column(String(10), nullable=True)
     rat = Column(String(50), nullable=True)
     status = Column(String(50), nullable=True)
+    # Additional detail fields
+    frequency_mhz = Column(Float, nullable=True)
+    earfcn = Column(Integer, nullable=True)
+    band = Column(String(10), nullable=True)
+    pci = Column(Integer, nullable=True)
+    rsrp = Column(Float, nullable=True)
+    rsrq = Column(Float, nullable=True)
+    snr = Column(Float, nullable=True)
 
     session = relationship("ScanSession", back_populates="results")

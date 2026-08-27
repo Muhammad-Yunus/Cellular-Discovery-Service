@@ -65,8 +65,43 @@ class CLIAdapter:
             return self._parse_output(result.stdout, band)
 
     def _parse_output(self, stdout: str, band: int) -> CLIScanResponse:
+        # lte-scan outputs a status line before JSON and may append text after
+        # (e.g. "Running lte_scan_example..." and "Result saved to:...")
+        # Find the JSON block by locating the first '{' or '[' and matching the
+        # corresponding closing bracket/brace.
+        first_brace = stdout.find('{')
+        first_bracket = stdout.find('[')
+        if first_brace == -1 and first_bracket == -1:
+            raise CLIParseError(
+                "Failed to parse CLI output as JSON: no JSON object found",
+                raw_output=stdout,
+            )
+        # Prefer '{' if it comes first, otherwise '['
+        if first_brace != -1 and (first_bracket == -1 or first_brace < first_bracket):
+            start_char, end_char = '{', '}'
+            json_start = first_brace
+        else:
+            start_char, end_char = '[', ']'
+            json_start = first_bracket
+
+        json_str = stdout[json_start:]
+        depth = 0
+        end = 0
+        for i, c in enumerate(json_str):
+            if c == start_char:
+                depth += 1
+            elif c == end_char:
+                depth -= 1
+                if depth == 0:
+                    end = i + 1
+                    break
+        if end == 0:
+            raise CLIParseError(
+                "Failed to parse CLI output as JSON: unmatched braces",
+                raw_output=stdout,
+            )
         try:
-            data = json.loads(stdout)
+            data = json.loads(json_str[:end])
         except json.JSONDecodeError as e:
             raise CLIParseError(
                 f"Failed to parse CLI output as JSON: {e}",
@@ -101,6 +136,13 @@ class CLIAdapter:
                     mnc=mnc,
                     rat=rat,
                     status="Available",  # RTL-SDR detects available cells
+                    frequency_mhz=cell.get("frequency_mhz"),
+                    earfcn=cell.get("earfcn"),
+                    band=cell.get("band"),
+                    pci=cell.get("pci"),
+                    rsrp=cell.get("rsrp"),
+                    rsrq=cell.get("rsrq"),
+                    snr=cell.get("snr"),
                 )
             )
 
