@@ -24,7 +24,7 @@ def create_mission(
     if not payload.band:
         raise HTTPException(
             status_code=422,
-            detail="band is required. Provide a valid USB modem port (e.g., /dev/ttyUSB0).",
+            detail="band is required. Provide a valid LTE band (e.g., 8, 20, 40).",
         )
     service = MissionService(db)
     return service.create(payload)

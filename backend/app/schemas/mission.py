@@ -1,4 +1,3 @@
-import subprocess
 import re
 from enum import Enum
 from typing import Optional
@@ -19,46 +18,6 @@ class MissionStatus(str, Enum):
     FAILED = "FAILED"
 
 
-def _get_connected_usb_ports() -> set[str]:
-    """Get set of connected /dev/ttyUSB* ports from lsusb."""
-    try:
-        result = subprocess.run(
-            ["lsusb"], capture_output=True, text=True, timeout=5
-        )
-        if result.returncode != 0:
-            return set()
-        # Find all Bus:Device pairs
-        bus_dev_pattern = re.compile(r"Bus (\d+) Device (\d+): ID ([0-9a-f]{4}):([0-9a-f]{4})")
-        bus_devices = set()
-        for line in result.stdout.splitlines():
-            match = bus_dev_pattern.search(line)
-            if match:
-                bus_devices.add((match.group(1), match.group(2)))
-        
-        # Map to /dev/ttyUSB* using udevadm
-        ports = set()
-        import glob
-        for tty_dev in glob.glob("/dev/ttyUSB*"):
-            dev_name = tty_dev.replace("/dev/", "")
-            try:
-                udev_info = subprocess.run(
-                    ["udevadm", "info", "-n", dev_name],
-                    capture_output=True, text=True, timeout=5
-                )
-                # Check if this device appears in lsusb output
-                if udev_info.returncode == 0:
-                    # Get bus:dev from udev
-                    for line in udev_info.stdout.splitlines():
-                        if line.startswith("E: DEVNAME="):
-                            port_name = line.split("=", 1)[1].replace("/dev/", "")
-                            ports.add(f"/dev/{port_name}")
-            except (subprocess.TimeoutExpired, subprocess.CalledProcessError):
-                continue
-        return ports
-    except Exception:
-        return set()
-
-
 VALID_BANDS = {"8", "20", "28", "40", "42"}
 
 
@@ -69,24 +28,14 @@ def _validate_band(cls, v):
     # Accept numeric band identifiers (e.g. "8", "20", "40")
     if v in VALID_BANDS:
         return v
-    # Accept USB serial port paths
-    if not v.startswith("/dev/ttyUSB"):
-        raise ValueError("band must be a valid integer or string")
-    # Check if port exists in system
-    if not __import__("os").path.exists(v):
-        raise ValueError(f"band {v} is not valid")
-    # Check if port appears in lsusb (USB-connected device)
-    connected_ports = _get_connected_usb_ports()
-    if connected_ports and v not in connected_ports:
-        raise ValueError(f"band {v} is not available")
-    return v
+    raise ValueError(f"band must be a valid LTE band from {VALID_BANDS}")
 
 
 class MissionCreate(BaseModel):
     name: str
     description: Optional[str] = None
     radius_meters: Optional[int] = Field(default=None, ge=10, le=100)
-    band: str  # Required: must be a valid, existing /dev/ttyUSB* port
+    band: str  # Required: must be a valid LTE band (e.g., 8, 20, 40)
 
     @model_validator(mode="before")
     @classmethod

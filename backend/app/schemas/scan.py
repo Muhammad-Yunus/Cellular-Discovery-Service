@@ -51,8 +51,7 @@ class ScanSessionResponse(BaseModel):
 
 
 class ScanRequest(BaseModel):
-    band: int
-    tty: Optional[str] = None
+    band: int = 8
 
     @field_validator("band")
     @classmethod
