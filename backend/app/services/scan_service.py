@@ -100,6 +100,13 @@ class ScanService:
                     mnc=r.mnc,
                     rat=r.rat,
                     status=r.status,
+                    frequency_mhz=r.frequency_mhz,
+                    earfcn=r.earfcn,
+                    band=r.band,
+                    pci=r.pci,
+                    rsrp=r.rsrp,
+                    rsrq=r.rsrq,
+                    snr=r.snr,
                 )
                 for r in results
             ],
