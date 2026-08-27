@@ -57,12 +57,21 @@ class HistoryService:
                 band=str(r.session.band),
                 latitude=r.session.latitude,
                 longitude=r.session.longitude,
+                mission_location_id=r.session.mission_location_id,
+                altitude=r.session.altitude,
+                course_deg=r.session.course_deg,
                 created_at=r.session.created_at,
                 operator_name=r.operator_name,
                 mcc=r.mcc,
                 mnc=r.mnc,
                 rat=r.rat,
                 status=r.status,
+                frequency_mhz=r.frequency_mhz,
+                earfcn=r.earfcn,
+                pci=r.pci,
+                rsrp=r.rsrp,
+                rsrq=r.rsrq,
+                snr=r.snr,
             )
             for r in results
         ]
@@ -134,12 +143,21 @@ class HistoryService:
             band=str(result.session.band),
             latitude=result.session.latitude,
             longitude=result.session.longitude,
+            mission_location_id=result.session.mission_location_id,
+            altitude=result.session.altitude,
+            course_deg=result.session.course_deg,
             created_at=result.session.created_at,
             operator_name=result.operator_name,
             mcc=result.mcc,
             mnc=result.mnc,
             rat=result.rat,
             status=result.status,
+            frequency_mhz=result.frequency_mhz,
+            earfcn=result.earfcn,
+            pci=result.pci,
+            rsrp=result.rsrp,
+            rsrq=result.rsrq,
+            snr=result.snr,
         )
 
     def delete_session(self, result_id: int) -> bool:

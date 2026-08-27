@@ -19,6 +19,12 @@ class ScanResultFlatResponse(BaseModel):
     mnc: Optional[str] = None
     rat: Optional[str] = None
     status: Optional[str] = None
+    frequency_mhz: Optional[float] = None
+    earfcn: Optional[int] = None
+    pci: Optional[int] = None
+    rsrp: Optional[float] = None
+    rsrq: Optional[float] = None
+    snr: Optional[float] = None
 
     class Config:
         from_attributes = True
