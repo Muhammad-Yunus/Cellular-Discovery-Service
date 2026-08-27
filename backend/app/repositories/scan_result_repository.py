@@ -106,6 +106,13 @@ class ScanResultRepository:
                 mnc=item.get("mnc"),
                 rat=item.get("rat"),
                 status=item.get("status"),
+                frequency_mhz=item.get("frequency_mhz"),
+                earfcn=item.get("earfcn"),
+                band=item.get("band"),
+                pci=item.get("pci"),
+                rsrp=item.get("rsrp"),
+                rsrq=item.get("rsrq"),
+                snr=item.get("snr"),
             )
             self.db.add(result)
             scan_results.append(result)
