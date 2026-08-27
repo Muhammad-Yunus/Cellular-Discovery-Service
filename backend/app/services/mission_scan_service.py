@@ -146,6 +146,7 @@ class MissionScanService:
             "scan_time", "latitude", "longitude",
             "operator_name", "mcc", "mnc", "rat",
             "cellular_tower_id", "cellular_tower_name",
+            "frequency_mhz", "earfcn", "pci", "rsrp", "rsrq", "snr",
         ])
 
         for r in results:
@@ -161,6 +162,12 @@ class MissionScanService:
                 r.rat or "",
                 mission_loc.cellular_tower_id if mission_loc else "",
                 mission_loc.cellular_tower_name if mission_loc else "",
+                r.frequency_mhz or "",
+                r.earfcn or "",
+                r.pci or "",
+                r.rsrp or "",
+                r.rsrq or "",
+                r.snr or "",
             ])
 
         return output.getvalue()
