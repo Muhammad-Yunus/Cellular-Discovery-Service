@@ -110,7 +110,8 @@ class HistoryService:
         # Header
         writer.writerow([
             "id", "session_id", "scan_time", "band", "latitude",
-            "longitude", "created_at", "operator_name", "mcc", "mnc", "rat", "status"
+            "longitude", "created_at", "operator_name", "mcc", "mnc", "rat", "status",
+            "frequency_mhz", "earfcn", "pci", "rsrp", "rsrq", "snr"
         ])
         # Rows
         for r in results:
@@ -127,6 +128,12 @@ class HistoryService:
                 r.mnc or "",
                 r.rat or "",
                 r.status or "",
+                r.frequency_mhz or "",
+                r.earfcn or "",
+                r.pci or "",
+                r.rsrp or "",
+                r.rsrq or "",
+                r.snr or "",
             ])
 
         return output.getvalue()
