@@ -22,13 +22,18 @@ StandardError=journal
 SyslogIdentifier=lte-scanner
 
 # Security hardening
+# Note: app lives under /home/pi, so ProtectHome must NOT block it
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
-ProtectHome=true
+ProtectHome=tmpfs
+ReadOnlyPaths=/home/pi/Cellular-Discovery-Service/backend
 ReadWritePaths=/home/pi/Cellular-Discovery-Service/backend/logs
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
 MemoryMax=512M
-CPUQuota=100%
 
 [Install]
 WantedBy=multi-user.target
