@@ -131,99 +131,164 @@ Visit `http://localhost:8000/docs` for interactive API documentation.
 ### Development Installation (Source)
 
 ```bash
-# Install all dev + runtime deps
+# Navigate to backend directory
+cd backend
+
+# Setup virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install production dependencies only (runtime)
+pip install -r requirements.txt
+
+# OR install development dependencies (includes test tools)
+pip install -r requirements-dev.txt
+```
+
+### Production Dependencies Only
+
+For production deployment, only install `requirements.txt` (excludes pytest, httpx, etc.):
+
+```bash
+cd backend
 pip install -r requirements.txt
 ```
 
-### Wheel Distribution (Optional)
-
-```bash
-pip install wheel
-python setup.py bdist_wheel   # or `python -m wheel`
-# Artifacts go into dist/ directory
-```
-
 ---
 
-## ▶️ Run Instructions
+## 🚀 Production Deployment (Raspberry Pi + Systemd)
 
-### Development Mode (Hot Reload)
+### Automated Installation Script
 
 ```bash
+cd backend
+sudo ./scripts/install.sh
+```
+
+The script will:
+1. Check Python 3.12+ and PostgreSQL prerequisites
+2. Create virtual environment at `.venv/`
+3. Install production dependencies only (no dev/test tools)
+4. Run database migrations via Alembic
+5. Set up systemd service file
+
+### Manual Installation
+
+#### 1. Clone & Setup
+
+```bash
+# Clone repository
+git clone <repo-url>
+cd Cellular-Discovery-Service/backend
+
+# Create virtual environment
+python3 -m venv .venv
 source .venv/bin/activate
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-# OR (dev override to port 8001)
-uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
-# OR
-./scripts/run.sh
+
+# Install production dependencies only
+pip install -r requirements.txt
+
+# Apply database migrations
+alembic upgrade head
 ```
 
-Visit `http://localhost:8000/docs`.
-
-### Background Process
+#### 2. Configure Environment
 
 ```bash
-nohup uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+# Copy environment template
+cp .env.example .env
+
+# Edit with your settings
+nano .env
 ```
 
-### Systemd Daemon (Production)
+Required production settings:
+```env
+APP_ENV=production
+LOG_LEVEL=INFO
+GPS_PROVIDER=cli           # Use 'mock' for testing only
+```
+
+#### 3. Install Systemd Service
 
 ```bash
-sudo cp lte-scanner.service /etc/systemd/system/
+# Create logs directory
+mkdir -p logs
+
+# Install service file
+sudo ln -sf "$(pwd)/../lte-scanner.service" /etc/systemd/system/lte-scanner.service
+
+# Reload systemd and enable service
 sudo systemctl daemon-reload
 sudo systemctl enable lte-scanner.service
+
+# Start the service
 sudo systemctl start lte-scanner.service
+
+# Check status
 sudo systemctl status lte-scanner.service
-sudo journalctl -u lte-scanner.service -f
 ```
 
----
-
-## 🚀 Production Deployment (Systemd)
-
-Create `/etc/systemd/system/lte-scanner.service`:
-
-```ini
-[Unit]
-Description=LTE Scanner Backend
-After=network.target postgresql.service
-
-[Service]
-Type=simple
-User=pi
-WorkingDirectory=/home/pi/Cellular-Discovery-Service/backend
-EnvironmentFile=/home/pi/Cellular-Discovery-Service/backend/.env
-ExecStart=/home/pi/Cellular-Discovery-Service/backend/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
-Restart=always
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Apply the service:
+#### 4. Monitor Logs
 
 ```bash
-sudo systemctl daemon-reload
-sudo systemctl enable lte-scanner.service
-sudo systemctl start lte-scanner.service
-sudo systemctl status lte-scanner.service
-sudo journalctl -u lte-scanner.service -f
+# View service logs
+journalctl -u lte-scanner.service -f
+
+# Check application logs
+tail -f logs/app.log
 ```
 
-Or copy the service file from this repo:
+### Service Management
 
 ```bash
-sudo cp /home/pi/Cellular-Discovery-Service/lte-scanner.service /etc/systemd/system/
-sudo systemctl daemon-reload
+# Common commands
+sudo systemctl stop lte-scanner.service      # Stop service
+sudo systemctl start lte-scanner.service     # Start service
+sudo systemctl restart lte-scanner.service   # Restart (after updates)
+sudo systemctl status lte-scanner.service    # Check status
+sudo systemctl disable lte-scanner.service   # Disable auto-start
+```
+
+### Update Deployment
+
+```bash
+# Pull latest code
+cd /home/pi/Cellular-Discovery-Service
+git pull origin main
+
+# Update dependencies if needed
+cd backend
+source .venv/bin/activate
+pip install -r requirements.txt
+
+# Run migrations
+alembic upgrade head
+
+# Restart service
 sudo systemctl restart lte-scanner.service
 ```
+
+### Production Checklist
+
+- [ ] `.env` configured with production values
+- [ ] `APP_ENV=production` set
+- [ ] `LOG_LEVEL=INFO` (not DEBUG)
+- [ ] Database migrations applied (`alembic upgrade head`)
+- [ ] Service is enabled: `sudo systemctl enable lte-scanner.service`
+- [ ] Service is running: `sudo systemctl status lte-scanner.service`
+- [ ] API accessible: `curl http://localhost:8000/health`
 
 ---
 
 ## 🧪 Testing
 
+> **Note:** Testing requires `requirements-dev.txt` to be installed. Production deployments only need `requirements.txt`.
+
 ```bash
+# Install dev dependencies (requires pytest, coverage, etc.)
+pip install -r requirements-dev.txt
+
 # Run all tests
 pytest backend/tests/ -v
 
