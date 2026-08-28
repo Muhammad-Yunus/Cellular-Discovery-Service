@@ -103,6 +103,12 @@ class MissionScanService:
                     mnc=r.mnc,
                     rat=r.rat,
                     status=r.status,
+                    frequency_mhz=r.frequency_mhz,
+                    earfcn=r.earfcn,
+                    pci=r.pci,
+                    rsrp=r.rsrp,
+                    rsrq=r.rsrq,
+                    snr=r.snr,
                 )
             )
 
