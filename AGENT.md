@@ -34,7 +34,7 @@ lte-scan full <band> --json --gain 43
 
 ---
 
-# USB Modem LTE Network Discovery Web Backend
+# RTL-SDR LTE Network Discovery Web Backend
 
 **Backend Framework:** Python FastAPI  
 **Operating System:** Raspberry Pi OS 64-bit (Headless)  
@@ -50,7 +50,7 @@ lte-scan full <band> --json --gain 43
 
 # Objective
 
-Develop a REST API backend for the USB Modem LTE Network Discovery Web Application.
+Develop a REST API backend for the RTL-SDR LTE Network Discovery Web Application.
 
 The backend **DOES NOT** implement LTE scanning itself.
 
@@ -182,9 +182,14 @@ DATABASE_USER=lte_scanner
 DATABASE_PASSWORD=engen1us
 DATABASE_SCHEMA=app
 
-GPS_PROVIDER=mock
-DEFAULT_TTY=/dev/ttyAMA0
-SCAN_TIMEOUT=30
+GPS_PROVIDER=cli           # Valid: cli | mock | moving_mock | serial
+DEFAULT_GPS_TTY=/dev/ttyAMA0
+
+LTE_SCAN_COMMAND=lte-scan
+LTE_SCAN_BANDS=5,8         # Comma-separated LTE bands to scan
+LTE_SCAN_GAIN_DB=43
+LTE_SCAN_MODE=balance      # fast | balance | full
+SCAN_TIMEOUT=90
 
 LOG_LEVEL=INFO
 
@@ -347,7 +352,7 @@ The service SHALL
      │                               │
 CLI Process               Mock / Serial GPS
      │
-USB Modem LTE Discovery CLI
+RTL-SDR LTE Discovery CLI
 ```
 
 Business logic must never execute shell commands directly.
@@ -645,10 +650,10 @@ Responsible only for GPS providers.
 Request
 
 ```json
-{
-    "tty": "/dev/ttyUSB0"
-}
+{}
 ```
+
+Note: Scan uses `LTE_SCAN_COMMAND` and `LTE_SCAN_BANDS` from environment. No tty_port needed.
 
 Workflow
 
@@ -902,7 +907,6 @@ CLI execution SHALL be mocked.
 
 # Future Extensions
 
-- Multiple modem support
 - Serial GPS
 - Scheduled scan
 - Automatic scan
