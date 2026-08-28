@@ -12,7 +12,53 @@ from app.schemas.scan import (
 router = APIRouter(prefix="/api/v1/scans", tags=["scans"])
 
 
-@router.get("", response_model=PaginatedResponse)
+SCANS_LIST_EXAMPLE = {
+    "items": [
+        {
+            "id": 2119,
+            "scan_session_id": 2200,
+            "scan_time": "2026-08-28T09:40:08.748887+07:00",
+            "band": "5",
+            "latitude": -6.150456,
+            "longitude": 106.896944,
+            "mission_location_id": None,
+            "cellular_tower_id": None,
+            "cellular_tower_name": None,
+            "created_at": "2026-08-28T09:40:08.748887+07:00",
+            "operator_name": "Hutchison 3",
+            "mcc": "510",
+            "mnc": "89",
+            "rat": "LTE",
+            "status": "Available",
+            "frequency_mhz": 958.0,
+            "earfcn": 3780,
+            "pci": 306,
+            "rsrp": -29.6,
+            "rsrq": None,
+            "snr": None
+        }
+    ],
+    "total": 1754,
+    "page": 1,
+    "page_size": 1,
+    "total_pages": 1754
+}
+
+
+@router.get(
+    "",
+    response_model=PaginatedResponse,
+    responses={
+        200: {
+            "description": "Daftar scan results",
+            "content": {
+                "application/json": {
+                    "example": SCANS_LIST_EXAMPLE
+                }
+            }
+        }
+    }
+)
 def list_scans(
     page: int = Query(1, ge=1),
     page_size: int = Query(10, ge=1, le=100),

@@ -14,6 +14,31 @@ from app.schemas.mission import (
 
 router = APIRouter(prefix="/api/v1/missions", tags=["missions"])
 
+MISSIONS_LIST_EXAMPLE = {
+    "items": [
+        {
+            "id": 2236,
+            "name": "TEST-RADIUS20-SPEED10-V2",
+            "description": "Auto-generated mission dengan 1 tower",
+            "status": "COMPLETED",
+            "radius_meters": 50,
+            "start_location_id": 6331,
+            "current_location_id": 6331,
+            "total_locations": 1,
+            "visited_locations": 1,
+            "progress_percent": 100.0,
+            "started_at": "2026-08-28T06:00:36.834981+07:00",
+            "completed_at": "2026-08-28T06:01:49.551265+07:00",
+            "stopped_at": None,
+            "created_at": "2026-08-28T06:00:26.430945+07:00",
+            "updated_at": "2026-08-28T06:00:26.430945+07:00"
+        }
+    ],
+    "total": 93,
+    "page": 1,
+    "page_size": 1
+}
+
 
 @router.post("", response_model=MissionResponse, status_code=201)
 def create_mission(
@@ -24,7 +49,20 @@ def create_mission(
     return service.create(payload)
 
 
-@router.get("", response_model=MissionListResponse)
+@router.get(
+    "",
+    response_model=MissionListResponse,
+    responses={
+        200: {
+            "description": "Daftar misi",
+            "content": {
+                "application/json": {
+                    "example": MISSIONS_LIST_EXAMPLE
+                }
+            }
+        }
+    }
+)
 def list_missions(
     page: int = Query(1, ge=1),
     page_size: int = Query(10, ge=1, le=100),

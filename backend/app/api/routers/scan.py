@@ -11,7 +11,49 @@ from app.config.settings import get_settings
 router = APIRouter(prefix="/api/v1/scan", tags=["scan"])
 
 
-@router.post("", response_model=ScanSessionResponse)
+SCAN_SESSION_EXAMPLE = {
+    "id": 2200,
+    "scan_time": "2026-08-28T09:40:08.748887+07:00",
+    "band": "5",
+    "latitude": -6.150456,
+    "longitude": 106.896944,
+    "mission_location_id": None,
+    "altitude": None,
+    "course_deg": None,
+    "created_at": "2026-08-28T09:40:08.748887+07:00",
+    "results": [
+        {
+            "id": 2119,
+            "operator_name": "Hutchison 3",
+            "mcc": "510",
+            "mnc": "89",
+            "rat": "LTE",
+            "status": "Available",
+            "frequency_mhz": 958.0,
+            "earfcn": 3780,
+            "pci": 306,
+            "rsrp": -29.6,
+            "rsrq": None,
+            "snr": None
+        }
+    ]
+}
+
+
+@router.post(
+    "",
+    response_model=ScanSessionResponse,
+    responses={
+        200: {
+            "description": "Scan berhasil dieksekusi",
+            "content": {
+                "application/json": {
+                    "example": SCAN_SESSION_EXAMPLE
+                }
+            }
+        }
+    }
+)
 def execute_scan(
     db: Session = Depends(get_db),
     cli_adapter: CLIAdapter = Depends(get_cli_adapter),
