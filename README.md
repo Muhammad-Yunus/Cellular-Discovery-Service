@@ -12,8 +12,6 @@
 
 **REST API backend for RTL-SDR LTE Network Discovery Web Application** — orchestrates CLI-based LTE scans using `lte-scan` (RTL-SDR dongle), mission planning with GPS navigation, stores scan history in PostgreSQL, and provides realtime updates via WebSocket. Runs on Raspberry Pi OS 64-bit.
 
-> ⚠️ **CRITICAL:** This system uses `lte-scan` CLI with RTL-SDR hardware. The old `lte-scan` CLI with RTL-SDR hardware. See [MIGRATION_PLAN.md](MIGRATION_PLAN.md) for details.
-
 ---
 
 ## 🏗️ Architecture Diagram
@@ -345,15 +343,17 @@ DATABASE_HOST=localhost
 DATABASE_PORT=5432
 DATABASE_NAME=lte_scanner
 DATABASE_USER=lte_scanner
-DATABASE_PASSWORD=engen1us
+DATABASE_PASSWORD=<your_password>
 DATABASE_SCHEMA=app
 
-GPS_PROVIDER=mock          # Valid: mock | serial | cli
+GPS_PROVIDER=cli           # Valid: cli | mock | moving_mock | serial
 DEFAULT_GPS_TTY=/dev/ttyAMA0
+
 LTE_SCAN_COMMAND=lte-scan
-LTE_SCAN_BAND=8
-LTE_SCAN_GAIN=43
-SCAN_TIMEOUT=30
+LTE_SCAN_BANDS=5,8         # Comma-separated list of LTE bands to scan
+LTE_SCAN_GAIN_DB=43
+LTE_SCAN_MODE=balance      # fast | balance | full
+SCAN_TIMEOUT=90
 
 LOG_LEVEL=INFO             # DEBUG | INFO | WARNING | ERROR
 
@@ -373,7 +373,7 @@ All configuration is loaded dynamically at runtime from environment variables. *
 | Provider | Description | Config |
 |----------|-------------|--------|
 | `MockGPSProvider` | Returns fixed Jakarta coordinates (-6.15, 106.90) | `GPS_PROVIDER=mock` |
-| `SerialGPSProvider` | Reads NMEA GGA sentences from serial port | `GPS_PROVIDER=serial`, set `DEFAULT_TTY` to `/dev/ttyUSB0` or `/dev/ttyACM0` |
+| `SerialGPSProvider` | Reads NMEA GGA sentences from serial port | `GPS_PROVIDER=serial`, set `DEFAULT_GPS_TTY` (e.g. `/dev/ttyACM0`) |
 | `CLIGPSProvider` | Executes external GPS CLI binary and parses output | `GPS_PROVIDER=cli`, configure `command`, `device`, `baud`, `timeout` |
 
 The SerialGPSProvider parses `$GPGGA` sentences to extract latitude/longitude coordinates. Altitude, fix quality, and satellite count are supported but not stored.
@@ -401,12 +401,12 @@ The SerialGPSProvider parses `$GPGGA` sentences to extract latitude/longitude co
 - [x] Mission Logs Pagination ✅
 - [x] Device Location Endpoint (independent) ✅
 - [x] Test Management Endpoints ✅
+- [x] Health Check Endpoint ✅
+- [x] CSV/JSON Export for missions ✅
+- [x] Multi-band LTE Scanning (RTL-SDR) ✅
 - [ ] JWT Authentication
 - [ ] Prometheus Metrics
-- [ ] CSV/JSON Export for missions
-- [ ] Multiple Modem Support
 - [ ] Scheduled/Automated Scans
-- [ ] Health Check Endpoint (in progress)
 
 ---
 

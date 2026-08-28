@@ -118,7 +118,7 @@ File konfigurasi utama: `/home/pi/Cellular-Discovery-Service/backend/.env`
 | `MOCK_GPS_SPEED_MS` | Kecepatan巡航 mock GPS (m/s) |
 | `MOCK_GPS_LOITER_RADIUS_M` | Radius loiter di setiap waypoint (default: 5m) |
 | `MOCK_GPS_LOITER_LAPS` | Jumlah lap loiter (default: 1) |
-| `MOCK_GPS_LOITER_DURATION_S` | Durasi loiter per waypoint dalam detik (default: 3s) |
+
 
 ### Arah Kompas untuk Tower
 
@@ -418,7 +418,7 @@ External tools:
 System services:
 - `lte-scanner.service` - Backend FastAPI service (systemd)
 
-## Recent Updates (2024-08-10)
+## Recent Updates (2026-08-11)
 
 ### GPS Location Fields Fix
 - Fixed `GPSLocation` schema to use `Optional[float]` for `altitude` dan `accuracy`
@@ -441,7 +441,7 @@ System services:
 
 **Sebelum:**
 ```
-Mission 2 tower (25s) �� 1300+ logs
+Mission 2 tower (25s) → 1300+ logs
 ```
 
 **Sesudah:**
@@ -460,6 +460,11 @@ Mission 2 tower (25s) → 6 logs (1 STARTING, 4 INFO, 2 VISITED, 1 COMPLETED)
 2026-08-10T22:42:06 | VISITED  | TWR-001 scanned, session 1430 linked
 2026-08-10T22:42:06 | COMPLETED| All locations visited
 ```
+
+### Multi-Band LTE Scan
+- Scan sekarang mendukung multi-band (Band 5 & Band 8) via `LTE_SCAN_BANDS` di `.env`
+- Mode scan configurable: `fast` | `balance` | `full` via `LTE_SCAN_MODE`
+- Gain disesuaikan per band dengan `LTE_SCAN_GAIN_DB`
 
 Log tetap informatif namun tidak memenuhi database dengan spam yang tidak perlu.
 

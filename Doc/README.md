@@ -1,6 +1,6 @@
 # Documentation Folder
 
-This folder contains comprehensive documentation for the USB Modem LTE Network Discovery Web Backend project.
+This folder contains comprehensive documentation for the RTL-SDR LTE Network Discovery Web Backend project.
 
 ## Available Documents
 
