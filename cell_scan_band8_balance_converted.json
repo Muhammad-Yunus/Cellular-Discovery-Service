@@ -1,10 +1,10 @@
 {
   "scan_info": {
     "band": 8,
-    "gain_db": 43,
+    "gain_db": 40,
     "mode": "balance",
-    "total_cells": 7,
-    "timestamp": "2026-08-26T08:06:28.895131+00:00"
+    "total_cells": 8,
+    "timestamp": "2026-08-27T23:10:57.970604+00:00"
   },
   "cells": [
     {
@@ -17,12 +17,12 @@
       "tac": null,
       "mcc": 510,
       "mnc": 10,
-      "rsrp": -15.6,
+      "rsrp": -14.8,
       "rsrq": null,
       "snr": null,
       "operator": "Telkomsel",
       "country": "Indonesia",
-      "timestamp": "2026-08-26T08:06:28.895131+00:00"
+      "timestamp": "2026-08-27T23:10:57.970604+00:00"
     },
     {
       "frequency_mhz": 930.4,
@@ -34,12 +34,12 @@
       "tac": null,
       "mcc": 510,
       "mnc": 10,
-      "rsrp": -16.8,
+      "rsrp": -13.5,
       "rsrq": null,
       "snr": null,
       "operator": "Telkomsel",
       "country": "Indonesia",
-      "timestamp": "2026-08-26T08:06:28.895131+00:00"
+      "timestamp": "2026-08-27T23:10:57.970604+00:00"
     },
     {
       "frequency_mhz": 931.0,
@@ -51,46 +51,63 @@
       "tac": null,
       "mcc": 510,
       "mnc": 10,
-      "rsrp": -16.3,
+      "rsrp": -16.6,
       "rsrq": null,
       "snr": null,
       "operator": "Telkomsel",
       "country": "Indonesia",
-      "timestamp": "2026-08-26T08:06:28.895131+00:00"
+      "timestamp": "2026-08-27T23:10:57.970604+00:00"
+    },
+    {
+      "frequency_mhz": 943.0,
+      "earfcn": 3630,
+      "band": "8",
+      "bandwidth_mhz": null,
+      "pci": 2,
+      "cell_id": null,
+      "tac": null,
+      "mcc": 510,
+      "mnc": 11,
+      "rsrp": -27.1,
+      "rsrq": null,
+      "snr": null,
+      "operator": "XL Axiata",
+      "country": "Indonesia",
+      "timestamp": "2026-08-27T23:10:57.970604+00:00"
     },
     {
       "frequency_mhz": 945.4,
       "earfcn": 3654,
       "band": "8",
       "bandwidth_mhz": null,
-      "pci": 1,
+      "pci": 59,
       "cell_id": null,
       "tac": null,
       "mcc": 510,
       "mnc": 21,
-      "rsrp": -18.3,
+      "rsrp": -17.5,
       "rsrq": null,
       "snr": null,
       "operator": "Indosat Ooredoo",
       "country": "Indonesia",
-      "timestamp": "2026-08-26T08:06:28.895131+00:00"
+      "timestamp": "2026-08-27T23:10:57.970604+00:00"
     },
     {
       "frequency_mhz": 946.0,
       "earfcn": 3660,
       "band": "8",
       "bandwidth_mhz": null,
-      "pci": 1,
+      "pci": 354,
       "cell_id": null,
       "tac": null,
       "mcc": 510,
       "mnc": 21,
-      "rsrp": -17.7,
+      "rsrp": -19.0,
       "rsrq": null,
       "snr": null,
       "operator": "Indosat Ooredoo",
       "country": "Indonesia",
-      "timestamp": "2026-08-26T08:06:28.895131+00:00"
+      "timestamp": "2026-08-27T23:10:57.970604+00:00"
     },
     {
       "frequency_mhz": 957.4,
@@ -102,12 +119,12 @@
       "tac": null,
       "mcc": 510,
       "mnc": 89,
-      "rsrp": -30.3,
+      "rsrp": -28.2,
       "rsrq": null,
       "snr": null,
       "operator": "Hutchison 3",
       "country": "Indonesia",
-      "timestamp": "2026-08-26T08:06:28.895131+00:00"
+      "timestamp": "2026-08-27T23:10:57.970604+00:00"
     },
     {
       "frequency_mhz": 958.0,
@@ -119,12 +136,12 @@
       "tac": null,
       "mcc": 510,
       "mnc": 89,
-      "rsrp": -34.9,
+      "rsrp": -29.8,
       "rsrq": null,
       "snr": null,
       "operator": "Hutchison 3",
       "country": "Indonesia",
-      "timestamp": "2026-08-26T08:06:28.895131+00:00"
+      "timestamp": "2026-08-27T23:10:57.970604+00:00"
     }
   ]
 }
