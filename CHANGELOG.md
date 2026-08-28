@@ -23,9 +23,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - E2E test coverage (S01-S49) with Behave BDD framework
 - API documentation for mission endpoints in `Doc/API.md`
 - Database schema documentation (`Doc/SCHEMA.md`)
+- **Multi-band LTE scanning**: Support for multiple LTE bands (Band 5 & Band 8) via `LTE_SCAN_BANDS` environment variable
+- **Scan mode configuration**: Configurable scan modes (`fast`, `balance`, `full`) via `LTE_SCAN_MODE`
+- **LTE detail fields**: `frequency_mhz`, `earfcn`, `pci`, `rsrp`, `rsrq`, `snr` in scan response and CSV export
+- **RTL-SDR migration**: Complete migration from USB modem (`lte-discovery`) to RTL-SDR dongle (`lte-scan` CLI)
 
 ### Changed
 - Default GPS_PROVIDER changed from `mock` to `cli` with `/dev/ttyAMA0`
+- **RTL-SDR Migration**: Removed all USB modem (`lte-discovery`) references; now using `lte-scan` CLI with RTL-SDR dongle
+- Environment variables updated: `DEFAULT_TTY` → `DEFAULT_GPS_TTY`, `LTE_SCAN_BAND` → `LTE_SCAN_BANDS`, added `LTE_SCAN_GAIN_DB`, `LTE_SCAN_MODE`
+- Removed `tty_port` from mission schema and scan request body
+- Health Check Endpoint marked as complete
+- CSV/JSON Export for missions marked as complete
 - GPS provider now uses jq pipeline + multi-read for valid fix acquisition
 - Mission planner anchors TSP route on device GPS position
 - Upload endpoint response normalized to consistent flat format
@@ -45,6 +54,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Scan location matching: use closest location within radius_meters
 - Mission logs: use event_type from logs instead of scan status
 - Location status updates on scan completion
+- Removed obsolete tty_port references from mission creation and validation
+- Corrected LTE_SCAN_COMMAND reference in CLI adapter
 
 ### Removed
 - Legacy GPS provider code paths
@@ -56,7 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Initial project setup with FastAPI backend
-- LTE scan via USB modem CLI integration
+- LTE scan via RTL-SDR (lte-scan CLI) — migrated from legacy USB modem approach
 - Scan history management (list, get, delete, export)
 - Mission CRUD operations
 - Mission location management (upload, download, bulk delete)
@@ -119,12 +130,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.3.0] - Planned
 
 ### Planned Features
-- [ ] Health check endpoint (`/healthz`)
-- [ ] Multiple modem support
 - [ ] Scheduled/automatic scans
 - [ ] Authentication & user management (JWT)
 - [ ] Prometheus metrics endpoint
-- [ ] CSV/JSON export for missions
 - [ ] Frontend integration with new API
 
 ---
@@ -132,8 +140,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.4.0] - Planned
 
 ### Planned Features
-- [ ] Real-time scan notifications via WebSocket
-- [ ] Auto-trigger scan on modem hotplug
 - [ ] Advanced dashboard with heatmap visualization
 - [ ] Mobile-responsive frontend
 
