@@ -296,19 +296,60 @@ class DeviceCollector:
             except (socket.error, socket.timeout):
                 result["status"] = "offline"
 
-            # Get IP address
-            hostname = socket.gethostname()
+            # Get IP address from the default route interface (not localhost)
             try:
-                ip_address = socket.gethostbyname(hostname)
-                result["ip_address"] = ip_address
-            except socket.gaierror:
-                result["ip_address"] = "127.0.0.1"
+                proc = subprocess.run(
+                    ["ip", "-4", "route", "show", "default"],
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
+                )
+                ip_address = None
+                iface = None
+                for line in proc.stdout.split("\n"):
+                    if "via" in line:
+                        # e.g.: default via 192.168.1.1 dev wlan0 proto static metric 600
+                        parts = line.split()
+                        for i, p in enumerate(parts):
+                            if p == "dev" and i + 1 < len(parts):
+                                iface = parts[i + 1]
+                                break
+                        break
 
-            # Determine network mode
-            if ip_address and (
-                ip_address.startswith("192.168.") or ip_address.startswith("10.")
-            ):
-                result["mode"] = "dhcp"
+                if iface:
+                    # Get primary IPv4 from that interface
+                    proc2 = subprocess.run(
+                        ["ip", "-4", "addr", "show", iface],
+                        capture_output=True,
+                        text=True,
+                        timeout=5,
+                    )
+                    for line in proc2.stdout.split("\n"):
+                        if "inet " in line and not line.strip().startswith("inet6"):
+                            # e.g.: inet 192.168.1.112/24 brd 192.168.1.255 scope global noprefixroute wlan0
+                            addr_part = line.split("inet ")[1].split()[0]
+                            ip_address = addr_part.split("/")[0]
+                            break
+            except Exception:
+                pass
+
+            # Fallback: try hostname resolution, but prefer non-loopback
+            if not ip_address or ip_address.startswith("127."):
+                hostname = socket.gethostname()
+                try:
+                    ip_address = socket.gethostbyname(hostname)
+                except socket.gaierror:
+                    ip_address = "127.0.0.1"
+
+            if ip_address:
+                result["ip_address"] = ip_address
+                # Determine network mode
+                if (
+                    ip_address.startswith("192.168.")
+                    or ip_address.startswith("10.")
+                    or ip_address.startswith("172.")
+                ):
+                    result["mode"] = "dhcp"
 
             # Get gateway (if available)
             try:
