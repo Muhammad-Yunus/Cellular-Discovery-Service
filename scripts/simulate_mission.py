@@ -712,8 +712,12 @@ def run_mission(start_lat: float, start_lon: float, name: str = "AUTO-MISSION",
     mission_id = None
 
     # Deteksi modem port sebelum membuat mission
-    tty_port = detect_tty_port()
-    log(f"Modem port: {tty_port}")
+    try:
+        tty_port = detect_tty_port()
+        log(f"Modem port: {tty_port}")
+    except FileNotFoundError as e:
+        log(f"⚠️  Modem tidak ditemukan ({e}), melanjutkan tanpa tty_port")
+        tty_port = None
 
     try:
         # =========================================================================
