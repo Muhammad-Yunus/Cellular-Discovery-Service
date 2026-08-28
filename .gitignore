@@ -36,3 +36,7 @@ alembic/__pycache__/
 
 # OpenCode IDE (generated files)
 .opencode/
+
+# Cell scan balance data
+cell_scan_*.json
+backend/cell_scan_*.json
