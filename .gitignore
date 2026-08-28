@@ -40,3 +40,6 @@ alembic/__pycache__/
 # Cell scan balance data
 cell_scan_*.json
 backend/cell_scan_*.json
+
+# Frontend spec files
+FE_*SPEC.md
