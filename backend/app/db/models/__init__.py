@@ -4,5 +4,14 @@ from app.db.models.mission_log import MissionLog
 from app.db.models.scan_result import ScanResult
 from app.db.models.scan_session import ScanSession
 from app.db.models.setting import Setting
+from app.db.models.device_status import DeviceStatus
 
-__all__ = ["Mission", "MissionLocation", "MissionLog", "ScanResult", "ScanSession", "Setting"]
+__all__ = [
+    "Mission",
+    "MissionLocation",
+    "MissionLog",
+    "ScanResult",
+    "ScanSession",
+    "Setting",
+    "DeviceStatus",
+]

@@ -1,6 +1,14 @@
+import sys
+import os
+import asyncio
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
-from contextlib import asynccontextmanager
 from app.config.settings import get_settings
 from app.db.session import engine
 from app.db.base import Base
@@ -10,36 +18,18 @@ from app.core.exceptions import (
     generic_exception_handler,
     validation_exception_handler,
 )
-from app.api.routers import scan, history, settings as settings_router, ws_gps, ws_scan, ws_mission, ws_device, mission_locations, missions, mission_planning, mission_control, mission_scans, device
+from app.api.routers import scan, history, settings as settings_router, ws_gps, ws_scan, ws_mission, ws_device, mission_locations, missions, mission_planning, mission_control, mission_scans, device, device_status
 from app.gps import test_management
-import logging
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.mission_executor import MissionExecutor
-import os
 
 app_settings = get_settings()
 
-logging.basicConfig(level=app_settings.LOG_LEVEL)
-logger = logging.getLogger(__name__)
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    logger.info("Starting application...")
-    executor = MissionExecutor()
-    await executor.startup()
-    app.state.mission_executor = executor
-    yield
-    logger.info("Shutting down application...")
-    await executor.shutdown()
-    engine.dispose()
-
-
+# Create FastAPI app
 app = FastAPI(
     title="LTE Network Discovery API",
     description="USB Modem LTE Network Discovery Web Backend",
     version="0.1.0",
-    lifespan=lifespan,
 )
 
 # Add CORS Middleware
@@ -79,18 +69,60 @@ app.include_router(mission_control.router)
 app.include_router(mission_scans.router)
 app.include_router(device.router)
 app.include_router(ws_device.router)
+app.include_router(device_status.router)
 
-# Test-only management endpoints — check env var at runtime so the import
-# succeeds even if the server was already running before the env var was set.
+# Test-only management endpoints
 if os.environ.get("TEST_MANAGEMENT_ENDPOINTS") == "1":
     test_management.attach(app)
-    # Ensure mission_executor is available in app.state if lifespan wasn't triggered
-    if not hasattr(app.state, "mission_executor"):
-        from app.core.mission_executor import MissionExecutor
-        app.state.mission_executor = MissionExecutor()
     logger.info("[TEST] Test management endpoints activated")
 
 
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
+
+
+# ─── Startup logic (runs once when uvicorn starts) ───────────────────────────
+async def _start_mission_executor():
+    """Initialize MissionExecutor and restore any active missions."""
+    executor = MissionExecutor()
+    await executor.startup()
+    app.state.mission_executor = executor
+    logger.info("MissionExecutor started")
+
+
+async def device_status_scheduler():
+    """Background task to collect device status periodically."""
+    from app.db.session import SessionLocal
+    from app.core.device_collector import DeviceCollector
+
+    interval = get_settings().DEVICE_STATUS_COLLECTION_INTERVAL
+    logger.info(f"Device status scheduler started (interval: {interval}s)")
+
+    # Collect immediately on startup
+    try:
+        with SessionLocal() as db:
+            collector = DeviceCollector(db=db)
+            await collector.collect_all()
+        logger.info("Initial device status collection completed")
+    except Exception as e:
+        logger.error(f"Initial device status collection error: {e}")
+
+    while True:
+        await asyncio.sleep(interval)
+        try:
+            with SessionLocal() as db:
+                collector = DeviceCollector(db=db)
+                await collector.collect_all()
+            logger.info("Device status collection completed")
+        except asyncio.CancelledError:
+            logger.info("Device status scheduler cancelled")
+            break
+        except Exception as e:
+            logger.error(f"Device status collection error: {e}")
+
+
+# Fire-and-forget both tasks at import time
+loop = asyncio.get_event_loop()
+loop.create_task(_start_mission_executor())
+loop.create_task(device_status_scheduler())

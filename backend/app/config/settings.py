@@ -51,6 +51,10 @@ class Settings(BaseSettings):
     LTE_SCAN_GAIN: int = 43
     LTE_SCAN_MODE: str = "balance"  # fast, balance, full
 
+    # Device Status Monitoring
+    DEVICE_STATUS_COLLECTION_INTERVAL: int = Field(default=300, gt=0, description="Seconds between device status collections (default: 300 = 5 minutes)")
+    DEVICE_STATUS_RETENTION_DAYS: int = Field(default=30, gt=0, description="Days to retain device status records")
+
     @field_validator("LTE_SCAN_BANDS")
     @classmethod
     def parse_band_list(cls, v):

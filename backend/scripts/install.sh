@@ -35,6 +35,7 @@ echo ""
 echo "[4/7] Installing dependencies..."
 pip install --upgrade pip
 pip install -r requirements.txt
+pip install psutil
 echo "  ✓ Dependencies installed"
 
 # Database migrations
