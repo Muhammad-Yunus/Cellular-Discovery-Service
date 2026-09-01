@@ -7,7 +7,7 @@ class ScanResultFlatResponse(BaseModel):
     id: int
     scan_session_id: int
     scan_time: datetime
-    band: str
+    band: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     mission_location_id: Optional[int] = None

@@ -91,7 +91,7 @@ class MissionScanService:
                     id=r.id,
                     scan_session_id=session.id,
                     scan_time=session.scan_time,
-                    band=session.band,
+                    band=r.band,
                     latitude=session.latitude,
                     longitude=session.longitude,
                     mission_location_id=mission_loc_id,
@@ -150,7 +150,7 @@ class MissionScanService:
         writer = csv.writer(output)
         writer.writerow([
             "scan_time", "latitude", "longitude",
-            "operator_name", "mcc", "mnc", "rat",
+            "operator_name", "mcc", "mnc", "rat", "band",
             "cellular_tower_id", "cellular_tower_name",
             "frequency_mhz", "earfcn", "pci", "rsrp", "rsrq", "snr",
         ])
@@ -166,6 +166,7 @@ class MissionScanService:
                 r.mcc or "",
                 r.mnc or "",
                 r.rat or "",
+                r.band or "",
                 mission_loc.cellular_tower_id if mission_loc else "",
                 mission_loc.cellular_tower_name if mission_loc else "",
                 r.frequency_mhz or "",
