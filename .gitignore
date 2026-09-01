@@ -20,6 +20,7 @@ dist/
 
 # Database
 test.db
+*.db
 *.sqlite
 *.sql
 
