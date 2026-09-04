@@ -21,49 +21,48 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
+def _column_exists(connection, table_name, column_name, schema='app'):
+    """Check if a column exists in a table."""
+    result = connection.execute(sa.text(
+        "SELECT 1 FROM information_schema.columns "
+        "WHERE table_schema = :schema AND table_name = :table AND column_name = :column"
+    ), {
+        'schema': schema,
+        'table': table_name,
+        'column': column_name
+    })
+    return result.fetchone() is not None
+
+
 def upgrade() -> None:
-    # Add tty_port column to scan_sessions
-    op.add_column(
-        'scan_sessions',
-        sa.Column('tty_port', sa.String(length=255), nullable=False, server_default=""),
-        schema='app'
-    )
-    # Add detailed LTE scan fields to scan_results
-    op.add_column(
-        'scan_results',
-        sa.Column('frequency_mhz', sa.Float(), nullable=True),
-        schema='app'
-    )
-    op.add_column(
-        'scan_results',
-        sa.Column('earfcn', sa.Integer(), nullable=True),
-        schema='app'
-    )
-    op.add_column(
-        'scan_results',
-        sa.Column('band', sa.String(length=10), nullable=True),
-        schema='app'
-    )
-    op.add_column(
-        'scan_results',
-        sa.Column('pci', sa.Integer(), nullable=True),
-        schema='app'
-    )
-    op.add_column(
-        'scan_results',
-        sa.Column('rsrp', sa.Float(), nullable=True),
-        schema='app'
-    )
-    op.add_column(
-        'scan_results',
-        sa.Column('rsrq', sa.Float(), nullable=True),
-        schema='app'
-    )
-    op.add_column(
-        'scan_results',
-        sa.Column('snr', sa.Float(), nullable=True),
-        schema='app'
-    )
+    conn = op.get_bind()
+    
+    # Add tty_port column to scan_sessions if not exists
+    if not _column_exists(conn, 'scan_sessions', 'tty_port'):
+        op.add_column(
+            'scan_sessions',
+            sa.Column('tty_port', sa.String(length=255), nullable=False, server_default=""),
+            schema='app'
+        )
+    
+    # Add detailed LTE scan fields to scan_results if not exists
+    lte_fields = [
+        ('frequency_mhz', sa.Float(), True),
+        ('earfcn', sa.Integer(), True),
+        ('band', sa.String(length=10), True),
+        ('pci', sa.Integer(), True),
+        ('rsrp', sa.Float(), True),
+        ('rsrq', sa.Float(), True),
+        ('snr', sa.Float(), True),
+    ]
+    
+    for col_name, col_type, nullable in lte_fields:
+        if not _column_exists(conn, 'scan_results', col_name):
+            op.add_column(
+                'scan_results',
+                sa.Column(col_name, col_type, nullable=nullable),
+                schema='app'
+            )
 
 
 def downgrade() -> None:
