@@ -1,7 +1,7 @@
 """add tty_port column and LTE scan fields
 
 Revision ID: d8f2e3a1b0c9
-Revises: c711c08c3947
+Revises: abc123_ad_altitude_course
 Create Date: 2026-08-27 19:50:00.000000
 
 Adds:
@@ -16,7 +16,7 @@ import sqlalchemy as sa
 
 
 revision: str = 'd8f2e3a1b0c9'
-down_revision: Union[str, None] = 'c711c08c3947'
+down_revision: Union[str, None] = 'abc123_ad_altitude_course'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
