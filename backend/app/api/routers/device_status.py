@@ -5,6 +5,7 @@ GET /api/v1/device/status - Returns the latest device peripheral status
 """
 import json
 import logging
+import socket
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -89,6 +90,7 @@ def get_device_status(db: Session = Depends(get_db)):
             ip_address=latest.ip_address,
             gateway=latest.gateway,
             dns=dns_list,
+            hostname=socket.gethostname(),
         ),
         metadata={
             "collected_at": latest.collected_at.isoformat() if latest.collected_at else None,

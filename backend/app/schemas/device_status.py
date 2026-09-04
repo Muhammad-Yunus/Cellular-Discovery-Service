@@ -46,6 +46,7 @@ class NetworkStatus(BaseModel):
     ip_address: Optional[str] = None
     gateway: Optional[str] = None
     dns: Optional[List[str]] = Field(default_factory=list)
+    hostname: Optional[str] = Field(None, description="Current device hostname")
 
     class Config:
         from_attributes = True
