@@ -19,12 +19,29 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
+def _column_exists(connection, table_name, column_name, schema='app'):
+    """Check if a column exists in a table."""
+    result = connection.execute(sa.text(
+        "SELECT 1 FROM information_schema.columns "
+        "WHERE table_schema = :schema AND table_name = :table AND column_name = :column"
+    ), {
+        'schema': schema,
+        'table': table_name,
+        'column': column_name
+    })
+    return result.fetchone() is not None
+
+
 def upgrade() -> None:
-    op.add_column(
-        'scan_sessions',
-        sa.Column('band', sa.String(length=10), nullable=False, server_default=''),
-        schema='app'
-    )
+    conn = op.get_bind()
+    
+    # Add band column to scan_sessions if not exists
+    if not _column_exists(conn, 'scan_sessions', 'band'):
+        op.add_column(
+            'scan_sessions',
+            sa.Column('band', sa.String(length=10), nullable=False, server_default=''),
+            schema='app'
+        )
 
 
 def downgrade() -> None:
