@@ -9,3 +9,4 @@ python-dotenv==1.0.1
 python-multipart==0.0.32
 pyserial==3.5
 psutil>=5.9.0
+requests>=2.31.0
