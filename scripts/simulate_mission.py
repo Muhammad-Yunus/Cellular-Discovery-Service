@@ -668,21 +668,31 @@ def restart_backend():
 
     # Stop service via systemd
     subprocess.run(["sudo", "systemctl", "stop", "lte-scanner"], capture_output=True, check=True)
-    time.sleep(2)
+    time.sleep(3)  # Tunggu service fully stopped
 
     # Start service via systemd
     subprocess.run(["sudo", "systemctl", "start", "lte-scanner"], capture_output=True, check=True)
-    time.sleep(5)  # Tunggu backend stabil
 
-    # Verifikasi restart berhasil
-    try:
-        resp = requests.get(f"{API_BASE}/health", timeout=5)
-        if resp.status_code == 200:
-            log("Backend berhasil direstart")
-        else:
-            log("PERINGATAN: Backend mungkin tidak restart dengan benar")
-    except Exception as e:
-        log(f"PERINGATAN: Tidak bisa verifikasi restart backend: {e}")
+    # Tunggu backend stabil dan siap menerima request (maks 30 detik)
+    MAX_WAIT = 30
+    CHECK_INTERVAL = 2
+    log(f"Menunggu backend siap (maks {MAX_WAIT} detik)...")
+
+    for i in range(MAX_WAIT // CHECK_INTERVAL):
+        time.sleep(CHECK_INTERVAL)
+        try:
+            resp = requests.get(f"{API_BASE}/health", timeout=3)
+            if resp.status_code == 200:
+                log(f"✅ Backend berhasil direstart dan siap ({(i+1)*CHECK_INTERVAL} detik)")
+                return
+        except Exception:
+            pass
+
+        if (i + 1) % 5 == 0:
+            log(f"   Masih menunggu... ({(i+1)*CHECK_INTERVAL}s)")
+
+    log("⚠️  PERINGATAN: Backend tidak merespons dalam waktu yang ditentukan, melanjutkan tetap...")
+    log("   Pastikan service sudah running sebelum menggunakan API.")
 
 
 # ============================================================================
